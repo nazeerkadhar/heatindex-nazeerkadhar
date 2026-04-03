@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HSE Heat Stress Alert System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🔥 HSE Heat Stress Alert</h1>
+      <p class="subtitle">Real-time monitoring & WhatsApp alerts for worker safety</p>
+      <div class="header-credit">Created by <span>Nazeer Kadhar</span>, HSE Professional</div>
+    </header>
+
+    <section class="search-section">
+      <div class="search-box">
+        <input type="text" id="cityInput" placeholder="Enter city (e.g., Dubai, Riyadh)">
+        <button id="btnCheck" class="btn btn-primary">Check Heat Stress</button>
+      </div>
+    </section>
+
+    <div id="loading" class="loading hidden"><div class="spinner"></div><p>Analyzing conditions...</p></div>
+
+    <div id="results" class="results hidden">
+      <div id="riskBanner" class="risk-banner">
+        <div class="risk-info"><h2 id="riskLevel">--</h2><p id="riskMessage">--</p></div>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card"><span class="m-label">Temperature</span><div class="m-value" id="metricTemp">--°C</div></div>
+        <div class="metric-card"><span class="m-label">Humidity</span><div class="m-value" id="metricHumidity">--%</div></div>
+        <div class="metric-card highlight"><span class="m-label">Heat Index</span><div class="m-value" id="metricHeatIndex">--°C</div></div>
+        <div class="metric-card highlight"><span class="m-label">WBGT</span><div class="m-value" id="metricWBGT">--°C</div></div>
+      </div>
+      <div class="recommendations">
+        <h3>📋 HSE Safety Recommendations</h3>
+        <ul id="recList"></ul>
+      </div>
+      <div class="sub-box">
+        <h3>📱 Get WhatsApp Alerts</h3>
+        <input type="text" id="subPhone" placeholder="Your WhatsApp (+country code)">
+        <button id="btnSub" class="btn btn-accent">Subscribe</button>
+        <p id="subStatus" class="status hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer-credit">
+    <div class="statutory-warning">⚠️ STATUTORY WARNING</div>
+    <div class="credit-line">Created & Licensed by: <span class="author">NAZEER KADHAR</span>, HSE Professional</div>
+    <div class="copyright">© 2026 Heat Stress Alert System. Unauthorized use or reproduction is strictly prohibited.</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
