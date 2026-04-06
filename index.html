@@ -378,7 +378,12 @@
       document.getElementById('humVal').textContent = hum + '%';
       document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
       document.getElementById('wbgtVal').textContent = wbgt.toFixed(1) + '°C';
-
+      // Show Date & Time
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+      const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+      document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
+      document.getElementById('datetimeCard').style.display = 'block';
       // Show Cards
       document.getElementById('tempCard').style.display = 'block';
       document.getElementById('humCard').style.display = 'block';
