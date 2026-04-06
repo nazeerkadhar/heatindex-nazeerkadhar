@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HeatIndex Calculator</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; background: #fafafa; color: #222; }
+    nav { background: #1d3557; padding: 12px; margin-bottom: 20px; text-align: center; }
+    nav a { color: #f1faee; margin: 0 8px; text-decoration: none; font-weight: 500; }
+    h1 { color: #d32f2f; text-align: center; }
+    .input-group { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+    input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 130px; }
+    button { background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #1565c0; }
+    #result { margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; text-align: center; }
+    .footer { margin-top: 30px; text-align: center; font-size: 0.85em; color: #666; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">🌡️ Calculator</a>
+    <a href="/about.html">About</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/privacy-policy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+  </nav>
+
+  <h1>🌡️ Heat Index Calculator</h1>
+  <p style="text-align:center;">Enter temperature and humidity to calculate "feels-like" temperature.</p>
+  
+  <div class="input-group">
+    <input type="number" id="temp" placeholder="Temp (°C)" />
+    <input type="number" id="humidity" placeholder="Humidity (%)" />
+    <button onclick="calculate()">Calculate</button>
+  </div>
+  
+  <div id="result">Enter values above to see result</div>
+
+  <div class="footer">
+    Built for HSE Professionals & Public Safety • <a href="/privacy-policy.html">Privacy</a>
+  </div>
+
+  <script>
+    function calculate() {
+      const t = parseFloat(document.getElementById('temp').value);
+      const h = parseFloat(document.getElementById('humidity').value);
+      if (isNaN(t) || isNaN(h)) {
+        document.getElementById('result').innerHTML = '⚠️ Please enter valid numbers';
+        return;
+      }
+      // NOAA Heat Index Formula (°C)
+      const hi = -8.784695 + 1.61139411*t + 2.338549*h - 0.14611605*t*h 
+                 - 0.012308094*t*t - 0.016424828*h*h + 0.002211732*t*t*h 
+                 + 0.00072546*t*h*h - 0.000003582*t*t*h*h;
+      let risk = '✅ Safe';
+      if (hi >= 32) risk = '⚠️ Caution';
+      if (hi >= 40) risk = '🔥 Extreme Caution';
+      if (hi >= 51) risk = '☠️ Danger';
+      document.getElementById('result').innerHTML = `<strong>Heat Index:</strong> ${hi.toFixed(1)}°C<br><strong>Risk Level:</strong> ${risk}`;
+    }
+  </script>
+</body>
+</html>
