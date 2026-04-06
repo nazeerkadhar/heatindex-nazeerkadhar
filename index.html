@@ -3,62 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HeatIndex Calculator</title>
+  <title>HSE Heat Stress Alert System</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; background: #fafafa; color: #222; }
-    nav { background: #1d3557; padding: 12px; margin-bottom: 20px; text-align: center; }
-    nav a { color: #f1faee; margin: 0 8px; text-decoration: none; font-weight: 500; }
-    h1 { color: #d32f2f; text-align: center; }
-    .input-group { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
-    input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 130px; }
-    button { background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #1565c0; }
-    #result { margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; text-align: center; }
-    .footer { margin-top: 30px; text-align: center; font-size: 0.85em; color: #666; }
+    :root { --primary: #1d3557; --accent: #e63946; --light: #f1faee; --card: #ffffff; --text: #222; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #e8f0fe 0%, #d4e4f7 100%); color: var(--text); line-height: 1.6; min-height: 100vh; }
+    header { background: var(--primary); color: white; padding: 15px 20px; text-align: center; }
+    nav a { color: #ccc; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
+    nav a:hover { color: white; }
+    .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+    .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    h1 { color: var(--primary); margin-bottom: 10px; font-size: 1.8em; }
+    .input-group { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+    input, select { flex: 1; min-width: 140px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; }
+    button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 500; transition: 0.2s; }
+    button:hover { background: #457b9d; }
+    .result { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; }
+    .result h2 { margin-bottom: 8px; }
+    .risk-safe { color: #2e7d32; } .risk-caution { color: #f57f17; } .risk-extreme { color: #e63946; } .risk-danger { color: #b71c1c; }
+    .datetime { font-size: 0.95em; color: #555; margin: 8px 0; font-style: italic; }
+    .whatsapp-box { background: #e8f5e9; border-left: 4px solid #25d366; padding: 12px; margin-top: 15px; border-radius: 0 8px 8px 0; }
+    .premium-box { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; }
+    .ad-slot { background: #f1f3f4; border: 2px dashed #ccc; padding: 10px; text-align: center; margin: 15px 0; font-size: 0.85em; color: #666; }
+    .affiliate { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .affiliate a { display: inline-block; background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; text-decoration: none; color: #333; font-size: 0.9em; }
+    footer { text-align: center; padding: 20px; font-size: 0.8em; color: #777; }
+    @media(max-width: 500px) { .input-group { flex-direction: column; } button { width: 100%; } }
   </style>
 </head>
 <body>
+
+<header>
+  <h1>🌡️ HSE Heat Stress Alert System</h1>
   <nav>
-    <a href="/">🌡️ Calculator</a>
+    <a href="/">Home</a>
     <a href="/about.html">About</a>
     <a href="/contact.html">Contact</a>
     <a href="/privacy-policy.html">Privacy</a>
     <a href="/terms.html">Terms</a>
   </nav>
+</header>
 
-  <h1>🌡️ Heat Index Calculator</h1>
-  <p style="text-align:center;">Enter temperature and humidity to calculate "feels-like" temperature.</p>
-  
-  <div class="input-group">
-    <input type="number" id="temp" placeholder="Temp (°C)" />
-    <input type="number" id="humidity" placeholder="Humidity (%)" />
-    <button onclick="calculate()">Calculate</button>
+<div class="container">
+  <!-- AdSense Placeholder Top -->
+  <div class="ad-slot">📢 Google AdSense Header Banner (728x90) - Paste code here later</div>
+
+  <div class="card">
+    <h2>📍 Get Real-Time Heat Index</h2>
+    <p>Enter your city or use GPS. System fetches live temp/humidity & calculates heat stress risk.</p>
+    
+    <div class="input-group">
+      <input type="text" id="location" placeholder="City, Country (e.g., Mumbai, IN)" />
+      <button onclick="getWeather()" id="searchBtn">🔍 Get Data</button>
+      <button onclick="useGPS()" style="background:#457b9d;">📍 Use My GPS</button>
+    </div>
+
+    <div class="result" id="resultBox">
+      <h2 id="hiTitle">Heat Index: --°C</h2>
+      <p class="datetime" id="localTime">Local Date & Time: --</p>
+      <p><strong>Risk Level:</strong> <span id="riskLevel">--</span></p>
+      <p id="safetyTip"></p>
+      
+      <div class="whatsapp-box">
+        📲 <strong>WhatsApp Heat Alerts</strong> (Free)<br>
+        <input type="tel" id="waPhone" placeholder="+91 98765 43210" style="width:100%; margin:8px 0; padding:8px;">
+        <button onclick="subscribeWhatsApp()" style="background:#25d366; width:100%;">🔔 Subscribe via WhatsApp</button>
+      </div>
+    </div>
   </div>
-  
-  <div id="result">Enter values above to see result</div>
 
-  <div class="footer">
-    Built for HSE Professionals & Public Safety • <a href="/privacy-policy.html">Privacy</a>
+  <!-- AdSense Placeholder Middle -->
+  <div class="ad-slot">📢 Google AdSense Content Banner (300x250)</div>
+
+  <!-- Premium Upgrade -->
+  <div class="premium-box">
+    <h3>🔓 Go Premium: Advanced Alerts & Reports</h3>
+    <p>Daily SMS/WhatsApp forecasts, PDF safety reports, multi-site dashboard.</p>
+    <button onclick="openPremium()" style="background:#d32f2f; margin-top:10px;">💎 Upgrade - ₹49/month</button>
   </div>
 
-  <script>
-    function calculate() {
-      const t = parseFloat(document.getElementById('temp').value);
-      const h = parseFloat(document.getElementById('humidity').value);
-      if (isNaN(t) || isNaN(h)) {
-        document.getElementById('result').innerHTML = '⚠️ Please enter valid numbers';
-        return;
-      }
-      // NOAA Heat Index Formula (°C)
-      const hi = -8.784695 + 1.61139411*t + 2.338549*h - 0.14611605*t*h 
-                 - 0.012308094*t*t - 0.016424828*h*h + 0.002211732*t*t*h 
-                 + 0.00072546*t*h*h - 0.000003582*t*t*h*h;
-      let risk = '✅ Safe';
-      if (hi >= 32) risk = '⚠️ Caution';
-      if (hi >= 40) risk = '🔥 Extreme Caution';
-      if (hi >= 51) risk = '☠️ Danger';
-      document.getElementById('result').innerHTML = `<strong>Heat Index:</strong> ${hi.toFixed(1)}°C<br><strong>Risk Level:</strong> ${risk}`;
-    }
-  </script>
+  <!-- Affiliate Recommendations -->
+  <div class="card">
+    <h3>🛡️ Stay Safe in Extreme Heat</h3>
+    <div class="affiliate" id="affiliateLinks">
+      <a href="https://amzn.to/3XYZ" target="_blank">Cooling Towel</a>
+      <a href="https://amzn.to/3ABC" target="_blank">ORS Pack (10)</a>
+      <a href="https://amzn.to/3DEF" target="_blank">Portable Mist Fan</a>
+      <a href="https://amzn.to/3GHI" target="_blank">Sun Protection Hat</a>
+    </div>
+    <small style="color:#888;">*We earn a small commission if you buy via these links</small>
+  </div>
+
+  <!-- AdSense Placeholder Bottom -->
+  <div class="ad-slot">📢 Google AdSense Footer Banner</div>
+</div>
+
+<footer>
+  <p>👤 Created & Licensed by <strong>Nazeer Kadhar, HSE Professional</strong> | © <script>document.write(new Date().getFullYear())</script></p>
+  <p><a href="/privacy-policy.html" style="color:#555;">Privacy</a> • <a href="/terms.html" style="color:#555;">Terms</a> • <a href="/contact.html" style="color:#555;">Contact</a></p>
+</footer>
+
+<script>
+  // ⚠️ GET FREE KEY FROM: https://openweathermap.org/api (sign up → API keys)
+  const API_KEY = 'YOUR_OPENWEATHER_API_KEY_HERE'; 
+
+  async function getWeather() {
+    const city = document.getElementById('location').value.trim();
+    if (!city) return alert('Please enter a city');
+    await fetchWeather(city);
+  }
+
+  function useGPS() {
+    if (!navigator.geolocation) return alert('Geolocation not supported');
+    document.getElementById('searchBtn').innerText = '📡 Locating...';
+    navigator.geolocation.getCurrentPosition(
+      pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude),
+      err => alert('Location denied. Please enter city manually.')
+    );
+  }
+
+  async function fetchWeather(city) {
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true; btn.innerText = '⏳ Loading...';
+    try {
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`);
+      const data = await res.json();
+      if (data.cod !== 200) throw new Error(data.message);
+      showResult(data.main.temp, data.main.humidity, data.timezone);
+    } catch(e) { alert('Error: ' + e.message); }
+    finally { btn.disabled = false; btn.innerText = '🔍 Get Data'; }
+  }
+
+  async function fetchWeatherByCoords(lat, lon) {
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true; btn.innerText = '⏳ Loading...';
+    try {
+      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
+      const data = await res.json();
+      showResult(data.main.temp, data.main.humidity, data.timezone);
+    } catch(e) { alert('Weather API failed'); }
+    finally { btn.disabled = false; btn.innerText = '🔍 Get Data'; }
+  }
+
+  function showResult(temp, hum, tzOffset) {
+    // Heat Index (NOAA formula for °C)
+    let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum 
+             - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum 
+             + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+    if (temp < 26) hi = temp; // Below 26°C, HI ≈ actual temp
+
+    const risk = hi < 32 ? { cls: 'risk-safe', txt: '✅ Safe (Low Risk)' } :
+                 hi < 40 ? { cls: 'risk-caution', txt: '⚠️ Caution (Fatigue possible)' } :
+                 hi < 51 ? { cls: 'risk-extreme', txt: '🔥 Extreme (Heat cramps/exhaustion)' } :
+                          { cls: 'risk-danger', txt: '☠️ Danger (Heat stroke likely)' };
+
+    document.getElementById('hiTitle').innerHTML = `Heat Index: ${hi.toFixed(1)}°C`;
+    const riskEl = document.getElementById('riskLevel');
+    riskEl.className = risk.cls; riskEl.innerText = risk.txt;
+
+    // Local Date/Time
+    const localDate = new Date(Date.now() + (tzOffset * 1000));
+    document.getElementById('localTime').innerText = `📅 Local Time: ${localDate.toLocaleString()}`;
+
+    // Safety Tip
+    const tips = {
+      '✅ Safe (Low Risk)': 'Normal outdoor activities safe. Stay hydrated.',
+      '⚠️ Caution (Fatigue possible)': 'Limit prolonged exposure. Drink water every 20 mins.',
+      '🔥 Extreme (Heat cramps/exhaustion)': 'Reschedule heavy work. Use cooling breaks every hour.',
+      '☠️ Danger (Heat stroke likely)': 'STOP outdoor work. Seek shade/AC. Emergency protocols active.'
+    };
+    document.getElementById('safetyTip').innerText = tips[risk.txt];
+
+    document.getElementById('resultBox').style.display = 'block';
+  }
+
+  function subscribeWhatsApp() {
+    const phone = document.getElementById('waPhone').value.replace(/\s/g, '');
+    if (!phone.startsWith('+')) return alert('Please include country code (e.g., +91)');
+    
+    const hi = document.getElementById('hiTitle').innerText || 'N/A';
+    const loc = document.getElementById('location').value || 'GPS Location';
+    const msg = encodeURIComponent(`Hi, subscribe me for daily heat alerts at ${loc}. Current HI: ${hi}`);
+    
+    // Replace with your WhatsApp number (format: countrycode+number, no +)
+    const waNumber = '919876543210'; 
+    window.open(`https://wa.me/${waNumber}?text=${msg}`, '_blank');
+    
+    // Optional: Log to Google Sheets later via fetch() to Apps Script URL
+    console.log('Subscription request:', { phone, loc, hi });
+    alert('Opening WhatsApp... Send the pre-filled message to subscribe!');
+  }
+
+  function openPremium() {
+    // Replace with your Razorpay/Stripe payment link
+    window.open('https://rzp.io/r/your-payment-link', '_blank');
+  }
+</script>
+
 </body>
 </html>
