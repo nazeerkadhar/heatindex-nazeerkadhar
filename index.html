@@ -18,18 +18,18 @@
     /* HEADER */
     .header {
       background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-      padding: 20px 15px;
+      padding: 25px 15px;
       text-align: center;
       border-bottom: 3px solid #e67e22;
     }
     .header h1 {
       font-size: 1.3rem;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
       color: #fff;
     }
     .creator {
       color: #95a5a6;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
     }
     .creator strong {
       color: #e67e22;
@@ -128,6 +128,7 @@
       margin-bottom: 12px;
       text-align: center;
       border: 2px solid #34495e;
+      display: none;
     }
     .card-label {
       font-size: 0.85rem;
@@ -156,6 +157,7 @@
       padding: 15px;
       margin: 15px 0;
       text-align: center;
+      display: none;
     }
     .wa-box input {
       width: 100%;
@@ -261,45 +263,45 @@
     <!-- LOADING -->
     <div class="loading" id="loading">⏳ Fetching weather data...</div>
 
+    <!-- DATE & TIME DISPLAY -->
+    <div class="card" id="datetimeCard">
+      <div class="card-label">📅 Local Date & Time</div>
+      <div class="card-value" id="datetimeVal" style="font-size:1.3rem;">--</div>
+    </div>
+
     <!-- ALERT BOX -->
     <div class="alert-box" id="alertBox">
-  <!-- DATE & TIME DISPLAY -->
-  <div class="card" id="datetimeCard" style="display:none;">
-    <div class="card-label">📅 Local Date & Time</div>
-    <div class="card-value" id="datetimeVal" style="font-size:1.3rem; color:#fff;">--</div>
-  </div>
-  <!-- ALERT BOX -->
-  <div class="alert-box" id="alertBox">      <div class="alert-icon" id="alertIcon">🔴</div>
+      <div class="alert-icon" id="alertIcon">🔴</div>
       <div class="alert-title" id="alertTitle">EXTREME RISK</div>
       <div class="alert-msg" id="alertMsg">EXTREME HEAT STRESS - Cease all outdoor work immediately!</div>
     </div>
 
     <!-- TEMPERATURE CARD -->
-    <div class="card" id="tempCard" style="display:none;">
+    <div class="card" id="tempCard">
       <div class="card-label">Temperature</div>
       <div class="card-value" id="tempVal">--°C</div>
     </div>
 
     <!-- HUMIDITY CARD -->
-    <div class="card" id="humCard" style="display:none;">
+    <div class="card" id="humCard">
       <div class="card-label">Humidity</div>
       <div class="card-value" id="humVal">--%</div>
     </div>
 
     <!-- HEAT INDEX CARD -->
-    <div class="card heat-index" id="hiCard" style="display:none;">
+    <div class="card heat-index" id="hiCard">
       <div class="card-label">Heat Index</div>
       <div class="card-value" id="hiVal">--°C</div>
     </div>
 
     <!-- WBGT CARD -->
-    <div class="card wbgt" id="wbgtCard" style="display:none;">
+    <div class="card wbgt" id="wbgtCard">
       <div class="card-label">WBGT</div>
       <div class="card-value" id="wbgtVal">--°C</div>
     </div>
 
     <!-- WHATSAPP SUBSCRIPTION -->
-    <div class="wa-box" id="waBox" style="display:none;">
+    <div class="wa-box" id="waBox">
       <input type="tel" id="phone" placeholder="Enter WhatsApp number (+91...)" />
       <button class="btn-wa" onclick="subscribeWA()">📲 Subscribe for Alerts</button>
     </div>
@@ -378,13 +380,23 @@
       document.getElementById('humVal').textContent = hum + '%';
       document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
       document.getElementById('wbgtVal').textContent = wbgt.toFixed(1) + '°C';
+
       // Show Date & Time
       const now = new Date();
-      const dateStr = now.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-      const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+      const dateStr = now.toLocaleDateString('en-IN', { 
+        weekday:'short', 
+        day:'numeric', 
+        month:'short', 
+        year:'numeric' 
+      });
+      const timeStr = now.toLocaleTimeString('en-IN', { 
+        hour:'2-digit', 
+        minute:'2-digit' 
+      });
       document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
-      document.getElementById('datetimeCard').style.display = 'block';
+
       // Show Cards
+      document.getElementById('datetimeCard').style.display = 'block';
       document.getElementById('tempCard').style.display = 'block';
       document.getElementById('humCard').style.display = 'block';
       document.getElementById('hiCard').style.display = 'block';
@@ -424,6 +436,7 @@
     }
 
     function hideResults() {
+      document.getElementById('datetimeCard').style.display = 'none';
       document.getElementById('alertBox').style.display = 'none';
       document.getElementById('tempCard').style.display = 'none';
       document.getElementById('humCard').style.display = 'none';
