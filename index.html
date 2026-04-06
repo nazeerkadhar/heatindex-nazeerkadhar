@@ -3,202 +3,205 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HSE Heat Stress Alert System</title>
+  <title>HSE Heat Stress Alert System | Nazeer Kadhar</title>
   <style>
-    :root { --primary: #1d3557; --accent: #e63946; --light: #f1faee; --card: #ffffff; --text: #222; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, #e8f0fe 0%, #d4e4f7 100%); color: var(--text); line-height: 1.6; min-height: 100vh; }
-    header { background: var(--primary); color: white; padding: 15px 20px; text-align: center; }
-    nav a { color: #ccc; margin: 0 10px; text-decoration: none; font-size: 0.9em; }
-    nav a:hover { color: white; }
-    .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
-    .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    h1 { color: var(--primary); margin-bottom: 10px; font-size: 1.8em; }
-    .input-group { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
-    input, select { flex: 1; min-width: 140px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; }
-    button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 500; transition: 0.2s; }
-    button:hover { background: #457b9d; }
-    .result { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none; }
-    .result h2 { margin-bottom: 8px; }
-    .risk-safe { color: #2e7d32; } .risk-caution { color: #f57f17; } .risk-extreme { color: #e63946; } .risk-danger { color: #b71c1c; }
-    .datetime { font-size: 0.95em; color: #555; margin: 8px 0; font-style: italic; }
-    .whatsapp-box { background: #e8f5e9; border-left: 4px solid #25d366; padding: 12px; margin-top: 15px; border-radius: 0 8px 8px 0; }
-    .premium-box { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; }
-    .ad-slot { background: #f1f3f4; border: 2px dashed #ccc; padding: 10px; text-align: center; margin: 15px 0; font-size: 0.85em; color: #666; }
-    .affiliate { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-    .affiliate a { display: inline-block; background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; text-decoration: none; color: #333; font-size: 0.9em; }
-    footer { text-align: center; padding: 20px; font-size: 0.8em; color: #777; }
-    @media(max-width: 500px) { .input-group { flex-direction: column; } button { width: 100%; } }
+    /* DESIGN & COLORS */
+    :root { --primary: #0f2b46; --accent: #e63946; --light: #f8f9fa; --text: #333; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    
+    body { background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%); color: var(--text); min-height: 100vh; }
+    
+    /* HEADER DESIGN */
+    header { background: var(--primary); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--accent); }
+    header h1 { font-size: 1.6rem; margin-bottom: 5px; letter-spacing: 0.5px; }
+    header p { font-size: 0.9rem; opacity: 0.9; color: #b0c4de; }
+    nav { margin-top: 15px; }
+    nav a { color: white; text-decoration: none; margin: 0 8px; font-size: 0.85rem; padding: 5px 10px; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; transition: 0.3s; }
+    nav a:hover { background: white; color: var(--primary); }
+
+    /* MAIN CONTENT */
+    .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #eee; }
+    h2 { color: var(--primary); margin-bottom: 15px; font-size: 1.3rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+
+    /* INPUTS & BUTTONS */
+    .input-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    input { flex: 1; min-width: 140px; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+    button { padding: 12px 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+    .btn-primary { background: var(--primary); } .btn-primary:hover { background: #1a4a75; }
+    .btn-gps { background: #457b9d; } .btn-gps:hover { background: #2a5d82; }
+    .btn-whatsapp { background: #25d366; width: 100%; margin-top: 10px; font-size: 1rem; } .btn-whatsapp:hover { background: #1ebc57; }
+
+    /* RESULTS */
+    .result-box { display: none; background: #f1f8ff; border: 1px solid #d0e3ff; padding: 15px; border-radius: 8px; margin-top: 15px; }
+    .temp-display { font-size: 2rem; font-weight: bold; color: var(--primary); text-align: center; margin: 10px 0; }
+    .risk-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; color: white; font-weight: bold; font-size: 0.9rem; }
+    .safe { background: #2e7d32; } .caution { background: #f57f17; } .danger { background: #c62828; }
+    .meta-info { font-size: 0.85rem; color: #666; margin-top: 8px; text-align: center; font-style: italic; }
+
+    /* PREMIUM & AFFILIATES */
+    .premium-box { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; border: 1px solid #ffc1c4; }
+    .btn-premium { background: #d32f2f; padding: 10px 20px; font-size: 1rem; margin-top: 10px; }
+    .affiliate-links { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+    .affiliate-links a { flex: 0 0 auto; padding: 8px 12px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; text-decoration: none; color: #333; font-size: 0.85rem; white-space: nowrap; }
+
+    /* FOOTER */
+    footer { text-align: center; padding: 30px 20px; background: #f8f9fa; border-top: 1px solid #eee; margin-top: 30px; font-size: 0.85rem; color: #666; }
+    footer strong { color: var(--primary); }
+    
+    /* ADS PLACEHOLDER */
+    .ad-space { background: #f0f0f0; border: 1px dashed #bbb; padding: 10px; text-align: center; margin: 15px 0; font-size: 0.8rem; color: #888; }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🌡️ HSE Heat Stress Alert System</h1>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/about.html">About</a>
-    <a href="/contact.html">Contact</a>
-    <a href="/privacy-policy.html">Privacy</a>
-    <a href="/terms.html">Terms</a>
-  </nav>
-</header>
+  <!-- 🔝 HEADER WITH NAME & NAV -->
+  <header>
+    <h1>🌡️ HSE Heat Stress Alert System</h1>
+    <p>Real-time Monitoring & Safety Alerts</p>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/privacy-policy.html">Privacy</a>
+    </nav>
+  </header>
 
-<div class="container">
-  <!-- AdSense Placeholder Top -->
-  <div class="ad-slot">📢 Google AdSense Header Banner (728x90) - Paste code here later</div>
-
-  <div class="card">
-    <h2>📍 Get Real-Time Heat Index</h2>
-    <p>Enter your city or use GPS. System fetches live temp/humidity & calculates heat stress risk.</p>
+  <div class="container">
     
-    <div class="input-group">
-      <input type="text" id="location" placeholder="City, Country (e.g., Mumbai, IN)" />
-      <button onclick="getWeather()" id="searchBtn">🔍 Get Data</button>
-      <button onclick="useGPS()" style="background:#457b9d;">📍 Use My GPS</button>
-    </div>
+    <!-- CALCULATOR CARD -->
+    <div class="card">
+      <h2>📍 Get Real-Time Heat Index</h2>
+      <div class="input-group">
+        <input type="text" id="city" placeholder="City, Country (e.g. Dubai, AE)" />
+        <button class="btn-primary" onclick="fetchWeather()">🔍 Search</button>
+        <button class="btn-gps" onclick="useGPS()">📍 GPS</button>
+      </div>
 
-    <div class="result" id="resultBox">
-      <h2 id="hiTitle">Heat Index: --°C</h2>
-      <p class="datetime" id="localTime">Local Date & Time: --</p>
-      <p><strong>Risk Level:</strong> <span id="riskLevel">--</span></p>
-      <p id="safetyTip"></p>
-      
-      <div class="whatsapp-box">
-        📲 <strong>WhatsApp Heat Alerts</strong> (Free)<br>
-        <input type="tel" id="waPhone" placeholder="+91 98765 43210" style="width:100%; margin:8px 0; padding:8px;">
-        <button onclick="subscribeWhatsApp()" style="background:#25d366; width:100%;">🔔 Subscribe via WhatsApp</button>
+      <div class="result-box" id="result">
+        <div class="temp-display" id="hi-val">--°C</div>
+        <div style="text-align:center"><span class="risk-badge" id="risk-badge">Loading...</span></div>
+        <p id="safety-msg" style="margin-top:10px; text-align:center; font-weight:500;"></p>
+        <p class="meta-info" id="local-time">Local Time: --</p>
+        
+        <!-- WHATSAPP SUBSCRIPTION -->
+        <div style="margin-top:15px; border-top:1px solid #d0e3ff; padding-top:10px;">
+          <input type="tel" id="phone" placeholder="Phone with Country Code (+91...)" style="width:100%; margin-bottom:8px;">
+          <button class="btn-whatsapp" onclick="waSub()">🔔 Subscribe for WhatsApp Alerts</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- AdSense Placeholder Middle -->
-  <div class="ad-slot">📢 Google AdSense Content Banner (300x250)</div>
+    <!-- AD SPACE -->
+    <div class="ad-space">📢 Google AdSense Space</div>
 
-  <!-- Premium Upgrade -->
-  <div class="premium-box">
-    <h3>🔓 Go Premium: Advanced Alerts & Reports</h3>
-    <p>Daily SMS/WhatsApp forecasts, PDF safety reports, multi-site dashboard.</p>
-    <button onclick="openPremium()" style="background:#d32f2f; margin-top:10px;">💎 Upgrade - ₹49/month</button>
-  </div>
-
-  <!-- Affiliate Recommendations -->
-  <div class="card">
-    <h3>🛡️ Stay Safe in Extreme Heat</h3>
-    <div class="affiliate" id="affiliateLinks">
-      <a href="https://amzn.to/3XYZ" target="_blank">Cooling Towel</a>
-      <a href="https://amzn.to/3ABC" target="_blank">ORS Pack (10)</a>
-      <a href="https://amzn.to/3DEF" target="_blank">Portable Mist Fan</a>
-      <a href="https://amzn.to/3GHI" target="_blank">Sun Protection Hat</a>
+    <!-- PREMIUM UPGRADE -->
+    <div class="premium-box">
+      <h3>💎 Go Premium</h3>
+      <p>Get daily SMS alerts & PDF safety reports for your worksite.</p>
+      <button class="btn-premium" onclick="window.open('YOUR_RAZORPAY_LINK_HERE','_blank')">Upgrade - ₹49/mo</button>
     </div>
-    <small style="color:#888;">*We earn a small commission if you buy via these links</small>
+
+    <!-- AFFILIATES -->
+    <div class="card">
+      <h3>🛡️ Recommended Safety Gear</h3>
+      <div class="affiliate-links">
+        <a href="#">Cooling Towel</a>
+        <a href="#">ORS Powder</a>
+        <a href="#">Mist Fan</a>
+        <a href="#">Sun Hat</a>
+      </div>
+      <small style="color:#999; display:block; margin-top:5px;">*Affiliate links. We earn a commission.</small>
+    </div>
+
   </div>
 
-  <!-- AdSense Placeholder Bottom -->
-  <div class="ad-slot">📢 Google AdSense Footer Banner</div>
-</div>
+  <!-- 🔽 FOOTER WITH YOUR NAME -->
+  <footer>
+    <p>👤 Created & Licensed by <strong>Nazeer Kadhar, HSE Professional</strong></p>
+    <p style="margin-top:5px;">© 2026 Heat Stress Alert System. All rights reserved.</p>
+    <p style="margin-top:10px;">
+      <a href="/privacy-policy.html" style="color:#666; margin:0 5px;">Privacy</a> | 
+      <a href="/terms.html" style="color:#666; margin:0 5px;">Terms</a>
+    </p>
+  </footer>
 
-<footer>
-  <p>👤 Created & Licensed by <strong>Nazeer Kadhar, HSE Professional</strong> | © <script>document.write(new Date().getFullYear())</script></p>
-  <p><a href="/privacy-policy.html" style="color:#555;">Privacy</a> • <a href="/terms.html" style="color:#555;">Terms</a> • <a href="/contact.html" style="color:#555;">Contact</a></p>
-</footer>
+  <script>
+    // ⚠️ PASTE YOUR OPENWEATHER API KEY HERE
+    const API_KEY = 'YOUR_OPENWEATHER_API_KEY_HERE';
 
-<script>
-  // ⚠️ GET FREE KEY FROM: https://openweathermap.org/api (sign up → API keys)
-  const API_KEY = '0c0adab3c8cc353020af11d03821e94d'; 
+    async function fetchWeather(cityInput) {
+      const city = cityInput || document.getElementById('city').value;
+      if(!city) return alert('Please enter a city name');
+      
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('hi-val').innerText = '⏳...';
+      
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`);
+        const data = await res.json();
+        if(data.cod !== 200) throw new Error(data.message);
+        showData(data.main.temp, data.main.humidity, data.timezone);
+      } catch(e) {
+        alert('Error: ' + e.message);
+        document.getElementById('result').style.display = 'none';
+      }
+    }
 
-  async function getWeather() {
-    const city = document.getElementById('location').value.trim();
-    if (!city) return alert('Please enter a city');
-    await fetchWeather(city);
-  }
+    function useGPS() {
+      if(!navigator.geolocation) return alert('GPS not supported');
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('hi-val').innerText = '📡...';
+      navigator.geolocation.getCurrentPosition(pos => {
+        fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude);
+      }, () => alert('Location access denied. Please type city manually.'));
+    }
 
-  function useGPS() {
-    if (!navigator.geolocation) return alert('Geolocation not supported');
-    document.getElementById('searchBtn').innerText = '📡 Locating...';
-    navigator.geolocation.getCurrentPosition(
-      pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude),
-      err => alert('Location denied. Please enter city manually.')
-    );
-  }
+    async function fetchWeatherByCoords(lat, lon) {
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
+        const data = await res.json();
+        showData(data.main.temp, data.main.humidity, data.timezone);
+      } catch(e) { alert('Weather fetch failed'); }
+    }
 
-  async function fetchWeather(city) {
-    const btn = document.getElementById('searchBtn');
-    btn.disabled = true; btn.innerText = '⏳ Loading...';
-    try {
-      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`);
-      const data = await res.json();
-      if (data.cod !== 200) throw new Error(data.message);
-      showResult(data.main.temp, data.main.humidity, data.timezone);
-    } catch(e) { alert('Error: ' + e.message); }
-    finally { btn.disabled = false; btn.innerText = '🔍 Get Data'; }
-  }
+    function showData(temp, hum, tz) {
+      // Heat Index Calculation (NOAA)
+      let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum 
+               - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum 
+               + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+      if(temp < 26) hi = temp;
 
-  async function fetchWeatherByCoords(lat, lon) {
-    const btn = document.getElementById('searchBtn');
-    btn.disabled = true; btn.innerText = '⏳ Loading...';
-    try {
-      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
-      const data = await res.json();
-      showResult(data.main.temp, data.main.humidity, data.timezone);
-    } catch(e) { alert('Weather API failed'); }
-    finally { btn.disabled = false; btn.innerText = '🔍 Get Data'; }
-  }
+      const riskEl = document.getElementById('risk-badge');
+      const msgEl = document.getElementById('safety-msg');
+      
+      document.getElementById('hi-val').innerText = hi.toFixed(1) + '°C';
+      
+      // Local Time Logic
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const localDate = new Date(utc + (1000 * tz));
+      document.getElementById('local-time').innerText = '📅 Local Time: ' + localDate.toLocaleString();
 
-  function showResult(temp, hum, tzOffset) {
-    // Heat Index (NOAA formula for °C)
-    let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum 
-             - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum 
-             + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
-    if (temp < 26) hi = temp; // Below 26°C, HI ≈ actual temp
+      if(hi < 32) {
+        riskEl.className = 'risk-badge safe'; riskEl.innerText = '✅ SAFE';
+        msgEl.innerText = 'Standard hydration protocols apply.';
+      } else if(hi < 41) {
+        riskEl.className = 'risk-badge caution'; riskEl.innerText = '⚠️ CAUTION';
+        msgEl.innerText = 'Heat cramps possible. Increase water intake.';
+      } else {
+        riskEl.className = 'risk-badge danger'; riskEl.innerText = '☠️ DANGER';
+        msgEl.innerText = 'Heat stroke likely. Suspend heavy work.';
+      }
+    }
 
-    const risk = hi < 32 ? { cls: 'risk-safe', txt: '✅ Safe (Low Risk)' } :
-                 hi < 40 ? { cls: 'risk-caution', txt: '⚠️ Caution (Fatigue possible)' } :
-                 hi < 51 ? { cls: 'risk-extreme', txt: '🔥 Extreme (Heat cramps/exhaustion)' } :
-                          { cls: 'risk-danger', txt: '☠️ Danger (Heat stroke likely)' };
-
-    document.getElementById('hiTitle').innerHTML = `Heat Index: ${hi.toFixed(1)}°C`;
-    const riskEl = document.getElementById('riskLevel');
-    riskEl.className = risk.cls; riskEl.innerText = risk.txt;
-
-    // Local Date/Time
-    const localDate = new Date(Date.now() + (tzOffset * 1000));
-    document.getElementById('localTime').innerText = `📅 Local Time: ${localDate.toLocaleString()}`;
-
-    // Safety Tip
-    const tips = {
-      '✅ Safe (Low Risk)': 'Normal outdoor activities safe. Stay hydrated.',
-      '⚠️ Caution (Fatigue possible)': 'Limit prolonged exposure. Drink water every 20 mins.',
-      '🔥 Extreme (Heat cramps/exhaustion)': 'Reschedule heavy work. Use cooling breaks every hour.',
-      '☠️ Danger (Heat stroke likely)': 'STOP outdoor work. Seek shade/AC. Emergency protocols active.'
-    };
-    document.getElementById('safetyTip').innerText = tips[risk.txt];
-
-    document.getElementById('resultBox').style.display = 'block';
-  }
-
-  function subscribeWhatsApp() {
-    const phone = document.getElementById('waPhone').value.replace(/\s/g, '');
-    if (!phone.startsWith('+')) return alert('Please include country code (e.g., +91)');
-    
-    const hi = document.getElementById('hiTitle').innerText || 'N/A';
-    const loc = document.getElementById('location').value || 'GPS Location';
-    const msg = encodeURIComponent(`Hi, subscribe me for daily heat alerts at ${loc}. Current HI: ${hi}`);
-    
-    // Replace with your WhatsApp number (format: countrycode+number, no +)
-    const waNumber = '971562395526'; 
-    window.open(`https://wa.me/${waNumber}?text=${msg}`, '_blank');
-    
-    // Optional: Log to Google Sheets later via fetch() to Apps Script URL
-    console.log('Subscription request:', { phone, loc, hi });
-    alert('Opening WhatsApp... Send the pre-filled message to subscribe!');
-  }
-
-  function openPremium() {
-    // Replace with your Razorpay/Stripe payment link
-    window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank');
-  }
-</script>
-
+    function waSub() {
+      const phone = document.getElementById('phone').value.replace(/\D/g,'');
+      if(!phone) return alert('Enter phone number');
+      // Replace with YOUR WhatsApp number
+      const myNum = 'YOUR_WHATSAPP_NUMBER_HERE'; 
+      window.open(`https://wa.me/${myNum}?text=Subscribe%20me%20for%20Heat%20Alerts`, '_blank');
+    }
+  </script>
 </body>
 </html>
