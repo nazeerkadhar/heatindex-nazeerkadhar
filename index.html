@@ -354,11 +354,24 @@
       <button class="btn-wa" onclick="subscribeWA()">📲 Subscribe for Alerts</button>
     </div>
 
-    <!-- PREMIUM UPGRADE -->
+        <!-- PREMIUM UPGRADE -->
     <div class="premium-box">
-      <h3>💎 Premium Alerts</h3>
-      <p style="font-size:0.9rem; margin-bottom:10px;">Daily forecasts & PDF reports</p>
-      <button class="btn-premium" onclick="goPremium()">Upgrade - ₹49/month</button>
+      <h3>💎 Premium Alerts (50 AED/mo)</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px;">Advanced dashboard + Regional language alerts</p>
+      
+      <div style="margin-bottom:15px;">
+        <label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:8px; font-weight:500;">Select Alert Language:</label>
+        <select id="premiumLanguage" style="width:100%; padding:12px; border-radius:10px; border:2px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+          <option value="en">🇬 English</option>
+          <option value="ar">🇸🇦 العربية (Arabic)</option>
+          <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+          <option value="ta">🇮 தமிழ் (Tamil)</option>
+          <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+          <option value="ur">🇵🇰 اردو (Urdu)</option>
+        </select>
+      </div>
+
+      <button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button>
     </div>
 
     <!-- NAVIGATION -->
