@@ -486,7 +486,7 @@ document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
       document.getElementById('waBox').style.display = 'none';
     }
 
-    function subscribeWA() {
+        function subscribeWA() {
       const phone = document.getElementById('phone').value.replace(/\D/g, '');
       if (!phone) {
         alert('Please enter your WhatsApp number');
@@ -495,10 +495,14 @@ document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
       
       const hi = document.getElementById('hiVal').textContent;
       const city = document.getElementById('city').value;
-      const msg = encodeURIComponent(`Subscribe me for heat alerts in ${city}. Current HI: ${hi}`);
       
-      // Replace with YOUR number
+      // Message sent to YOU with their details
+      const msg = encodeURIComponent(`Hi Nazeer, please subscribe me for Heat Alerts. Location: ${city}. Current Heat Index: ${hi}.`);
+      
+      // YOUR WhatsApp Number (Format: CountryCode + Number, e.g., 971562395526)
       const myNumber = '971562395526';
+      
+      // Opens WhatsApp App/Web to send the message
       window.open(`https://wa.me/${myNumber}?text=${msg}`, '_blank');
     }
 
