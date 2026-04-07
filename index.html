@@ -285,10 +285,23 @@
       .container { padding: 15px; }
     }
 
-    @media (max-width: 480px) {
+        @media (max-width: 480px) {
       .header h1 { font-size: 1.2rem; }
       .card-value { font-size: 1.8rem; }
       .alert-title { font-size: 1.4rem; }
+    }
+    /* PREMIUM LANGUAGE DROPDOWN */
+    #premiumLanguage {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+    #premiumLanguage option {
+      background: #2c3e50;
+      color: #fff;
     }
   </style>
 </head>
