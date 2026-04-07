@@ -486,7 +486,7 @@ document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
       document.getElementById('waBox').style.display = 'none';
     }
 
-        function subscribeWA() {
+            function subscribeWA() {
       const phone = document.getElementById('phone').value.replace(/\D/g, '');
       if (!phone) {
         alert('Please enter your WhatsApp number');
@@ -495,14 +495,26 @@ document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
       
       const hi = document.getElementById('hiVal').textContent;
       const city = document.getElementById('city').value;
+      const today = new Date().toLocaleDateString('en-IN');
+      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
       
-      // Message sent to YOU with their details
-      const msg = encodeURIComponent(`Hi Nazeer, please subscribe me for Heat Alerts. Location: ${city}. Current Heat Index: ${hi}.`);
+      // Professional formatted message
+      const msg = encodeURIComponent(
+`Welcome to HSE Heat Stress Alert System.
+Created by "NAZEER KADHAR", HSE Professional
+
+Name: [Please enter your name]
+Location: ${city}
+Organization name: [Please enter]
+Subscription period: from ${today} to ${nextMonth}
+
+Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`
+      );
       
-      // YOUR WhatsApp Number (Format: CountryCode + Number, e.g., 971562395526)
+      // YOUR WhatsApp Number
       const myNumber = '971562395526';
       
-      // Opens WhatsApp App/Web to send the message
+      // Opens WhatsApp with pre-filled professional message
       window.open(`https://wa.me/${myNumber}?text=${msg}`, '_blank');
     }
 
