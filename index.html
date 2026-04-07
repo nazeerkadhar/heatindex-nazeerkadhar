@@ -354,7 +354,7 @@
         const temp = data.main.temp;
         const hum = data.main.humidity;
         
-        calculateHeatIndex(temp, hum);
+        calculateHeatIndex(temp, hum, data.timezone);
         
       } catch (error) {
         alert('Error: ' + error.message);
@@ -363,7 +363,7 @@
       }
     }
 
-    function calculateHeatIndex(temp, hum) {
+    function calculateHeatIndex(temp, hum, tzOffset) {
       // Heat Index Formula (NOAA)
       let hi = -8.784695 + 1.61139411*temp + 2.338549*hum 
                - 0.14611605*temp*hum - 0.012308094*temp*temp 
