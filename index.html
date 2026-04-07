@@ -544,9 +544,20 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       window.open(`https://wa.me/${myNumber}?text=${msg}`, '_blank');
     }
 
-    function goPremium() {
-      // Replace with your Razorpay link
-      window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank');
+        function goPremium() {
+      const lang = document.getElementById('premiumLanguage').value;
+      const city = document.getElementById('city').value || 'Multiple Sites';
+      const msg = encodeURIComponent(`💎 Premium Upgrade Request\nLanguage: ${lang.toUpperCase()}\nLocation(s): ${city}\n\nPlease process my 50 AED/month subscription.`);
+      
+      // Step 1: Open WhatsApp with pre-filled message
+      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
+      
+      // Step 2: After 3 seconds, prompt user to proceed to payment
+      setTimeout(() => {
+        if (confirm('✅ After sending the WhatsApp message, click OK to proceed to secure payment page.')) {
+          window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank');
+        }
+      }, 3000);
     }
 
     // Allow Enter key to trigger search
