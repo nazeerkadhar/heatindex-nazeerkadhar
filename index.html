@@ -361,6 +361,12 @@
       background: #2c3e50;
       color: #fff;
     }
+      /* 🔹 FEATURE 6: WORK-REST RESPONSIVE */
+    .wr-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+    @media (max-width: 480px) {
+      .wr-grid { grid-template-columns: 1fr !important; }
+      .wr-grid > div { display:flex; justify-content:space-between; align-items:center; padding:10px 15px; }
+    }
   </style>
 </head>
 <body>
@@ -441,6 +447,43 @@
       </div>
     </div>
     <!-- 🔹 END TASK 5 HTML -->
+        <!-- 🔹 FEATURE 6: WORK-REST SCHEDULE -->
+    <div id="workRestSection" style="display:none; margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+      <h3 style="color:#fff; margin:0 0 5px 0; text-align:center; font-size:1.2rem;">⏱️ Work-Rest Schedule Generator</h3>
+      <p style="color:#7f8c8d; font-size:0.75rem; margin:0 0 15px 0; text-align:center;">Based on NIOSH/ACGIH heat stress guidelines</p>
+      
+      <div style="margin-bottom:15px;">
+        <label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px; font-weight:500;">Work Intensity:</label>
+        <select id="workType" style="width:100%; padding:12px; border-radius:8px; border:1px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+          <option value="light">💡 Light (Inspection, Office, Surveying)</option>
+          <option value="moderate">🛠️ Moderate (Walking, Light Lifting, Drilling)</option>
+          <option value="heavy">🔨 Heavy (Digging, Rebar, Concrete Pouring)</option>
+        </select>
+      </div>
+
+      <button onclick="generateWorkRest()" style="width:100%; background:linear-gradient(135deg,#2980b9,#3498db); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; transition:opacity 0.2s;">
+        📋 Generate Schedule
+      </button>
+      
+      <div id="workRestResult" style="display:none; margin-top:15px; padding:15px; background:#1a252f; border-radius:8px; text-align:center;">
+        <div style="font-size:1.3rem; font-weight:700; color:#e67e22; margin-bottom:12px;" id="wrHeader"></div>
+        <div class="wr-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:10px;">
+          <div style="background:#27ae60; color:#fff; padding:12px 8px; border-radius:8px;">
+            <div style="font-size:0.75rem; opacity:0.85; margin-bottom:4px;">Work</div>
+            <div style="font-size:1.2rem; font-weight:700;" id="wrWork"></div>
+          </div>
+          <div style="background:#e74c3c; color:#fff; padding:12px 8px; border-radius:8px;">
+            <div style="font-size:0.75rem; opacity:0.85; margin-bottom:4px;">Rest</div>
+            <div style="font-size:1.2rem; font-weight:700;" id="wrRest"></div>
+          </div>
+          <div style="background:#3498db; color:#fff; padding:12px 8px; border-radius:8px;">
+            <div style="font-size:0.75rem; opacity:0.85; margin-bottom:4px;">Water</div>
+            <div style="font-size:1.2rem; font-weight:700;" id="wrWater"></div>
+          </div>
+        </div>
+        <p id="wrNote" style="color:#95a5a6; font-size:0.85rem; margin:10px 0 0 0; line-height:1.4;"></p>
+      </div>
+    </div>
     <!-- WHATSAPP SUBSCRIPTION -->
     <div class="wa-box" id="waBox">
       <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
@@ -745,6 +788,45 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
           }
         }
       } catch (e) { console.log('Forecast skipped:', e); }
+    }
+     // 🔹 FEATURE 6: Work-Rest Generator Logic (NIOSH/ACGIH Simplified)
+    function generateWorkRest() {
+      const hiText = document.getElementById('hiVal').textContent;
+      if (hiText === '--°C') {
+        alert('Please check heat stress for a location first.');
+        return;
+      }
+      const hi = parseFloat(hiText);
+      const workType = document.getElementById('workType').value;
+      
+      let workMin, restMin, water, note;
+      
+      if (hi < 32) {
+        workMin = "Continuous"; restMin = "As needed"; water = "0.5 L/hr";
+        note = "✅ Conditions safe. Maintain standard hydration & breaks.";
+      } else if (hi >= 32 && hi < 40) {
+        if (workType==='light') { workMin=50; restMin=10; water="0.75 L/hr"; }
+        else if (workType==='moderate') { workMin=40; restMin=20; water="1 L/hr"; }
+        else { workMin=30; restMin=30; water="1.25 L/hr"; }
+        note = "⚠️ Heat stress increasing. Strictly follow cycles. Monitor for fatigue.";
+      } else if (hi >= 40 && hi < 46) {
+        if (workType==='light') { workMin=40; restMin=20; water="1 L/hr"; }
+        else if (workType==='moderate') { workMin=30; restMin=30; water="1.25 L/hr"; }
+        else { workMin=20; restMin=40; water="1.5 L/hr"; }
+        note = "🚨 HIGH RISK. Cease heavy labor if possible. Rest in shade/AC. Mandatory hydration.";
+      } else {
+        if (workType==='heavy') { workMin=10; restMin=50; water="1.5 L/hr"; }
+        else { workMin=30; restMin=30; water="1 L/hr"; }
+        note = "🚨 EXTREME DANGER. Outdoor work should be suspended. Activate emergency protocols.";
+      }
+      
+      document.getElementById('workRestSection').style.display = 'block';
+      document.getElementById('workRestResult').style.display = 'block';
+      document.getElementById('wrHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${workType.charAt(0).toUpperCase()+workType.slice(1)} Work`;
+      document.getElementById('wrWork').textContent = typeof workMin==='number' ? `${workMin} min` : workMin;
+      document.getElementById('wrRest').textContent = typeof restMin==='number' ? `${restMin} min` : restMin;
+      document.getElementById('wrWater').textContent = water;
+      document.getElementById('wrNote').textContent = note;
     }
   </script>
 
