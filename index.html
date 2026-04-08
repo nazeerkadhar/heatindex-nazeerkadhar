@@ -573,8 +573,8 @@
     <!-- 🔹 FEATURE 13: UAE SUMMER BAN ALERT -->
     <div id="uaeBanAlert" style="display:none; margin-top:20px; background:linear-gradient(135deg,#c0392b,#e74c3c); border:3px solid #fff; border-radius:12px; padding:20px; text-align:center; box-shadow:0 6px 20px rgba(231,76,60,0.5); animation:pulse 2s infinite;">
       <div style="font-size:2rem; margin-bottom:10px;">⚠️</div>
-      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.3rem; font-weight:700;">UAE MIDDAY BREAK IN EFFECT</h3>
-      <p style="color:#fff; margin:0 0 15px 0; font-size:1rem; line-height:1.4;">Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style="color:#f1c40f;">per MOHRE rule</strong></p>
+      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.3rem; font-weight:700;" id="uaeBanTitle">UAE MIDDAY BREAK IN EFFECT</h3>
+      <p style="color:#fff; margin:0 0 15px 0; font-size:1rem; line-height:1.4;" id="uaeBanMessage">Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style="color:#f1c40f;">per MOHRE rule</strong></p>
       
       <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
         <button onclick="dismissBanAlert()" style="background:#fff; color:#c0392b; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">
@@ -694,6 +694,8 @@
           const hum = data.main.humidity; // 🔹 FIXED: Added missing variable
           calculateHeatIndex(temp, hum, data.timezone);
           fetchForecast(data.timezone);
+          // 🔹 FIXED: Check UAE ban after successful fetch
+          checkUaeBanWithCountry(data.sys.country);
         }
       } catch (error) {
         alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
@@ -859,6 +861,8 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
           document.getElementById('city').value = data.name + ',' + data.sys.country;
           calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
           fetchForecast(data.timezone);
+          // 🔹 FIXED: Check UAE ban after location fetch
+          checkUaeBanWithCountry(data.sys.country);
         } catch (error) {
           alert('Error: ' + error.message);
         } finally {
@@ -1020,8 +1024,29 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       }
     };
 
-    // 🔹 FEATURE 13: UAE Summer Ban Auto-Alert (MOHRE Rule)
+    // 🔹 FEATURE 13: UAE Summer Ban with Country Check
+    let isUaeLocation = false;
+    function checkUaeBanWithCountry(countryCode) {
+      // Set flag based on country code (AE = UAE)
+      isUaeLocation = (countryCode === 'AE');
+      // Run immediate check
+      checkUaeBan();
+    }
+
     function checkUaeBan() {
+      const alertBox = document.getElementById('uaeBanAlert');
+      const title = document.getElementById('uaeBanTitle');
+      const message = document.getElementById('uaeBanMessage');
+      
+      if (!isUaeLocation) {
+        // Outside UAE
+        title.textContent = "UAE Midday Break Not Applicable";
+        message.innerHTML = "Not applicable in your country as per law";
+        alertBox.style.background = 'linear-gradient(135deg,#7f8c8d,#95a5a6)';
+        alertBox.style.display = 'block';
+        return;
+      }
+      
       // Get current time in UAE timezone
       const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' });
       const date = new Date(now);
@@ -1033,13 +1058,16 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       const banStart = 12 * 60 + 30; // 750
       const banEnd = 15 * 60; // 900
       
-      const alertBox = document.getElementById('uaeBanAlert');
-      
       if (totalMinutes >= banStart && totalMinutes < banEnd) {
+        // Inside ban hours
+        title.textContent = "UAE MIDDAY BREAK IN EFFECT";
+        message.innerHTML = "Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>";
+        alertBox.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
         alertBox.style.display = 'block';
         // Vibrate on mobile if supported
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       } else {
+        // Outside ban hours
         alertBox.style.display = 'none';
       }
     }
@@ -1075,7 +1103,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
     // 🔹 FEATURE 10: Toolbox Talk Generator Subscription (20 AED/mo)
     function subscribeTBT() {
       const lang = document.getElementById('tbtLanguage').value;
-      const city = document.getElementById('city').value || 'london';
+      const city = document.getElementById('city').value || 'Not specified'; // 🔹 FIXED: Use actual input value
       const today = new Date().toLocaleDateString('en-IN');
       const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
       
