@@ -352,7 +352,7 @@
     #premiumLanguage {
       appearance: none;
       -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
       cursor: pointer;
@@ -366,6 +366,12 @@
     @media (max-width: 480px) {
       .wr-grid { grid-template-columns: 1fr !important; }
       .wr-grid > div { display:flex; justify-content:space-between; align-items:center; padding:10px 15px; }
+    }
+    /* 🔹 FEATURE 7: HYDRATION + EMERGENCY RESPONSIVE */
+    @media (max-width: 480px) {
+      #hydrationSection input { font-size: 0.95rem; padding: 10px; }
+      #emergencySection button { font-size: 0.9rem; padding: 10px; }
+      #emergencySection a { font-size: 1rem; padding: 12px; }
     }
   </style>
 </head>
@@ -483,6 +489,73 @@
         </div>
         <p id="wrNote" style="color:#95a5a6; font-size:0.85rem; margin:10px 0 0 0; line-height:1.4;"></p>
       </div>
+    </div>
+
+    <!-- 🔹 FEATURE 7A: HYDRATION CALCULATOR -->
+    <div id="hydrationSection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+      <h3 style="color:#fff; margin:0 0 5px 0; text-align:center; font-size:1.2rem;">💧 Hydration Calculator</h3>
+      <p style="color:#7f8c8d; font-size:0.75rem; margin:0 0 15px 0; text-align:center;">Based on temperature + body weight</p>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px;">
+        <div>
+          <label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px; font-weight:500;">Weight (kg):</label>
+          <input type="number" id="workerWeight" placeholder="e.g., 70" min="40" max="150" style="width:100%; padding:12px; border-radius:8px; border:1px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+        </div>
+        <div>
+          <label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px; font-weight:500;">Heat Index:</label>
+          <input type="text" id="autoHI" value="--°C" readonly style="width:100%; padding:12px; border-radius:8px; border:1px solid #34495e; background:#1a252f; color:#e67e22; font-size:1rem; font-weight:600; outline:none; cursor:not-allowed;">
+        </div>
+      </div>
+
+      <button onclick="calculateHydration()" style="width:100%; background:linear-gradient(135deg,#27ae60,#2ecc71); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; transition:opacity 0.2s;">
+        💧 Calculate Water Needs
+      </button>
+      
+      <div id="hydrationResult" style="display:none; margin-top:15px; padding:15px; background:#1a252f; border-radius:8px; text-align:center;">
+        <div style="font-size:1.3rem; font-weight:700; color:#3498db; margin-bottom:12px;" id="hydHeader"></div>
+        <div style="font-size:1.5rem; font-weight:700; color:#2ecc71; margin:10px 0;" id="hydAmount"></div>
+        <p id="hydNote" style="color:#95a5a6; font-size:0.85rem; margin:10px 0 0 0; line-height:1.4;"></p>
+      </div>
+    </div>
+
+    <!-- 🔹 FEATURE 7B: EMERGENCY GUIDANCE -->
+    <div id="emergencySection" style="margin-top:20px; background:linear-gradient(135deg,#2c1810,#4a1c1c); border:3px solid #e74c3c; border-radius:12px; padding:20px; box-shadow:0 6px 20px rgba(231,76,60,0.3);">
+      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">🚨 Emergency Heat Response</h3>
+      
+      <div style="margin-bottom:15px;">
+        <button onclick="toggleEmergency('exhaustion')" style="width:100%; background:#e67e22; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">
+          ⚠️ Heat Exhaustion Symptoms
+        </button>
+        <div id="exhaustionContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; color:#ecf0f1; line-height:1.5;">
+          • Heavy sweating • Cold, pale skin • Dizziness • Nausea • Muscle cramps • Weakness
+        </div>
+      </div>
+      
+      <div style="margin-bottom:15px;">
+        <button onclick="toggleEmergency('stroke')" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">
+          🔴 Heat Stroke Symptoms (MEDICAL EMERGENCY)
+        </button>
+        <div id="strokeContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; color:#ecf0f1; line-height:1.5;">
+          • Hot, red, dry skin • No sweating • Confusion • Loss of consciousness • Seizures • Body temp >40°C
+        </div>
+      </div>
+      
+      <div style="margin-bottom:15px;">
+        <button onclick="toggleEmergency('firstaid')" style="width:100%; background:#3498db; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">
+          🩹 Immediate First Aid Steps
+        </button>
+        <div id="firstaidContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; color:#ecf0f1; line-height:1.5;">
+          1. Move to shade/AC immediately<br>
+          2. Remove excess clothing<br>
+          3. Cool with wet cloths/fan<br>
+          4. Sip water if conscious<br>
+          5. Call emergency if no improvement in 15 min
+        </div>
+      </div>
+      
+      <a href="tel:998" style="display:block; width:100%; background:#c0392b; color:#fff; text-align:center; padding:14px; border-radius:8px; font-weight:700; text-decoration:none; font-size:1.1rem; margin-top:10px;">
+        📞 Call UAE Emergency: 998 / 999
+      </a>
     </div>
     <!-- WHATSAPP SUBSCRIPTION -->
     <div class="wa-box" id="waBox">
@@ -828,6 +901,63 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       document.getElementById('wrWater').textContent = water;
       document.getElementById('wrNote').textContent = note;
     }
+
+    // 🔹 FEATURE 7A: Hydration Calculator Logic
+    function calculateHydration() {
+      const weight = parseFloat(document.getElementById('workerWeight').value);
+      const hiText = document.getElementById('hiVal').textContent;
+      if (!weight || weight < 40 || weight > 150) {
+        alert('Please enter a valid weight (40-150 kg)');
+        return;
+      }
+      if (hiText === '--°C') {
+        alert('Please check heat stress for a location first.');
+        return;
+      }
+      const hi = parseFloat(hiText);
+      
+      // Base hydration: weight × 0.035 L/hr
+      let base = weight * 0.035;
+      let adjustment = 0;
+      
+      if (hi >= 46) adjustment = 1.5;
+      else if (hi >= 40) adjustment = 1.0;
+      else if (hi >= 32) adjustment = 0.5;
+      
+      const total = (base + adjustment).toFixed(1);
+      const interval = hi >= 40 ? "15" : hi >= 32 ? "20" : "30";
+      const amount = Math.round((total * 1000) / (60/parseInt(interval)));
+      
+      document.getElementById('hydrationSection').style.display = 'block';
+      document.getElementById('hydrationResult').style.display = 'block';
+      document.getElementById('hydHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${weight} kg`;
+      document.getElementById('hydAmount').textContent = `💧 ${amount}ml every ${interval} min`;
+      document.getElementById('hydNote').textContent = `Total: ~${total} L/hr. Adjust for sweat loss. Urine should be pale yellow.`;
+      
+      // Auto-fill HI field
+      document.getElementById('autoHI').value = `${hi.toFixed(1)}°C`;
+    }
+
+    // 🔹 FEATURE 7B: Emergency Guidance Toggle
+    function toggleEmergency(type) {
+      // Hide all first
+      ['exhaustion','stroke','firstaid'].forEach(t => {
+        document.getElementById(t+'Content').style.display = 'none';
+      });
+      // Toggle selected
+      const content = document.getElementById(type+'Content');
+      content.style.display = content.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Auto-update HI field when heat is checked
+    const originalCalculateHeatIndex = calculateHeatIndex;
+    calculateHeatIndex = function(temp, hum, tzOffset) {
+      originalCalculateHeatIndex(temp, hum, tzOffset);
+      const hiText = document.getElementById('hiVal').textContent;
+      if (hiText !== '--°C') {
+        document.getElementById('autoHI').value = hiText;
+      }
+    };
   </script>
 
 </body>
