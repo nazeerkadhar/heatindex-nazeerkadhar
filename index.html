@@ -502,7 +502,8 @@
         if (!res.ok || data.cod != 200) {
           alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
         } else {
-          calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
+        calculateHeatIndex(temp, hum, data.timezone);
+        fetchForecast(data.timezone);
         }
       } catch (error) {
         alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
