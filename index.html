@@ -314,7 +314,30 @@
       .card-value { font-size: 1.8rem; }
       .alert-title { font-size: 1.4rem; }
     }
-    
+        /* 🔹 TASK 5: FORECAST CARDS */
+    .forecast-card {
+      background: #2c3e50;
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 2px solid #34495e;
+      transition: transform 0.2s;
+    }
+    .forecast-card:hover { transform: translateY(-2px); }
+    .forecast-time { font-size:0.85rem; color:#95a5a6; margin-bottom:6px; font-weight:600; }
+    .forecast-temp { font-size:1.3rem; color:#fff; font-weight:700; margin:4px 0; }
+    .forecast-hi { font-size:0.85rem; margin-bottom:6px; }
+    .forecast-risk {
+      display:inline-block; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin-top:4px;
+    }
+    .risk-safe { background:#27ae60; color:#fff; }
+    .risk-caution { background:#f39c12; color:#fff; }
+    .risk-high { background:#e67e22; color:#fff; }
+    .risk-extreme { background:#e74c3c; color:#fff; }
+    @media (max-width: 480px) {
+      #forecastGrid { grid-template-columns: repeat(2, 1fr); }
+    }
+    /* 🔹 END TASK 5 CSS */
     /* PREMIUM LANGUAGE DROPDOWN */
     #premiumLanguage {
       appearance: none;
