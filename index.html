@@ -466,11 +466,11 @@
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
         const data = await res.json();
         
-        if (data.cod !== 200) {
+                if (data.cod !== 200) {
           if (data.message && data.message.includes('City not found')) {
-            alert(`Location not found. Try: "Ras Al Khaimah,AE" or "Dubai,AE" (include country code).`);
+            alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
           } else {
-            alert('Error fetching location: ' + data.message);
+            alert('Error: ' + data.message);
           }
           return;
         }
