@@ -421,6 +421,15 @@
       <div class="card-value" id="wbgtVal">--°C</div>
       <p style="color:#7f8c8d; font-size:0.75rem; margin-top:8px; line-height:1.3;">*Estimated from temp + humidity. For certified readings, use a calibrated WBGT meter.</p>
     </div>
+        <!-- 🔹 TASK 5: FORECAST & WORK PLANNING -->
+    <div id="forecastSection" style="display:none; margin-top:25px;">
+      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">📊 12-Hour Heat Forecast & Work Planning</h3>
+      <div id="forecastGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;"></div>
+      <div id="bestWorkTime" style="background:linear-gradient(135deg,#1e824c,#27ae60); border-radius:12px; padding:15px; text-align:center; display:none;">
+        <strong style="color:#fff; font-size:1.1rem; display:block; margin-bottom:8px;">💡 Recommended Safe Work Window</strong>
+        <p id="bestTimeText" style="color:#ecf0f1; margin:0; line-height:1.4;"></p>
+      </div>
+    </div>
     <!-- 🔹 TASK 5: FORECAST & WORK PLANNING -->
     <div id="forecastSection" style="display:none; margin-top:25px;">
       <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">📊 12-Hour Heat Forecast & Work Planning</h3>
