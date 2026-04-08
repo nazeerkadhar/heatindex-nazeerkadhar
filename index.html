@@ -21,7 +21,7 @@
       border-bottom: 4px solid #e67e22;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-        .header-content {
+    .header-content {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -58,13 +58,8 @@
       color: #e67e22;
       font-weight: 600;
     }
-    @media (max-width: 768px) {
-      .header-content { flex-direction: column; gap: 10px; }
-      .site-logo { height: 60px; }
-      .header-text h1 { font-size: 1.3rem; }
-    }
 
-    /* MAIN CONTAINER - RESPONSIVE */
+    /* MAIN CONTAINER */
     .container {
       padding: 20px 15px;
       max-width: 850px;
@@ -306,7 +301,8 @@
     /* MOBILE OPTIMIZATION */
     @media (max-width: 768px) {
       .header-content { flex-direction: column; gap: 10px; }
-      .header-text { text-align: center; }
+      .site-logo { height: 60px; }
+      .header-text h1 { font-size: 1.3rem; }
       .card-value { font-size: 2rem; }
       .input-section { flex-direction: column; }
       .btn-check { width: 100%; }
@@ -314,7 +310,7 @@
     }
 
     @media (max-width: 480px) {
-      .header-text h1 { font-size: 1.3rem; }
+      .header-text h1 { font-size: 1.2rem; }
       .card-value { font-size: 1.8rem; }
       .alert-title { font-size: 1.4rem; }
     }
@@ -332,30 +328,6 @@
       background: #2c3e50;
       color: #fff;
     }
-
-    /* 🔹 FIXED HERE: Logo & Title sizing - Larger & clearer */
-    .site-logo {
-      height: 85px;
-      width: auto;
-      object-fit: contain;
-      flex-shrink: 0;
-    }
-    .header-text h1 {
-      font-size: 1.7rem;
-      margin: 0 0 5px 0;
-      color: #fff;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-    @media (max-width: 768px) { 
-      .site-logo { height: 65px; } 
-      .header-text h1 { font-size: 1.4rem; }
-    }
-    @media (max-width: 480px) { 
-      .site-logo { height: 50px; } 
-      .header-text h1 { font-size: 1.2rem; }
-    }
-    /* 🔹 END FIX 1 */
   </style>
 </head>
 <body>
@@ -455,7 +427,7 @@
           <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
           <option value="ta">🇮 தமிழ் (Tamil)</option>
           <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
-          <option value="ur">🇵🇰 اردو (Urdu)</option>
+          <option value="ur">🇵 اردو (Urdu)</option>
         </select>
       </div>
 
@@ -479,10 +451,8 @@
   </div>
 
   <script>
-    // ⚠️ PASTE YOUR API KEY HERE
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
 
-    // 🔹 FIXED HERE: Robust error handling for ANY invalid city or network error
     async function checkHeat() {
       const city = document.getElementById('city').value.trim();
       if (!city) {
@@ -495,34 +465,21 @@
 
       try {
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
-        
-        if (!res.ok) {
-          throw new Error('Network failed');
-        }
-        
         const data = await res.json();
-        
-        // Handles both number 404 and string "404"
-        if (data.cod != 200) {
-          alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
-          document.getElementById('loading').style.display = 'none';
-          return;
-        }
 
-        const temp = data.main.temp;
-        const hum = data.main.humidity;
-        calculateHeatIndex(temp, hum, data.timezone);
-        
+        if (!res.ok || data.cod != 200) {
+          alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
+        } else {
+          calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
+        }
       } catch (error) {
-        // Catches "Failed to fetch" & shows helpful message instead
         alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
+      } finally {
         document.getElementById('loading').style.display = 'none';
       }
     }
-    // 🔹 END FIX 2
 
     function calculateHeatIndex(temp, hum, tzOffset) {
-      // Heat Index Formula (NOAA)
       let hi = -8.784695 + 1.61139411*temp + 2.338549*hum 
                - 0.14611605*temp*hum - 0.012308094*temp*temp 
                - 0.016424828*hum*hum + 0.002211732*temp*temp*hum 
@@ -530,23 +487,19 @@
       
       if (temp < 26) hi = temp;
 
-      // WBGT Approximation
       const wbgt = (0.7 * temp) + (0.3 * (temp + (5/9)*(hum/100)*6.112*Math.exp((17.27*temp)/(237.7+temp)) - 273.15));
 
-      // Display Results
       document.getElementById('tempVal').textContent = temp.toFixed(2) + '°C';
       document.getElementById('humVal').textContent = hum + '%';
       document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
       document.getElementById('wbgtVal').textContent = wbgt.toFixed(1) + '°C';
 
-      // ✅ Location-aware time using OpenWeatherMap timezone offset
       const utcNow = Math.floor(Date.now() / 1000);
       const locTime = new Date((utcNow + tzOffset) * 1000);
       const dateStr = locTime.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
       const timeStr = locTime.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
       document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
 
-      // Show Cards
       document.getElementById('datetimeCard').style.display = 'block';
       document.getElementById('tempCard').style.display = 'block';
       document.getElementById('humCard').style.display = 'block';
@@ -554,7 +507,6 @@
       document.getElementById('wbgtCard').style.display = 'block';
       document.getElementById('waBox').style.display = 'block';
 
-      // Determine Risk Level
       const alertBox = document.getElementById('alertBox');
       const alertIcon = document.getElementById('alertIcon');
       const alertTitle = document.getElementById('alertTitle');
@@ -603,12 +555,10 @@
         return;
       }
       
-      const hi = document.getElementById('hiVal').textContent;
       const city = document.getElementById('city').value || 'Not specified';
       const today = new Date().toLocaleDateString('en-IN');
       const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
       
-      // Professional formatted message for WhatsApp Subscription (15 AED)
       const msg = encodeURIComponent(
 `Welcome to HSE Heat Stress Alert System.
 Created by "NAZEER KADHAR", HSE Professional
@@ -623,19 +573,14 @@ Please process my 15 AED/month subscription for a number.
 Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`
       );
       
-      // Step 1: Open WhatsApp
       window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
-      
-      // Step 2: Show payment button on website
       document.getElementById('waPaymentStep').style.display = 'block';
       document.querySelector('#waBox .btn-wa').style.display = 'none';
     }
 
-    // ✅ goPremium() was already correct - NO CHANGE MADE (as requested)
     function goPremium() {
       const lang = document.getElementById('premiumLanguage').value;
       const city = document.getElementById('city').value || 'Multiple Sites';
-      
       const today = new Date().toLocaleDateString('en-IN');
       const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
       
@@ -653,10 +598,8 @@ Please process my 50 AED/month subscription for a number.
 Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`
       );
       
-      // Step 1: Open WhatsApp
       window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
       
-      // Step 2: Show payment prompt on website
       const box = document.querySelector('.premium-box');
       box.innerHTML = `
         <h3>✅ Step 1: Message Sent</h3>
@@ -665,12 +608,10 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       `;
     }
 
-    // Allow Enter key to trigger search
     document.getElementById('city').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') checkHeat();
     });
     
-    // 🔹 NEW: Use My Location function (unchanged from your code)
     function useMyLocation() {
       if (!navigator.geolocation) {
         alert('Geolocation is not supported by your browser');
@@ -693,10 +634,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
           }
           
           document.getElementById('city').value = data.name + ',' + data.sys.country;
-          const temp = data.main.temp;
-          const hum = data.main.humidity;
-          
-          calculateHeatIndex(temp, hum, data.timezone);
+          calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
           
         } catch (error) {
           alert('Error: ' + error.message);
