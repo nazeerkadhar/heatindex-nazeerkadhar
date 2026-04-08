@@ -17,22 +17,34 @@
     /* HEADER */
     .header {
       background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-      padding: 30px 20px;
-      text-align: center;
+      padding: 20px;
       border-bottom: 4px solid #e67e22;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    .header h1 {
-      font-size: 1.5rem;
-      margin-bottom: 8px;
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .header-text {
+      text-align: left;
+    }
+    .header-text h1 {
+      font-size: 1.4rem;
+      margin: 0 0 5px 0;
       color: #fff;
       font-weight: 700;
     }
-    .creator {
+    .header-text .creator {
       color: #bdc3c7;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      margin: 0;
     }
-    .creator strong {
+    .header-text .creator strong {
       color: #e67e22;
       font-weight: 600;
     }
@@ -278,18 +290,20 @@
 
     /* MOBILE OPTIMIZATION */
     @media (max-width: 768px) {
-      .header h1 { font-size: 1.3rem; }
+      .header-content { flex-direction: column; gap: 10px; }
+      .header-text { text-align: center; }
       .card-value { font-size: 2rem; }
       .input-section { flex-direction: column; }
       .btn-check { width: 100%; }
       .container { padding: 15px; }
     }
 
-        @media (max-width: 480px) {
-      .header h1 { font-size: 1.2rem; }
+    @media (max-width: 480px) {
+      .header-text h1 { font-size: 1.3rem; }
       .card-value { font-size: 1.8rem; }
       .alert-title { font-size: 1.4rem; }
     }
+    
     /* PREMIUM LANGUAGE DROPDOWN */
     #premiumLanguage {
       appearance: none;
@@ -304,26 +318,42 @@
       color: #fff;
     }
 
-    .site-logo { height: 48px; width: auto; display: block; margin: 0 auto 10px auto; object-fit: contain; }
-    @media (max-width: 768px) { .site-logo { height: 40px; margin-bottom: 8px; } }
-    @media (max-width: 480px) { .site-logo { height: 32px; margin-bottom: 6px; } }
+    .site-logo {
+      height: 60px;
+      width: auto;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) { .site-logo { height: 50px; } }
+    @media (max-width: 480px) { .site-logo { height: 40px; } }
   </style>
 </head>
 <body>
 
-      <!-- HEADER -->
+  <!-- HEADER -->
   <div class="header">
-    <img src="logo heat stress index.png" alt="Logo" class="site-logo" />
-    <h1>🌡️ HSE Heat Stress Alert System</h1>
-    <p class="creator">Created by <strong>NAZEER KADHAR</strong>, HSE Professional</p>
+    <div class="header-content">
+      <img src="logo heat stress index.png" alt="Logo" class="site-logo" />
+      <div class="header-text">
+        <h1>🌡️ HSE Heat Stress Alert System</h1>
+        <p class="creator">Created by <strong>NAZEER KADHAR</strong>, HSE Professional</p>
+      </div>
+    </div>
   </div>
 
   <div class="container">
     
     <!-- INPUT SECTION -->
     <div class="input-section">
-     <input type="text" id="city" placeholder="Enter location (e.g., Ras Al Khaimah,AE)" />
+      <input type="text" id="city" placeholder="Enter location (e.g., Ras Al Khaimah,AE)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
+    </div>
+    
+    <!-- LOCATION BUTTON -->
+    <div style="text-align:center; margin:-10px 0 20px 0;">
+      <button type="button" onclick="useMyLocation()" style="background:transparent; border:1px dashed #3498db; color:#3498db; padding:8px 16px; border-radius:20px; font-size:0.85rem; cursor:pointer; transition:all 0.2s;">
+        📍 Use My Current Location
+      </button>
     </div>
 
     <!-- LOADING -->
@@ -360,19 +390,19 @@
       <div class="card-value" id="hiVal">--°C</div>
     </div>
 
-        <!-- WBGT CARD -->
+    <!-- WBGT CARD -->
     <div class="card wbgt" id="wbgtCard">
       <div class="card-label">WBGT <span style="font-size:0.75rem; font-weight:400; color:#95a5a6;">(estimated)</span></div>
       <div class="card-value" id="wbgtVal">--°C</div>
       <p style="color:#7f8c8d; font-size:0.75rem; margin-top:8px; line-height:1.3;">*Estimated from temp + humidity. For certified readings, use a calibrated WBGT meter.</p>
     </div>
 
-       <!-- WHATSAPP SUBSCRIPTION -->
+    <!-- WHATSAPP SUBSCRIPTION -->
     <div class="wa-box" id="waBox">
-      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem; display:flex; align-items:center; gap:8px;">
-  📲 WhatsApp Alerts (15 AED/mo)
-  <span style="background:#e67e22; color:#fff; font-size:0.75rem; padding:3px 8px; border-radius:12px; font-weight:600;">🔥 Popular</span>
-</h3>
+      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
+        📲 WhatsApp Alerts (15 AED/mo)
+        <span style="background:#e67e22; color:#fff; font-size:0.75rem; padding:3px 8px; border-radius:12px; font-weight:600;">🔥 Popular</span>
+      </h3>
       <p style="color:#ecf0f1; margin:0 0 15px 0; font-size:0.9rem; line-height:1.4;">3 daily alerts: 10:00 AM, 12:30 PM, 3:00 PM</p>
       <input type="tel" id="phone" placeholder="Enter WhatsApp number (+91...)" />
       <button class="btn-wa" onclick="subscribeWA()">📲 Subscribe - 15 AED/month/per number</button>
@@ -381,7 +411,8 @@
         <button class="btn-wa" style="background:#fff; color:#27ae60;" onclick="window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank')">💳 Pay Securely - 15 AED</button>
       </div>
     </div>
-        <!-- PREMIUM UPGRADE -->
+    
+    <!-- PREMIUM UPGRADE -->
     <div class="premium-box">
       <h3>💎 Premium Alerts (50 AED/mo)</h3>
       <p style="font-size:0.9rem; margin-bottom:15px;">Advanced dashboard + Regional language alerts</p>
@@ -435,7 +466,7 @@
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
         const data = await res.json();
         
-                if (data.cod !== 200) {
+        if (data.cod !== 200) {
           if (data.message && data.message.includes('City not found')) {
             alert(`Location not found. Try: "Ras Al Khaimah,AE" or "Dubai,AE" (include country code).`);
           } else {
@@ -474,12 +505,12 @@
       document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
       document.getElementById('wbgtVal').textContent = wbgt.toFixed(1) + '°C';
 
-            // ✅ Location-aware time using OpenWeatherMap timezone offset
-const utcNow = Math.floor(Date.now() / 1000);
-const locTime = new Date((utcNow + tzOffset) * 1000);
-const dateStr = locTime.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
-const timeStr = locTime.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
-document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
+      // ✅ Location-aware time using OpenWeatherMap timezone offset
+      const utcNow = Math.floor(Date.now() / 1000);
+      const locTime = new Date((utcNow + tzOffset) * 1000);
+      const dateStr = locTime.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
+      const timeStr = locTime.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
+      document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
 
       // Show Cards
       document.getElementById('datetimeCard').style.display = 'block';
@@ -531,7 +562,7 @@ document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
       document.getElementById('waBox').style.display = 'none';
     }
 
-                function subscribeWA() {
+    function subscribeWA() {
       const phone = document.getElementById('phone').value.replace(/\D/g, '');
       if (!phone) {
         alert('Please enter your WhatsApp number');
@@ -566,7 +597,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       document.querySelector('#waBox .btn-wa').style.display = 'none';
     }
 
-            function goPremium() {
+    function goPremium() {
       const lang = document.getElementById('premiumLanguage').value;
       const city = document.getElementById('city').value || 'Multiple Sites';
       const msg = encodeURIComponent(`💎 Premium Upgrade Request\nLanguage: ${lang.toUpperCase()}\nLocation(s): ${city}\n\nPlease process my 50 AED/month subscription.`);
@@ -587,6 +618,45 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
     document.getElementById('city').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') checkHeat();
     });
+    
+    // 🔹 NEW: Use My Location function
+    function useMyLocation() {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser');
+        return;
+      }
+      
+      document.getElementById('loading').style.display = 'block';
+      hideResults();
+      
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
+          const data = await res.json();
+          
+          if (data.cod !== 200) {
+            throw new Error(data.message);
+          }
+          
+          document.getElementById('city').value = data.name + ',' + data.sys.country;
+          const temp = data.main.temp;
+          const hum = data.main.humidity;
+          
+          calculateHeatIndex(temp, hum, data.timezone);
+          
+        } catch (error) {
+          alert('Error: ' + error.message);
+        } finally {
+          document.getElementById('loading').style.display = 'none';
+        }
+      }, () => {
+        alert('Unable to retrieve your location. Please enter city name manually.');
+        document.getElementById('loading').style.display = 'none';
+      });
+    }
   </script>
 
 </body>
