@@ -334,8 +334,18 @@
     .risk-caution { background:#f39c12; color:#fff; }
     .risk-high { background:#e67e22; color:#fff; }
     .risk-extreme { background:#e74c3c; color:#fff; }
+        @media (max-width: 768px) {
+      #forecastGrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .forecast-card { padding: 12px 8px; }
+      .forecast-temp { font-size: 1.1rem; }
+    }
     @media (max-width: 480px) {
-      #forecastGrid { grid-template-columns: repeat(2, 1fr); }
+      #forecastGrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .forecast-card { padding: 10px 6px; border-radius: 8px; }
+      .forecast-time { font-size: 0.8rem; }
+      .forecast-temp { font-size: 1rem; }
+      .forecast-hi { font-size: 0.8rem; }
+      .forecast-risk { font-size: 0.7rem; padding: 2px 6px; }
     }
     /* 🔹 END TASK 5 CSS */
     /* PREMIUM LANGUAGE DROPDOWN */
