@@ -373,6 +373,14 @@
       #emergencySection button { font-size: 0.9rem; padding: 10px; }
       #emergencySection a { font-size: 1rem; padding: 12px; }
     }
+    /* 🔹 FEATURE 13: UAE BAN RESPONSIVE */
+    @media (max-width: 480px) {
+      #uaeBanAlert { padding: 15px; }
+      #uaeBanAlert h3 { font-size: 1.1rem; }
+      #uaeBanAlert p { font-size: 0.9rem; }
+      #uaeBanAlert button { font-size: 0.9rem; padding: 8px 16px; }
+      #overridePin { width: 100% !important; margin-bottom: 8px; }
+    }
   </style>
 </head>
 <body>
@@ -557,6 +565,35 @@
         📞 Call UAE Emergency: 998 / 999
       </a>
     </div>
+
+    <!-- 🔹 FEATURE 13: UAE SUMMER BAN ALERT -->
+    <div id="uaeBanAlert" style="display:none; margin-top:20px; background:linear-gradient(135deg,#c0392b,#e74c3c); border:3px solid #fff; border-radius:12px; padding:20px; text-align:center; box-shadow:0 6px 20px rgba(231,76,60,0.5); animation:pulse 2s infinite;">
+      <div style="font-size:2rem; margin-bottom:10px;">⚠️</div>
+      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.3rem; font-weight:700;">UAE MIDDAY BREAK IN EFFECT</h3>
+      <p style="color:#fff; margin:0 0 15px 0; font-size:1rem; line-height:1.4;">Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style="color:#f1c40f;">per MOHRE rule</strong></p>
+      
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button onclick="dismissBanAlert()" style="background:#fff; color:#c0392b; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">
+          ✅ Acknowledge
+        </button>
+        <button onclick="overrideBanAlert()" style="background:transparent; color:#fff; border:2px solid #fff; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;">
+          🔐 HSE Override (Emergency)
+        </button>
+      </div>
+      
+      <div id="overrideForm" style="display:none; margin-top:15px; padding-top:15px; border-top:2px solid rgba(255,255,255,0.3);">
+        <input type="password" id="overridePin" placeholder="Enter HSE PIN" style="padding:10px; border-radius:6px; border:none; margin-right:8px; width:150px;">
+        <button onclick="validateOverride()" style="background:#27ae60; color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:600; cursor:pointer;">Validate</button>
+      </div>
+    </div>
+
+    <style>
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(231,76,60,0.7); }
+        70% { box-shadow: 0 0 0 12px rgba(231,76,60,0); }
+        100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+      }
+    </style>
     <!-- WHATSAPP SUBSCRIPTION -->
     <div class="wa-box" id="waBox">
       <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
@@ -958,6 +995,58 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
         document.getElementById('autoHI').value = hiText;
       }
     };
+
+    // 🔹 FEATURE 13: UAE Summer Ban Auto-Alert (MOHRE Rule)
+    function checkUaeBan() {
+      // Get current time in UAE timezone
+      const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' });
+      const date = new Date(now);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const totalMinutes = hours * 60 + minutes;
+      
+      // UAE Midday Break: 12:30 (750 min) to 15:00 (900 min)
+      const banStart = 12 * 60 + 30; // 750
+      const banEnd = 15 * 60; // 900
+      
+      const alertBox = document.getElementById('uaeBanAlert');
+      
+      if (totalMinutes >= banStart && totalMinutes < banEnd) {
+        alertBox.style.display = 'block';
+        // Vibrate on mobile if supported
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else {
+        alertBox.style.display = 'none';
+      }
+    }
+
+    function dismissBanAlert() {
+      document.getElementById('uaeBanAlert').style.display = 'none';
+    }
+
+    function overrideBanAlert() {
+      document.getElementById('overrideForm').style.display = 'block';
+    }
+
+    function validateOverride() {
+      const pin = document.getElementById('overridePin').value;
+      // Simple PIN check (change '1234' to your secure PIN)
+      if (pin === '1234') {
+        alert('✅ Override accepted. Log this emergency work in your HSE records.');
+        document.getElementById('uaeBanAlert').style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
+        document.getElementById('uaeBanAlert').querySelector('h3').textContent = '⚠️ OVERRIDE ACTIVE - EMERGENCY WORK';
+        document.getElementById('uaeBanAlert').querySelector('p').innerHTML = 'Emergency work authorized by HSE Officer.<br><strong style="color:#f1c40f;">per MOHRE rule - Ensure all safety measures are in place.</strong>';
+        document.getElementById('overrideForm').style.display = 'none';
+      } else {
+        alert('❌ Invalid PIN. Contact site HSE manager for authorization.');
+      }
+    }
+
+    // Run ban check on load and every minute
+    document.addEventListener('DOMContentLoaded', () => {
+      checkUaeBan();
+      setInterval(checkUaeBan, 60000);
+    });
   </script>
 
 </body>
