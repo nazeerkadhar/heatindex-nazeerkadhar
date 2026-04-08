@@ -381,6 +381,10 @@
       #uaeBanAlert button { font-size: 0.9rem; padding: 8px 16px; }
       #overridePin { width: 100% !important; margin-bottom: 8px; }
     }
+    /* 🔹 FEATURE 10: TBT RESPONSIVE */
+    @media (max-width: 480px) {
+      #tbtLanguage { font-size: 0.95rem; padding: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -627,6 +631,26 @@
       </div>
 
       <button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button>
+    </div>
+
+    <!-- 🔹 FEATURE 10: TOOLBOX TALK GENERATOR (PREMIUM 20 AED) -->
+    <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#9b59b6,#8e44ad);">
+      <h3>🗣️ Toolbox Talk Generator (20 AED/mo)</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px;">Daily safety briefings in your language</p>
+      
+      <div style="margin-bottom:15px;">
+        <label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:8px; font-weight:500;">Select TBT Language:</label>
+        <select id="tbtLanguage" style="width:100%; padding:12px; border-radius:10px; border:2px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+          <option value="en">🇬 English</option>
+          <option value="ar">🇸🇦 العربية (Arabic)</option>
+          <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+          <option value="ta">🇮 தமிழ் (Tamil)</option>
+          <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+          <option value="ur">🇵 اردو (Urdu)</option>
+        </select>
+      </div>
+
+      <button class="btn-premium" onclick="subscribeTBT()">📋 Subscribe TBT - 20 AED/month</button>
     </div>
 
     <!-- NAVIGATION -->
@@ -1047,6 +1071,37 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       checkUaeBan();
       setInterval(checkUaeBan, 60000);
     });
+
+    // 🔹 FEATURE 10: Toolbox Talk Generator Subscription (20 AED/mo)
+    function subscribeTBT() {
+      const lang = document.getElementById('tbtLanguage').value;
+      const city = document.getElementById('city').value || 'london';
+      const today = new Date().toLocaleDateString('en-IN');
+      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
+      
+      const msg = encodeURIComponent(
+`Welcome to HSE Heat Stress Alert System.
+Created by "NAZEER KADHAR", HSE Professional
+
+Name: [Please enter your name]
+Location: ${city}
+Organization name: [Please enter]
+Subscription period: from ${today} to ${nextMonth}
+Daily safety briefings(TBT)
+Please process my 20 AED/month subscription for a number.
+
+Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`
+      );
+      
+      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
+      
+      // After WhatsApp opens, show Razorpay step
+      setTimeout(() => {
+        if(confirm('✅ Message sent!\n\nClick OK to proceed to secure payment (20 AED)')) {
+          window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank');
+        }
+      }, 2000);
+    }
   </script>
 
 </body>
