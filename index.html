@@ -501,9 +501,12 @@
 
         if (!res.ok || data.cod != 200) {
           alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
+          return; // 🔹 FIXED: Added return to stop execution on error
         } else {
-        calculateHeatIndex(temp, hum, data.timezone);
-        fetchForecast(data.timezone);
+          const temp = data.main.temp; // 🔹 FIXED: Added missing variable
+          const hum = data.main.humidity; // 🔹 FIXED: Added missing variable
+          calculateHeatIndex(temp, hum, data.timezone);
+          fetchForecast(data.timezone);
         }
       } catch (error) {
         alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
@@ -650,7 +653,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
         alert('Geolocation is not supported by your browser');
         return;
       }
-      
+
       document.getElementById('loading').style.display = 'block';
       hideResults();
       
@@ -678,6 +681,60 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
         alert('Unable to retrieve your location. Please enter city name manually.');
         document.getElementById('loading').style.display = 'none';
       });
+    }
+
+    // 🔹 TASK 5: Fetch & Render Forecast (MOVED OUTSIDE useMyLocation)
+    async function fetchForecast(tzOffset) {
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(document.getElementById('city').value)}&units=metric&appid=${API_KEY}`);
+        const data = await res.json();
+        if (!data.list) return;
+        
+        document.getElementById('forecastSection').style.display = 'block';
+        const grid = document.getElementById('forecastGrid');
+        grid.innerHTML = '';
+        let bestSlot = null;
+        let bestHI = 999;
+        
+        data.list.slice(0, 4).forEach(slot => {
+          const dt = new Date((slot.dt + tzOffset) * 1000);
+          const timeStr = dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
+          const temp = slot.main.temp;
+          const hum = slot.main.humidity;
+          
+          let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+          if (temp < 26) hi = temp;
+          
+          let riskClass = 'risk-safe', riskText = 'SAFE';
+          if (hi >= 54) { riskClass = 'risk-extreme'; riskText = 'EXTREME'; }
+          else if (hi >= 40) { riskClass = 'risk-high'; riskText = 'HIGH RISK'; }
+          else if (hi >= 32) { riskClass = 'risk-caution'; riskText = 'CAUTION'; }
+          
+          if (hi < bestHI) { bestHI = hi; bestSlot = { time: timeStr, hi: hi.toFixed(1) }; }
+          
+          grid.innerHTML += `
+            <div class="forecast-card">
+              <div class="forecast-time">⏰ ${timeStr}</div>
+              <div class="forecast-temp">${temp.toFixed(1)}°C</div>
+              <div class="forecast-hi" style="color:#bdc3c7;">HI: ${hi.toFixed(1)}°C</div>
+              <span class="forecast-risk ${riskClass}">${riskText}</span>
+            </div>
+          `;
+        });
+        
+        const bestDiv = document.getElementById('bestWorkTime');
+        const bestText = document.getElementById('bestTimeText');
+        if (bestSlot) {
+          bestDiv.style.display = 'block';
+          if (bestHI >= 40) {
+            bestText.textContent = `Lowest risk at ${bestSlot.time} (HI: ${bestSlot.hi}°C). Consider indoor/night shifts. Stay hydrated.`;
+            bestDiv.style.background = 'linear-gradient(135deg,#e67e22,#d35400)';
+          } else {
+            bestText.textContent = `Safest period: ${bestSlot.time} (HI: ${bestSlot.hi}°C). Normal outdoor work acceptable with standard breaks.`;
+            bestDiv.style.background = 'linear-gradient(135deg,#1e824c,#27ae60)';
+          }
+        }
+      } catch (e) { console.log('Forecast skipped:', e); }
     }
   </script>
 
