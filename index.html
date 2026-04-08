@@ -696,7 +696,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
         let bestSlot = null;
         let bestHI = 999;
         
-        data.list.slice(0, 4).forEach(slot => {
+          data.list.slice(0, 5).forEach(slot => { // Show 5 slots = ~15 hours coverage
           const dt = new Date((slot.dt + tzOffset) * 1000);
           const timeStr = dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
           const temp = slot.main.temp;
