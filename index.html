@@ -668,7 +668,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
           
           document.getElementById('city').value = data.name + ',' + data.sys.country;
           calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
-          
+          fetchForecast(data.timezone);
         } catch (error) {
           alert('Error: ' + error.message);
         } finally {
