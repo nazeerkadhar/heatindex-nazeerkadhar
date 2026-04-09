@@ -688,13 +688,12 @@
 
         if (!res.ok || data.cod != 200) {
           alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
-          return; // 🔹 FIXED: Added return to stop execution on error
+          return;
         } else {
-          const temp = data.main.temp; // 🔹 FIXED: Added missing variable
-          const hum = data.main.humidity; // 🔹 FIXED: Added missing variable
+          const temp = data.main.temp;
+          const hum = data.main.humidity;
           calculateHeatIndex(temp, hum, data.timezone);
           fetchForecast(data.timezone);
-          // 🔹 FIXED: Check UAE ban after successful fetch
           checkUaeBanWithCountry(data.sys.country);
         }
       } catch (error) {
@@ -861,7 +860,6 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
           document.getElementById('city').value = data.name + ',' + data.sys.country;
           calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
           fetchForecast(data.timezone);
-          // 🔹 FIXED: Check UAE ban after location fetch
           checkUaeBanWithCountry(data.sys.country);
         } catch (error) {
           alert('Error: ' + error.message);
@@ -874,7 +872,6 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       });
     }
 
-    // 🔹 TASK 5: Fetch & Render Forecast (MOVED OUTSIDE useMyLocation)
     async function fetchForecast(tzOffset) {
       try {
         const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(document.getElementById('city').value)}&units=metric&appid=${API_KEY}`);
@@ -887,7 +884,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
         let bestSlot = null;
         let bestHI = 999;
         
-          data.list.slice(0, 5).forEach(slot => { // Show 5 slots = ~15 hours coverage
+          data.list.slice(0, 5).forEach(slot => {
           const dt = new Date((slot.dt + tzOffset) * 1000);
           const timeStr = dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
           const temp = slot.main.temp;
@@ -927,7 +924,7 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
         }
       } catch (e) { console.log('Forecast skipped:', e); }
     }
-     // 🔹 FEATURE 6: Work-Rest Generator Logic (NIOSH/ACGIH Simplified)
+
     function generateWorkRest() {
       const hiText = document.getElementById('hiVal').textContent;
       if (hiText === '--°C') {
@@ -967,7 +964,6 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       document.getElementById('wrNote').textContent = note;
     }
 
-    // 🔹 FEATURE 7A: Hydration Calculator Logic
     function calculateHydration() {
       const weight = parseFloat(document.getElementById('workerWeight').value);
       const hiText = document.getElementById('hiVal').textContent;
@@ -981,7 +977,6 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       }
       const hi = parseFloat(hiText);
       
-      // Base hydration: weight × 0.035 L/hr
       let base = weight * 0.035;
       let adjustment = 0;
       
@@ -999,22 +994,17 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       document.getElementById('hydAmount').textContent = `💧 ${amount}ml every ${interval} min`;
       document.getElementById('hydNote').textContent = `Total: ~${total} L/hr. Adjust for sweat loss. Urine should be pale yellow.`;
       
-      // Auto-fill HI field
       document.getElementById('autoHI').value = `${hi.toFixed(1)}°C`;
     }
 
-    // 🔹 FEATURE 7B: Emergency Guidance Toggle
     function toggleEmergency(type) {
-      // Hide all first
       ['exhaustion','stroke','firstaid'].forEach(t => {
         document.getElementById(t+'Content').style.display = 'none';
       });
-      // Toggle selected
       const content = document.getElementById(type+'Content');
       content.style.display = content.style.display === 'none' ? 'block' : 'none';
     }
 
-    // Auto-update HI field when heat is checked
     const originalCalculateHeatIndex = calculateHeatIndex;
     calculateHeatIndex = function(temp, hum, tzOffset) {
       originalCalculateHeatIndex(temp, hum, tzOffset);
@@ -1024,12 +1014,21 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       }
     };
 
-    // 🔹 FEATURE 13: UAE Summer Ban with Country Check
     let isUaeLocation = false;
     function checkUaeBanWithCountry(countryCode) {
-      // Set flag based on country code (AE = UAE)
-      isUaeLocation = (countryCode === 'AE');
-      // Run immediate check
+      // 🔹 ROBUST UAE DETECTION (Works for ALL Emirates)
+      const cityInput = document.getElementById('city').value.toUpperCase();
+      const isUaeByCode = countryCode ? countryCode.toUpperCase() === 'AE' : false;
+      const isUaeByCity = cityInput.endsWith(',AE') || 
+                          cityInput.includes('DUBAI') || 
+                          cityInput.includes('ABU DHABI') || 
+                          cityInput.includes('SHARJAH') || 
+                          cityInput.includes('AJMAN') || 
+                          cityInput.includes('FUJAIRAH') || 
+                          cityInput.includes('UMM AL QUWAIN') || 
+                          cityInput.includes('RAS AL KHAIMAH');
+      
+      isUaeLocation = isUaeByCode || isUaeByCity;
       checkUaeBan();
     }
 
@@ -1037,43 +1036,34 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       const alertBox = document.getElementById('uaeBanAlert');
       const title = document.getElementById('uaeBanTitle');
       const message = document.getElementById('uaeBanMessage');
-      const buttons = document.getElementById('banButtons'); // 🔹 ADDED: Button container reference
+      const buttons = document.getElementById('banButtons');
       
       if (!isUaeLocation) {
-        // Outside UAE
         title.textContent = "UAE Midday Break Not Applicable";
         message.innerHTML = "Not applicable in your country as per law";
         alertBox.style.background = 'linear-gradient(135deg,#7f8c8d,#95a5a6)';
-        buttons.style.display = 'none'; // 🔹 FIX: Hide Acknowledge & Override buttons
+        buttons.style.display = 'none';
         alertBox.style.display = 'block';
         return;
       }
       
-      // Inside UAE
-      buttons.style.display = 'flex'; // 🔹 FIX: Show buttons
-      // Get current time in UAE timezone
+      buttons.style.display = 'flex';
       const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' });
       const date = new Date(now);
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      const totalMinutes = hours * 60 + minutes;
-      
-      // UAE Midday Break: 12:30 (750 min) to 15:00 (900 min)
-      const banStart = 12 * 60 + 30; // 750
-      const banEnd = 15 * 60; // 900
+      const totalMinutes = date.getHours() * 60 + date.getMinutes();
+      const banStart = 750, banEnd = 900;
       
       if (totalMinutes >= banStart && totalMinutes < banEnd) {
-        // Inside ban hours
         title.textContent = "UAE MIDDAY BREAK IN EFFECT";
         message.innerHTML = "Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>";
         alertBox.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
-        alertBox.style.display = 'block';
-        // Vibrate on mobile if supported
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       } else {
-        // Outside ban hours
-        alertBox.style.display = 'none';
+        title.textContent = "UAE Midday Break Currently Inactive";
+        message.innerHTML = "Outdoor work allowed. Ban resumes at 12:30 PM UAE time.<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>";
+        alertBox.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
       }
+      alertBox.style.display = 'block';
     }
 
     function dismissBanAlert() {
@@ -1086,7 +1076,6 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
 
     function validateOverride() {
       const pin = document.getElementById('overridePin').value;
-      // Simple PIN check (change '1234' to your secure PIN)
       if (pin === '1234') {
         alert('✅ Override accepted. Log this emergency work in your HSE records.');
         document.getElementById('uaeBanAlert').style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
@@ -1098,16 +1087,14 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       }
     }
 
-    // Run ban check on load and every minute
     document.addEventListener('DOMContentLoaded', () => {
       checkUaeBan();
       setInterval(checkUaeBan, 60000);
     });
 
-    // 🔹 FEATURE 10: Toolbox Talk Generator Subscription (20 AED/mo)
     function subscribeTBT() {
       const lang = document.getElementById('tbtLanguage').value;
-      const city = document.getElementById('city').value || 'Not specified'; // 🔹 FIXED: Use actual input value
+      const city = document.getElementById('city').value || 'Not specified';
       const today = new Date().toLocaleDateString('en-IN');
       const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
       
@@ -1127,7 +1114,6 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       
       window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
       
-      // After WhatsApp opens, show Razorpay step
       setTimeout(() => {
         if(confirm('✅ Message sent!\n\nClick OK to proceed to secure payment (20 AED)')) {
           window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank');
