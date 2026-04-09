@@ -576,7 +576,7 @@
       <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.3rem; font-weight:700;" id="uaeBanTitle">UAE MIDDAY BREAK IN EFFECT</h3>
       <p style="color:#fff; margin:0 0 15px 0; font-size:1rem; line-height:1.4;" id="uaeBanMessage">Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style="color:#f1c40f;">per MOHRE rule</strong></p>
       
-      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <div id="banButtons" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
         <button onclick="dismissBanAlert()" style="background:#fff; color:#c0392b; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">
           ✅ Acknowledge
         </button>
@@ -1037,16 +1037,20 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       const alertBox = document.getElementById('uaeBanAlert');
       const title = document.getElementById('uaeBanTitle');
       const message = document.getElementById('uaeBanMessage');
+      const buttons = document.getElementById('banButtons'); // 🔹 ADDED: Button container reference
       
       if (!isUaeLocation) {
         // Outside UAE
         title.textContent = "UAE Midday Break Not Applicable";
         message.innerHTML = "Not applicable in your country as per law";
         alertBox.style.background = 'linear-gradient(135deg,#7f8c8d,#95a5a6)';
+        buttons.style.display = 'none'; // 🔹 FIX: Hide Acknowledge & Override buttons
         alertBox.style.display = 'block';
         return;
       }
       
+      // Inside UAE
+      buttons.style.display = 'flex'; // 🔹 FIX: Show buttons
       // Get current time in UAE timezone
       const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' });
       const date = new Date(now);
