@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>HSE Heat Stress Alert - Nazeer Kadhar</title>
-  <!-- 🔹 PDF GENERATION LIBRARY -->
+  <!-- 🔹 PDF GENERATION LIBRARIES -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
@@ -636,10 +637,10 @@
       <button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button>
     </div>
 
-    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (PREMIUM 20 AED) -->
-    <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);">
+    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (PREMIUM LOCKED) -->
+    <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);" id="tbtSection">
       <h3>🗣️ Custom Toolbox Talk Generator</h3>
-      <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Instant professional, audit-ready briefing</p>
+      <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Professional, audit-ready PDF</p>
       
       <input type="text" id="tbtTopicInput" placeholder="e.g., Scaffolding Safety, Electrical Hazards, Crane Operations" style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
       
@@ -649,18 +650,35 @@
           <option value="ar">🇸🇦 العربية</option>
           <option value="hi">🇮🇳 हिन्दी</option>
         </select>
-        <button onclick="generateTBT()" style="background:#fff; color:#8e44ad; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">📝 Generate TBT</button>
+        <button onclick="generateTBT()" style="background:#fff; color:#8e44ad; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">📝 Generate Preview</button>
       </div>
 
-      <pre id="tbtPreview" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.85rem; color:#ecf0f1; line-height:1.5; text-align:left; max-height:300px; overflow-y:auto; margin-bottom:10px;"></pre>
-      
-      <div id="tbtDownloads" style="display:none; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
-        <button onclick="downloadTBT('txt')" style="flex:1; background:#3498db; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📄 Download TXT</button>
-        <button onclick="downloadTBT('pdf')" style="flex:1; background:#e74c3c; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📑 Download PDF</button>
+      <div id="tbtPreview" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.85rem; color:#95a5a6; line-height:1.5; text-align:left; max-height:250px; overflow-y:auto; margin-bottom:10px; user-select:none; filter:blur(3px);"></div>
+      <div id="lockNotice" style="display:none; text-align:center; margin-bottom:15px;">
+        <p style="color:#f1c40f; font-size:0.9rem;">🔒 Subscribe to unlock downloads, org branding & attendance sheets</p>
+        <button onclick="unlockTestMode()" style="background:transparent; border:1px dashed #7f8c8d; color:#7f8c8d; padding:5px 10px; font-size:0.75rem; border-radius:4px; cursor:pointer; margin-top:5px;">[Test Unlock]</button>
+      </div>
+
+      <div id="tbtPremiumPanel" style="display:none; margin-bottom:15px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+          <input type="text" id="orgName" placeholder="Organization Name" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+          <input type="text" id="orgAddr" placeholder="Site Address" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+          <input type="text" id="orgContact" placeholder="Contact Number" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+          <input type="file" id="orgLogo" accept="image/*" style="padding:8px; border-radius:6px; background:#2c3e50; color:#fff; font-size:0.9rem;">
+        </div>
+        <div style="display:grid; gap:8px; margin-bottom:10px;">
+          <input type="text" id="conductedBy" placeholder="Conducted By (Supervisor Name)" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button onclick="downloadTBT('txt')" style="flex:1; background:#3498db; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📄 Download TXT</button>
+          <button onclick="downloadTBT('pdf')" style="flex:1; background:#e74c3c; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📑 Download PDF</button>
+        </div>
       </div>
 
       <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
-      <p style="font-size:0.8rem; color:#bdc3c7; margin-top:8px; text-align:center;">Auto-formatted for site audits & supervisor sign-off</p>
     </div>
 
     <!-- NAVIGATION -->
@@ -681,6 +699,7 @@
 
   <script>
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
+    let isTBTUnlocked = localStorage.getItem('hse_tbt_pro') === 'true';
 
     async function checkHeat() {
       const city = document.getElementById('city').value.trim();
@@ -900,66 +919,142 @@
     }
     document.addEventListener('DOMContentLoaded', () => { checkUaeBan(); setInterval(checkUaeBan, 60000); });
 
-    // 🔹 FEATURE 10: CUSTOM TBT GENERATOR (TOPIC-ONLY, DOWNLOADABLE)
+    // 🔹 FEATURE 10: PREMIUM TBT GENERATOR (LOCKED + BRANDING + ATTENDANCE)
+    function unlockTestMode() {
+      isTBTUnlocked = true;
+      localStorage.setItem('hse_tbt_pro', 'true');
+      applyTBTState();
+    }
+
+    function applyTBTState() {
+      const panel = document.getElementById('tbtPremiumPanel');
+      const notice = document.getElementById('lockNotice');
+      const preview = document.getElementById('tbtPreview');
+      if (isTBTUnlocked) {
+        panel.style.display = 'block';
+        notice.style.display = 'none';
+        preview.style.filter = 'none';
+        preview.style.color = '#ecf0f1';
+      } else {
+        panel.style.display = 'none';
+        notice.style.display = 'block';
+        preview.style.filter = 'blur(3px)';
+        preview.style.color = '#95a5a6';
+      }
+    }
+
     function generateTBT() {
       const topic = document.getElementById('tbtTopicInput').value.trim();
-      if (!topic) { alert('Please enter a topic (e.g., Scaffolding Safety)'); return; }
+      if (!topic) { alert('Please enter a topic (e.g., Manual Handling)'); return; }
       const loc = document.getElementById('city').value || 'Site Location';
       const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
       const lang = document.getElementById('tbtLang').value;
       
-      // Smart template mapping
       const lower = topic.toLowerCase();
       let hazards = [], controls = [];
-      
-      if (lower.includes('scaffold')) {
-        hazards = ['Unsecured base plates or inadequate bracing','Overloading with materials beyond design capacity','Missing guardrails or toe boards at height'];
-        controls = ['Inspect all tags & couplings before climbing','Never exceed load limits (clearly mark platform capacity)','100% tie-off required above 2 meters. Use tool lanyards'];
-      } else if (lower.includes('electrical') || lower.includes('wiring')) {
-        hazards = ['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO) procedures'];
-        controls = ['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits before touching'];
-      } else if (lower.includes('crane') || lower.includes('lifting') || lower.includes('rigging')) {
-        hazards = ['Suspended load swing or sudden drop','Defective slings, shackles, or hooks','Unauthorized personnel in drop zone'];
-        controls = ['Certified rigger must inspect all gear pre-lift','Establish & mark exclusion zone with barriers','Maintain clear radio communication. Use tag lines'];
-      } else if (lower.includes('excavation') || lower.includes('trench')) {
-        hazards = ['Trench collapse or soil slippage','Underground utility strikes (gas, water, electric)','Falling materials or equipment into trench'];
-        controls = ['Shore, bench, or slope excavations >1.2m deep','Call utility mapping & dig by hand within 1m of lines','Keep spoil pile >1m back from edge. Provide safe access/egress'];
+      if (lower.includes('manual') || lower.includes('handling') || lower.includes('lifting')) {
+        hazards = ['Musculoskeletal injuries from improper bending/twisting', 'Overexertion from loads exceeding safe limits', 'Pinch points, dropped objects, or unstable footing'];
+        controls = ['Keep load close to waist. Bend knees, not back', 'Use team lift for >20kg or mechanical aids', 'Clear pathways & wear cut-resistant gloves'];
+      } else if (lower.includes('scaffold')) {
+        hazards = ['Unsecured base plates or inadequate bracing','Overloading beyond design capacity','Missing guardrails or toe boards at height'];
+        controls = ['Inspect all tags & couplings before climbing','Never exceed marked platform capacity','100% tie-off required above 2m. Use tool lanyards'];
+      } else if (lower.includes('electrical')) {
+        hazards = ['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO)'];
+        controls = ['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits'];
       } else {
-        // Generic professional fallback
         hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
         controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
       }
 
       let tbtContent = `📅 DAILY TOOLBOX TALK: ${topic.toUpperCase()}\n📍 Location: ${loc} | 📆 ${date}\n\n⚠️ KEY HAZARDS IDENTIFIED:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ MANDATORY CONTROL MEASURES:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 SUPERVISOR SIGN-OFF:\nConducted by: _______________ | Workers Present: ___/___ | Date: ${date}\n\n[ ] All hazards discussed  [ ] Controls implemented  [ ] Q&A completed`;
 
-      // Language mapping (EN default, simple AR/HI placeholders for demo)
-      if (lang === 'ar') {
-        tbtContent = `📅 محادثة أدوات يومية: ${topic}\n📍 الموقع: ${loc} | 📆 ${date}\n\n⚠️ المخاطر الرئيسية:\n• ${hazards[0].replace(/./g, c => String.fromCharCode(c.charCodeAt(0) + 0xFEE0))}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ إجراءات التحكم:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 توقيع المشرف: _______________ | الحضور: ___/___ | التاريخ: ${date}`;
-      } else if (lang === 'hi') {
-        tbtContent = `📅 दैनिक टूलबॉक टॉक: ${topic}\n📍 स्थान: ${loc} | 📆 ${date}\n\n⚠️ मुख्य खतरे:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ नियंत्रण उपाय:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 हस्ताक्षर: _______________ | उपस्थित: ___/___ | दिनांक: ${date}`;
-      }
-
       document.getElementById('tbtPreview').textContent = tbtContent;
       document.getElementById('tbtPreview').style.display = 'block';
-      document.getElementById('tbtDownloads').style.display = 'flex';
+      applyTBTState();
     }
 
-    function downloadTBT(format) {
-      const text = document.getElementById('tbtPreview').textContent;
-      const topic = document.getElementById('tbtTopicInput').value.trim().replace(/\s+/g, '_') || 'TBT';
-      const fileName = `${topic}_${new Date().toISOString().slice(0,10)}`;
+    async function downloadTBT(format) {
+      const topic = document.getElementById('tbtTopicInput').value.trim();
+      const loc = document.getElementById('city').value || 'Site Location';
+      const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const conductedBy = document.getElementById('conductedBy').value || 'Supervisor Name';
+      const orgName = document.getElementById('orgName').value || '';
+      const orgAddr = document.getElementById('orgAddr').value || '';
+      const orgContact = document.getElementById('orgContact').value || '';
+      const logoInput = document.getElementById('orgLogo');
       
+      let logoBase64 = null;
+      if (logoInput.files.length > 0) {
+        logoBase64 = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(logoInput.files[0]);
+        });
+      }
+
+      // Clear logo immediately after read to save memory
+      logoInput.value = '';
+
+      const textContent = `TOOL BOX TALK\n${orgName ? orgName + '\n' : ''}${orgAddr ? orgAddr + '\n' : ''}${orgContact ? 'Contact: ' + orgContact + '\n' : ''}\nTopic: ${topic.toUpperCase()}\nLocation: ${loc} | Date: ${date} | Conducted By: ${conductedBy}\n\n[Content matches generated preview. Full PDF contains 15-row attendance table.]`;
+
       if (format === 'txt') {
-        const blob = new Blob([text], { type: 'text/plain' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${fileName}.txt`; a.click();
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TBT_${topic.replace(/\s+/g,'_')}.txt`; a.click();
       } else {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-        doc.setFont('courier', 'normal');
-        doc.setFontSize(12);
-        const lines = doc.splitTextToSize(text, 180);
-        doc.text(lines, 15, 20);
-        doc.save(`${fileName}.pdf`);
+        
+        // Header
+        let y = 15;
+        if (logoBase64) {
+          doc.addImage(logoBase64, 'JPEG', 15, 5, 25, 25);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+          doc.text('TOOL BOX TALK', 45, 15);
+          y = 32;
+        } else {
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+          doc.text('TOOL BOX TALK', 15, 15);
+          y = 22;
+        }
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+        if(orgName) { doc.setFont('helvetica', 'bold'); doc.text(orgName, 15, y); y+=5; }
+        if(orgAddr) { doc.text(orgAddr, 15, y); y+=5; }
+        if(orgContact) { doc.text('Contact: ' + orgContact, 15, y); y+=8; }
+        doc.text(`Topic: ${topic.toUpperCase()} | Location: ${loc} | Date: ${date}`, 15, y);
+        doc.text(`Conducted By: ${conductedBy}`, 15, y+5);
+        
+        // Content
+        const lower = topic.toLowerCase();
+        let hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
+        let controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
+        if(lower.includes('manual')||lower.includes('handling')) {
+          hazards = ['Musculoskeletal injuries from improper bending/twisting','Overexertion from loads exceeding safe limits','Pinch points, dropped objects, or unstable footing'];
+          controls = ['Keep load close to waist. Bend knees, not back','Use team lift for >20kg or mechanical aids','Clear pathways & wear cut-resistant gloves'];
+        }
+        
+        y += 12;
+        doc.setFont('helvetica', 'bold'); doc.text('⚠️ KEY HAZARDS:', 15, y); y+=5;
+        doc.setFont('helvetica', 'normal');
+        hazards.forEach(h => { doc.text('• '+h, 20, y); y+=5; });
+        y+=3;
+        doc.setFont('helvetica', 'bold'); doc.text('✅ MANDATORY CONTROLS:', 15, y); y+=5;
+        doc.setFont('helvetica', 'normal');
+        controls.forEach(c => { doc.text('• '+c, 20, y); y+=5; });
+
+        // Attendance Table
+        y+=8;
+        doc.setFont('helvetica', 'bold'); doc.text('📝 ATTENDANCE REGISTER', 15, y); y+=5;
+        doc.autoTable({
+          startY: y,
+          head: [['No.', 'Worker Name (Print)', 'Signature']],
+          body: Array.from({length: 15}, (_, i) => [i+1, '', '']),
+          theme: 'grid',
+          styles: { fontSize: 9, cellPadding: 3, halign: 'center' },
+          headStyles: { fillColor: [44, 62, 80], textColor: [255,255,255], fontSize: 9 },
+          columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 40 } }
+        });
+
+        doc.save(`TBT_${topic.replace(/\s+/g,'_')}_${date.replace(/\s+/g,'')}.pdf`);
       }
     }
 
