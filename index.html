@@ -401,6 +401,12 @@
       50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(231,76,60,0.7); }
     }
     .qa-pulse { animation: qaPulse 1.5s infinite !important; background: linear-gradient(135deg, #e74c3c, #c0392b) !important; }
+    /* 🔹 FEATURE 8: MULTI-SITE RESPONSIVE */
+    .site-card { background:#1a252f; border-radius:8px; padding:12px; position:relative; border:1px solid #34495e; transition:transform 0.2s; }
+    .site-card:hover { transform: translateY(-2px); }
+    .site-card .remove-btn { position:absolute; top:8px; right:8px; background:#c0392b; color:#fff; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; justify-content:center; transition:opacity 0.2s; }
+    .site-card .remove-btn:hover { opacity: 0.8; }
+    @media (max-width: 480px) { #siteInput, #multiSiteSection button { font-size: 0.9rem; padding: 8px; } }
   </style>
 </head>
 <body>
@@ -693,6 +699,18 @@
       <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
     </div>
 
+    <!-- 🔹 FEATURE 8: MULTI-SITE MONITORING -->
+    <div id="multiSiteSection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">🌍 Multi-Site Monitoring</h3>
+      <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+        <input type="text" id="siteInput" placeholder="e.g., Sharjah,AE" style="flex:1; min-width:200px; padding:10px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:0.95rem; outline:none;">
+        <button onclick="addSite()" style="background:#27ae60; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer;">+ Add Site</button>
+        <button onclick="refreshAllSites()" style="background:#2980b9; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer;">🔄 Refresh All</button>
+      </div>
+      <div id="siteGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;"></div>
+      <p id="siteEmptyMsg" style="color:#7f8c8d; text-align:center; margin-top:15px; font-size:0.9rem;">No sites added yet. Add your first location above.</p>
+    </div>
+
     <!-- NAVIGATION -->
     <div class="nav-links">
       <a href="/about.html">About</a>
@@ -944,23 +962,15 @@
     document.addEventListener('DOMContentLoaded', () => { checkUaeBan(); setInterval(checkUaeBan, 60000); });
 
     // 🔹 FEATURE 10: PREMIUM TBT GENERATOR (LOCKED + BRANDING + ATTENDANCE)
-    function unlockTestMode() {
-      isTBTUnlocked = true;
-      localStorage.setItem('hse_tbt_pro', 'true');
-      applyTBTState();
-    }
+    function unlockTestMode() { isTBTUnlocked = true; localStorage.setItem('hse_tbt_pro', 'true'); applyTBTState(); }
     function applyTBTState() {
-      const panel = document.getElementById('tbtPremiumPanel');
-      const notice = document.getElementById('lockNotice');
-      const preview = document.getElementById('tbtPreview');
+      const panel = document.getElementById('tbtPremiumPanel'); const notice = document.getElementById('lockNotice'); const preview = document.getElementById('tbtPreview');
       if (isTBTUnlocked) { panel.style.display = 'block'; notice.style.display = 'none'; preview.style.filter = 'none'; preview.style.color = '#ecf0f1'; } 
       else { panel.style.display = 'none'; notice.style.display = 'block'; preview.style.filter = 'blur(3px)'; preview.style.color = '#95a5a6'; }
     }
     function generateTBT() {
-      const topic = document.getElementById('tbtTopicInput').value.trim();
-      if (!topic) { alert('Please enter a topic'); return; }
-      const loc = document.getElementById('city').value || 'Site Location';
-      const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const topic = document.getElementById('tbtTopicInput').value.trim(); if (!topic) { alert('Please enter a topic'); return; }
+      const loc = document.getElementById('city').value || 'Site Location'; const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
       const lower = topic.toLowerCase();
       let hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
       let controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
@@ -968,19 +978,12 @@
       else if(lower.includes('scaffold')) { hazards=['Unsecured base plates or inadequate bracing','Overloading beyond design capacity','Missing guardrails or toe boards at height']; controls=['Inspect all tags & couplings before climbing','Never exceed marked platform capacity','100% tie-off required above 2m']; }
       else if(lower.includes('electrical')) { hazards=['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO)']; controls=['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits']; }
       document.getElementById('tbtPreview').textContent = `📅 DAILY TOOLBOX TALK: ${topic.toUpperCase()}\n📍 Location: ${loc} | 📆 ${date}\n\n⚠️ KEY HAZARDS IDENTIFIED:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ MANDATORY CONTROL MEASURES:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 SUPERVISOR SIGN-OFF:\nConducted by: _______________ | Workers Present: ___/___ | Date: ${date}\n\n[ ] All hazards discussed  [ ] Controls implemented  [ ] Q&A completed`;
-      document.getElementById('tbtPreview').style.display = 'block';
-      applyTBTState();
+      document.getElementById('tbtPreview').style.display = 'block'; applyTBTState();
     }
     async function downloadTBT(format) {
-      const topic = document.getElementById('tbtTopicInput').value.trim();
-      const loc = document.getElementById('city').value || 'Site Location';
-      const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-      const conductedBy = document.getElementById('conductedBy').value || 'Supervisor Name';
-      const orgName = document.getElementById('orgName').value || '';
-      const orgAddr = document.getElementById('orgAddr').value || '';
-      const orgContact = document.getElementById('orgContact').value || '';
-      const logoInput = document.getElementById('orgLogo');
-      let logoBase64 = null;
+      const topic = document.getElementById('tbtTopicInput').value.trim(); const loc = document.getElementById('city').value || 'Site Location'; const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const conductedBy = document.getElementById('conductedBy').value || 'Supervisor Name'; const orgName = document.getElementById('orgName').value || ''; const orgAddr = document.getElementById('orgAddr').value || ''; const orgContact = document.getElementById('orgContact').value || '';
+      const logoInput = document.getElementById('orgLogo'); let logoBase64 = null;
       if (logoInput.files.length > 0) { logoBase64 = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(logoInput.files[0]); }); }
       logoInput.value = '';
       if (format === 'txt') {
@@ -1001,8 +1004,7 @@
       }
     }
     function subscribeTBT() {
-      const lang = document.getElementById('tbtLang').value;
-      const city = document.getElementById('city').value || 'Not specified';
+      const lang = document.getElementById('tbtLang').value; const city = document.getElementById('city').value || 'Not specified';
       const today = new Date().toLocaleDateString('en-IN'); const nextMonth = new Date(Date.now()+30*24*60*60*1000).toLocaleDateString('en-IN');
       window.open(`https://wa.me/971562395526?text=${encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Enter name]\nLocation: ${city}\nOrg: [Enter]\nPeriod: ${today} to ${nextMonth}\nTBT Sub (${lang})\n\nPlease process 20 AED/mo.\nDisclaimer: Tool provided "as is". Report bugs to kaarnaz@gmail.com`)}`, '_blank');
       setTimeout(()=>{if(confirm('✅ Message sent!\nClick OK for payment (20 AED)')){window.open('https://razorpay.me/@heatindexnazeerkadhar','_blank');}},2000);
@@ -1012,14 +1014,68 @@
     let qaOpen = false;
     function toggleQA() { qaOpen = !qaOpen; document.getElementById('qaMenu').style.display = qaOpen ? 'flex' : 'none'; }
     function qaScroll(id) { toggleQA(); const el = document.getElementById(id); if(el) { if(el.style.display==='none') el.style.display='block'; el.scrollIntoView({behavior:'smooth',block:'center'}); } }
-    function checkExtreme() {
-      const h = parseFloat(document.getElementById('hiVal')?.textContent || 0);
-      const btn = document.getElementById('qaBtn');
-      if(h >= 40) { btn.classList.add('qa-pulse'); if(navigator.vibrate) navigator.vibrate([300,100,300]); }
-      else { btn.classList.remove('qa-pulse'); }
-    }
+    function checkExtreme() { const h = parseFloat(document.getElementById('hiVal')?.textContent || 0); const btn = document.getElementById('qaBtn'); if(h >= 40) { btn.classList.add('qa-pulse'); if(navigator.vibrate) navigator.vibrate([300,100,300]); } else { btn.classList.remove('qa-pulse'); } }
     setInterval(checkExtreme, 30000);
     document.addEventListener('DOMContentLoaded', checkExtreme);
+
+    // 🔹 FEATURE 8: MULTI-SITE MONITORING LOGIC
+    let savedSites = JSON.parse(localStorage.getItem('hse_sites') || '[]');
+    function renderSites() {
+      const grid = document.getElementById('siteGrid');
+      const emptyMsg = document.getElementById('siteEmptyMsg');
+      grid.innerHTML = '';
+      if (savedSites.length === 0) { emptyMsg.style.display = 'block'; return; }
+      emptyMsg.style.display = 'none';
+      savedSites.forEach(site => {
+        const id = site.replace(/[^a-zA-Z0-9]/g,'');
+        grid.innerHTML += `<div class="site-card" id="card-${id}">
+          <button class="remove-btn" onclick="removeSite('${site}')">×</button>
+          <div style="font-size:0.95rem; font-weight:600; color:#ecf0f1; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📍 ${site}</div>
+          <div id="data-${id}" style="color:#7f8c8d; font-size:0.85rem; line-height:1.4;">Loading...</div>
+        </div>`;
+      });
+      refreshAllSites();
+    }
+    function addSite() {
+      const input = document.getElementById('siteInput');
+      const val = input.value.trim();
+      if (!val) return alert('Please enter a location (e.g., Dubai,AE)');
+      if (savedSites.includes(val)) return alert('Site already exists');
+      savedSites.push(val);
+      localStorage.setItem('hse_sites', JSON.stringify(savedSites));
+      input.value = '';
+      renderSites();
+    }
+    function removeSite(site) {
+      savedSites = savedSites.filter(s => s !== site);
+      localStorage.setItem('hse_sites', JSON.stringify(savedSites));
+      renderSites();
+    }
+    async function refreshAllSites() {
+      if (savedSites.length === 0) return;
+      const promises = savedSites.map(async (site) => {
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          const temp = data.main.temp.toFixed(1);
+          const hum = data.main.humidity;
+          let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+          if (temp < 26) hi = temp;
+          let risk = hi >= 40 ? '🔴 HIGH' : hi >= 32 ? '🟡 CAUTION' : '🟢 SAFE';
+          const id = `data-${site.replace(/[^a-zA-Z0-9]/g,'')}`;
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = `🌡️ ${temp}°C | 💧 ${hum}%<br>HI: ${hi.toFixed(1)}°C ${risk}`;
+        } catch {
+          const id = `data-${site.replace(/[^a-zA-Z0-9]/g,'')}`;
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = '⚠️ Invalid location';
+        }
+      });
+      await Promise.all(promises);
+    }
+    document.addEventListener('DOMContentLoaded', renderSites);
+    setInterval(refreshAllSites, 300000);
   </script>
 </body>
 </html>
