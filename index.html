@@ -15,6 +15,7 @@
       background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%);
       color: #ecf0f1;
       min-height: 100vh;
+      padding-bottom: 80px;
     }
 
     /* HEADER */
@@ -389,6 +390,17 @@
       #tbtTopicInput { font-size: 0.95rem; padding: 10px; }
       #tbtPreview { font-size: 0.8rem; padding: 12px; }
     }
+    /* 🔹 FEATURE 9: QUICK ALERT WIDGET RESPONSIVE */
+    @media (max-width: 480px) {
+      #qaWidget { bottom: 15px; right: 15px; }
+      #qaBtn { width: 50px; height: 50px; font-size: 1.3rem; }
+      #qaMenu button { font-size: 0.9rem; padding: 8px 12px; }
+    }
+    @keyframes qaPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(230,126,34,0.4); }
+      50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(231,76,60,0.7); }
+    }
+    .qa-pulse { animation: qaPulse 1.5s infinite !important; background: linear-gradient(135deg, #e74c3c, #c0392b) !important; }
   </style>
 </head>
 <body>
@@ -697,6 +709,18 @@
     <p style="margin-top:5px;">Created by <strong>Nazeer Kadhar</strong></p>
   </div>
 
+  <!-- 🔹 FEATURE 9: MOBILE QUICK ALERT WIDGET -->
+  <div id="qaWidget" style="position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+    <div id="qaMenu" style="display:none; flex-direction:column; gap:8px; margin-bottom:8px; background:#2c3e50; padding:12px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.4); border:2px solid #34495e; min-width:200px;">
+      <button onclick="qaScroll('hiCard')" style="background:#e74c3c; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">🔥 Check Heat Risk Now</button>
+      <button onclick="qaScroll('workRestSection')" style="background:#2980b9; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">⏱️ Work-Rest</button>
+      <button onclick="qaScroll('hydrationSection')" style="background:#27ae60; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">💧 Hydration</button>
+      <button onclick="qaScroll('uaeBanAlert')" style="background:#f39c12; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">🚨 UAE Ban</button>
+      <button onclick="qaScroll('tbtSection')" style="background:#9b59b6; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">🗣️ TBT Generator</button>
+    </div>
+    <button onclick="toggleQA()" id="qaBtn" style="background:linear-gradient(135deg,#e67e22,#d35400); color:#fff; border:none; width:56px; height:56px; border-radius:50%; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 12px rgba(230,126,34,0.4); display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🚨</button>
+  </div>
+
   <script>
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let isTBTUnlocked = localStorage.getItem('hse_tbt_pro') === 'true';
@@ -925,54 +949,28 @@
       localStorage.setItem('hse_tbt_pro', 'true');
       applyTBTState();
     }
-
     function applyTBTState() {
       const panel = document.getElementById('tbtPremiumPanel');
       const notice = document.getElementById('lockNotice');
       const preview = document.getElementById('tbtPreview');
-      if (isTBTUnlocked) {
-        panel.style.display = 'block';
-        notice.style.display = 'none';
-        preview.style.filter = 'none';
-        preview.style.color = '#ecf0f1';
-      } else {
-        panel.style.display = 'none';
-        notice.style.display = 'block';
-        preview.style.filter = 'blur(3px)';
-        preview.style.color = '#95a5a6';
-      }
+      if (isTBTUnlocked) { panel.style.display = 'block'; notice.style.display = 'none'; preview.style.filter = 'none'; preview.style.color = '#ecf0f1'; } 
+      else { panel.style.display = 'none'; notice.style.display = 'block'; preview.style.filter = 'blur(3px)'; preview.style.color = '#95a5a6'; }
     }
-
     function generateTBT() {
       const topic = document.getElementById('tbtTopicInput').value.trim();
-      if (!topic) { alert('Please enter a topic (e.g., Manual Handling)'); return; }
+      if (!topic) { alert('Please enter a topic'); return; }
       const loc = document.getElementById('city').value || 'Site Location';
       const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-      const lang = document.getElementById('tbtLang').value;
-      
       const lower = topic.toLowerCase();
-      let hazards = [], controls = [];
-      if (lower.includes('manual') || lower.includes('handling') || lower.includes('lifting')) {
-        hazards = ['Musculoskeletal injuries from improper bending/twisting', 'Overexertion from loads exceeding safe limits', 'Pinch points, dropped objects, or unstable footing'];
-        controls = ['Keep load close to waist. Bend knees, not back', 'Use team lift for >20kg or mechanical aids', 'Clear pathways & wear cut-resistant gloves'];
-      } else if (lower.includes('scaffold')) {
-        hazards = ['Unsecured base plates or inadequate bracing','Overloading beyond design capacity','Missing guardrails or toe boards at height'];
-        controls = ['Inspect all tags & couplings before climbing','Never exceed marked platform capacity','100% tie-off required above 2m. Use tool lanyards'];
-      } else if (lower.includes('electrical')) {
-        hazards = ['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO)'];
-        controls = ['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits'];
-      } else {
-        hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
-        controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
-      }
-
-      let tbtContent = `📅 DAILY TOOLBOX TALK: ${topic.toUpperCase()}\n📍 Location: ${loc} | 📆 ${date}\n\n⚠️ KEY HAZARDS IDENTIFIED:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ MANDATORY CONTROL MEASURES:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 SUPERVISOR SIGN-OFF:\nConducted by: _______________ | Workers Present: ___/___ | Date: ${date}\n\n[ ] All hazards discussed  [ ] Controls implemented  [ ] Q&A completed`;
-
-      document.getElementById('tbtPreview').textContent = tbtContent;
+      let hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
+      let controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
+      if(lower.includes('manual')||lower.includes('handling')) { hazards=['Musculoskeletal injuries from improper bending/twisting','Overexertion from loads exceeding safe limits','Pinch points, dropped objects, or unstable footing']; controls=['Keep load close to waist. Bend knees, not back','Use team lift for >20kg or mechanical aids','Clear pathways & wear cut-resistant gloves']; }
+      else if(lower.includes('scaffold')) { hazards=['Unsecured base plates or inadequate bracing','Overloading beyond design capacity','Missing guardrails or toe boards at height']; controls=['Inspect all tags & couplings before climbing','Never exceed marked platform capacity','100% tie-off required above 2m']; }
+      else if(lower.includes('electrical')) { hazards=['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO)']; controls=['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits']; }
+      document.getElementById('tbtPreview').textContent = `📅 DAILY TOOLBOX TALK: ${topic.toUpperCase()}\n📍 Location: ${loc} | 📆 ${date}\n\n⚠️ KEY HAZARDS IDENTIFIED:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ MANDATORY CONTROL MEASURES:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 SUPERVISOR SIGN-OFF:\nConducted by: _______________ | Workers Present: ___/___ | Date: ${date}\n\n[ ] All hazards discussed  [ ] Controls implemented  [ ] Q&A completed`;
       document.getElementById('tbtPreview').style.display = 'block';
       applyTBTState();
     }
-
     async function downloadTBT(format) {
       const topic = document.getElementById('tbtTopicInput').value.trim();
       const loc = document.getElementById('city').value || 'Site Location';
@@ -982,91 +980,46 @@
       const orgAddr = document.getElementById('orgAddr').value || '';
       const orgContact = document.getElementById('orgContact').value || '';
       const logoInput = document.getElementById('orgLogo');
-      
       let logoBase64 = null;
-      if (logoInput.files.length > 0) {
-        logoBase64 = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(logoInput.files[0]);
-        });
-      }
-
-      // Clear logo immediately after read to save memory
+      if (logoInput.files.length > 0) { logoBase64 = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(logoInput.files[0]); }); }
       logoInput.value = '';
-
-      const textContent = `TOOL BOX TALK\n${orgName ? orgName + '\n' : ''}${orgAddr ? orgAddr + '\n' : ''}${orgContact ? 'Contact: ' + orgContact + '\n' : ''}\nTopic: ${topic.toUpperCase()}\nLocation: ${loc} | Date: ${date} | Conducted By: ${conductedBy}\n\n[Content matches generated preview. Full PDF contains 15-row attendance table.]`;
-
       if (format === 'txt') {
-        const blob = new Blob([textContent], { type: 'text/plain' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TBT_${topic.replace(/\s+/g,'_')}.txt`; a.click();
+        const txt = `TOOL BOX TALK\n${orgName?orgName+'\n':''}${orgAddr?orgAddr+'\n':''}${orgContact?'Contact: '+orgContact+'\n':''}\nTopic: ${topic.toUpperCase()}\nLocation: ${loc} | Date: ${date} | Conducted By: ${conductedBy}\n[Full content & attendance sheet available in PDF]`;
+        const blob = new Blob([txt], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TBT_${topic.replace(/\s+/g,'_')}.txt`; a.click();
       } else {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-        
-        // Header
-        let y = 15;
-        if (logoBase64) {
-          doc.addImage(logoBase64, 'JPEG', 15, 5, 25, 25);
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-          doc.text('TOOL BOX TALK', 45, 15);
-          y = 32;
-        } else {
-          doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
-          doc.text('TOOL BOX TALK', 15, 15);
-          y = 22;
-        }
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-        if(orgName) { doc.setFont('helvetica', 'bold'); doc.text(orgName, 15, y); y+=5; }
-        if(orgAddr) { doc.text(orgAddr, 15, y); y+=5; }
-        if(orgContact) { doc.text('Contact: ' + orgContact, 15, y); y+=8; }
-        doc.text(`Topic: ${topic.toUpperCase()} | Location: ${loc} | Date: ${date}`, 15, y);
-        doc.text(`Conducted By: ${conductedBy}`, 15, y+5);
-        
-        // Content
-        const lower = topic.toLowerCase();
-        let hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
-        let controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
-        if(lower.includes('manual')||lower.includes('handling')) {
-          hazards = ['Musculoskeletal injuries from improper bending/twisting','Overexertion from loads exceeding safe limits','Pinch points, dropped objects, or unstable footing'];
-          controls = ['Keep load close to waist. Bend knees, not back','Use team lift for >20kg or mechanical aids','Clear pathways & wear cut-resistant gloves'];
-        }
-        
-        y += 12;
-        doc.setFont('helvetica', 'bold'); doc.text('⚠️ KEY HAZARDS:', 15, y); y+=5;
-        doc.setFont('helvetica', 'normal');
-        hazards.forEach(h => { doc.text('• '+h, 20, y); y+=5; });
-        y+=3;
-        doc.setFont('helvetica', 'bold'); doc.text('✅ MANDATORY CONTROLS:', 15, y); y+=5;
-        doc.setFont('helvetica', 'normal');
-        controls.forEach(c => { doc.text('• '+c, 20, y); y+=5; });
-
-        // Attendance Table
-        y+=8;
-        doc.setFont('helvetica', 'bold'); doc.text('📝 ATTENDANCE REGISTER', 15, y); y+=5;
-        doc.autoTable({
-          startY: y,
-          head: [['No.', 'Worker Name (Print)', 'Signature']],
-          body: Array.from({length: 15}, (_, i) => [i+1, '', '']),
-          theme: 'grid',
-          styles: { fontSize: 9, cellPadding: 3, halign: 'center' },
-          headStyles: { fillColor: [44, 62, 80], textColor: [255,255,255], fontSize: 9 },
-          columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 40 } }
-        });
-
+        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y=15;
+        if(logoBase64) { doc.addImage(logoBase64, 'JPEG', 15, 5, 20, 20); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('TOOL BOX TALK', 40, 15); y=30; } 
+        else { doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('TOOL BOX TALK', 15, 15); y=22; }
+        doc.setFont('helvetica','normal'); doc.setFontSize(10); if(orgName){doc.text(orgName,15,y);y+=5;} if(orgAddr){doc.text(orgAddr,15,y);y+=5;} if(orgContact){doc.text('Contact: '+orgContact,15,y);y+=8;}
+        doc.text(`Topic: ${topic.toUpperCase()} | Loc: ${loc} | Date: ${date} | By: ${conductedBy}`, 15, y); y+=12;
+        doc.setFont('helvetica','bold'); doc.text('⚠️ KEY HAZARDS:', 15, y); y+=5; doc.setFont('helvetica','normal');
+        const lower=topic.toLowerCase(), hz=['Unplanned task execution','Worker fatigue','Uncontrolled environment'], ct=['Conduct JSA before starting','Verify personnel briefing','Maintain exclusion zones'];
+        if(lower.includes('manual')||lower.includes('handling')) { hz=['Improper lifting posture','Overexertion >20kg','Dropped objects/pinch points']; ct=['Bend knees, keep load close','Use mechanical aids/team lift','Clear path, wear gloves']; }
+        hz.forEach(h=>{doc.text('• '+h,20,y);y+=5;}); y+=3; doc.setFont('helvetica','bold'); doc.text('✅ MANDATORY CONTROLS:', 15, y); y+=5; doc.setFont('helvetica','normal'); ct.forEach(c=>{doc.text('• '+c,20,y);y+=5;});
+        doc.autoTable({ startY: y, head: [['No.', 'Worker Name', 'Signature']], body: Array.from({length:15},(_,i)=>[i+1,'','']), theme:'grid', styles:{fontSize:9,cellPadding:3,halign:'center'}, headStyles:{fillColor:[44,62,80]}, columnStyles:{0:{cellWidth:12},1:{cellWidth:'auto'},2:{cellWidth:40}} });
         doc.save(`TBT_${topic.replace(/\s+/g,'_')}_${date.replace(/\s+/g,'')}.pdf`);
       }
     }
-
     function subscribeTBT() {
       const lang = document.getElementById('tbtLang').value;
       const city = document.getElementById('city').value || 'Not specified';
-      const today = new Date().toLocaleDateString('en-IN');
-      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
-      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\nDaily safety briefings(TBT) - Language: ${lang.toUpperCase()}\nPlease process my 20 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
-      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
-      setTimeout(() => { if(confirm('✅ Message sent!\n\nClick OK to proceed to secure payment (20 AED)')) { window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank'); } }, 2000);
+      const today = new Date().toLocaleDateString('en-IN'); const nextMonth = new Date(Date.now()+30*24*60*60*1000).toLocaleDateString('en-IN');
+      window.open(`https://wa.me/971562395526?text=${encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Enter name]\nLocation: ${city}\nOrg: [Enter]\nPeriod: ${today} to ${nextMonth}\nTBT Sub (${lang})\n\nPlease process 20 AED/mo.\nDisclaimer: Tool provided "as is". Report bugs to kaarnaz@gmail.com`)}`, '_blank');
+      setTimeout(()=>{if(confirm('✅ Message sent!\nClick OK for payment (20 AED)')){window.open('https://razorpay.me/@heatindexnazeerkadhar','_blank');}},2000);
     }
+
+    // 🔹 FEATURE 9: MOBILE QUICK ALERT WIDGET LOGIC
+    let qaOpen = false;
+    function toggleQA() { qaOpen = !qaOpen; document.getElementById('qaMenu').style.display = qaOpen ? 'flex' : 'none'; }
+    function qaScroll(id) { toggleQA(); const el = document.getElementById(id); if(el) { if(el.style.display==='none') el.style.display='block'; el.scrollIntoView({behavior:'smooth',block:'center'}); } }
+    function checkExtreme() {
+      const h = parseFloat(document.getElementById('hiVal')?.textContent || 0);
+      const btn = document.getElementById('qaBtn');
+      if(h >= 40) { btn.classList.add('qa-pulse'); if(navigator.vibrate) navigator.vibrate([300,100,300]); }
+      else { btn.classList.remove('qa-pulse'); }
+    }
+    setInterval(checkExtreme, 30000);
+    document.addEventListener('DOMContentLoaded', checkExtreme);
   </script>
 </body>
 </html>
