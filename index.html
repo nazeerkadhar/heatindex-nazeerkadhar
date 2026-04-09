@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>HSE Heat Stress Alert - Nazeer Kadhar</title>
+  <!-- 🔹 PDF GENERATION LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
@@ -383,7 +385,8 @@
     }
     /* 🔹 FEATURE 10: TBT RESPONSIVE */
     @media (max-width: 480px) {
-      #tbtLanguage { font-size: 0.95rem; padding: 10px; }
+      #tbtTopicInput { font-size: 0.95rem; padding: 10px; }
+      #tbtPreview { font-size: 0.8rem; padding: 12px; }
     }
   </style>
 </head>
@@ -633,24 +636,31 @@
       <button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button>
     </div>
 
-    <!-- 🔹 FEATURE 10: TOOLBOX TALK GENERATOR (PREMIUM 20 AED) -->
-    <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#9b59b6,#8e44ad);">
-      <h3>🗣️ Toolbox Talk Generator (20 AED/mo)</h3>
-      <p style="font-size:0.9rem; margin-bottom:15px;">Daily safety briefings in your language</p>
+    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (PREMIUM 20 AED) -->
+    <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);">
+      <h3>🗣️ Custom Toolbox Talk Generator</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Instant professional, audit-ready briefing</p>
       
-      <div style="margin-bottom:15px;">
-        <label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:8px; font-weight:500;">Select TBT Language:</label>
-        <select id="tbtLanguage" style="width:100%; padding:12px; border-radius:10px; border:2px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+      <input type="text" id="tbtTopicInput" placeholder="e.g., Scaffolding Safety, Electrical Hazards, Crane Operations" style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+        <select id="tbtLang" style="padding:10px; border-radius:8px; border:none; background:#2c3e50; color:#fff; font-size:0.95rem;">
           <option value="en">🇬 English</option>
-          <option value="ar">🇸🇦 العربية (Arabic)</option>
-          <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
-          <option value="ta">🇮 தமிழ் (Tamil)</option>
-          <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
-          <option value="ur">🇵 اردو (Urdu)</option>
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="hi">🇮🇳 हिन्दी</option>
         </select>
+        <button onclick="generateTBT()" style="background:#fff; color:#8e44ad; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">📝 Generate TBT</button>
       </div>
 
-      <button class="btn-premium" onclick="subscribeTBT()">📋 Subscribe TBT - 20 AED/month</button>
+      <pre id="tbtPreview" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.85rem; color:#ecf0f1; line-height:1.5; text-align:left; max-height:300px; overflow-y:auto; margin-bottom:10px;"></pre>
+      
+      <div id="tbtDownloads" style="display:none; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+        <button onclick="downloadTBT('txt')" style="flex:1; background:#3498db; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📄 Download TXT</button>
+        <button onclick="downloadTBT('pdf')" style="flex:1; background:#e74c3c; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📑 Download PDF</button>
+      </div>
+
+      <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
+      <p style="font-size:0.8rem; color:#bdc3c7; margin-top:8px; text-align:center;">Auto-formatted for site audits & supervisor sign-off</p>
     </div>
 
     <!-- NAVIGATION -->
@@ -674,18 +684,12 @@
 
     async function checkHeat() {
       const city = document.getElementById('city').value.trim();
-      if (!city) {
-        alert('Please enter a location');
-        return;
-      }
-
+      if (!city) { alert('Please enter a location'); return; }
       document.getElementById('loading').style.display = 'block';
       hideResults();
-
       try {
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
         const data = await res.json();
-
         if (!res.ok || data.cod != 200) {
           alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
           return;
@@ -704,62 +708,34 @@
     }
 
     function calculateHeatIndex(temp, hum, tzOffset) {
-      let hi = -8.784695 + 1.61139411*temp + 2.338549*hum 
-               - 0.14611605*temp*hum - 0.012308094*temp*temp 
-               - 0.016424828*hum*hum + 0.002211732*temp*temp*hum 
-               + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
-      
+      let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
       if (temp < 26) hi = temp;
-
       const wbgt = (0.7 * temp) + (0.3 * (temp + (5/9)*(hum/100)*6.112*Math.exp((17.27*temp)/(237.7+temp)) - 273.15));
-
       document.getElementById('tempVal').textContent = temp.toFixed(2) + '°C';
       document.getElementById('humVal').textContent = hum + '%';
       document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
       document.getElementById('wbgtVal').textContent = wbgt.toFixed(1) + '°C';
-
       const utcNow = Math.floor(Date.now() / 1000);
       const locTime = new Date((utcNow + tzOffset) * 1000);
       const dateStr = locTime.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
       const timeStr = locTime.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
       document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
-
       document.getElementById('datetimeCard').style.display = 'block';
       document.getElementById('tempCard').style.display = 'block';
       document.getElementById('humCard').style.display = 'block';
       document.getElementById('hiCard').style.display = 'block';
       document.getElementById('wbgtCard').style.display = 'block';
       document.getElementById('waBox').style.display = 'block';
-
       const alertBox = document.getElementById('alertBox');
       const alertIcon = document.getElementById('alertIcon');
       const alertTitle = document.getElementById('alertTitle');
       const alertMsg = document.getElementById('alertMsg');
-
       alertBox.className = 'alert-box';
       alertBox.style.display = 'block';
-
-      if (hi >= 54 || wbgt >= 32) {
-        alertBox.classList.add('extreme');
-        alertIcon.textContent = '🔴';
-        alertTitle.textContent = 'EXTREME RISK';
-        alertMsg.textContent = 'EXTREME HEAT STRESS - Cease all outdoor work immediately!';
-      } else if (hi >= 40 || wbgt >= 28) {
-        alertBox.classList.add('caution');
-        alertIcon.textContent = '🟠';
-        alertTitle.textContent = 'HIGH RISK';
-        alertMsg.textContent = 'Heat exhaustion likely. Limit outdoor exposure. Take frequent breaks.';
-      } else if (hi >= 32 || wbgt >= 25) {
-        alertBox.classList.add('caution');
-        alertIcon.textContent = '🟡';
-        alertTitle.textContent = 'CAUTION';
-        alertMsg.textContent = 'Heat fatigue possible. Stay hydrated and take rest breaks.';
-      } else {
-        alertBox.classList.add('safe');
-        alertIcon.textContent = '🟢';
-        alertTitle.textContent = 'SAFE';
-        alertMsg.textContent = 'Normal outdoor activities safe. Maintain regular hydration.';
-      }
+      if (hi >= 54 || wbgt >= 32) { alertBox.classList.add('extreme'); alertIcon.textContent = '🔴'; alertTitle.textContent = 'EXTREME RISK'; alertMsg.textContent = 'EXTREME HEAT STRESS - Cease all outdoor work immediately!'; }
+      else if (hi >= 40 || wbgt >= 28) { alertBox.classList.add('caution'); alertIcon.textContent = '🟠'; alertTitle.textContent = 'HIGH RISK'; alertMsg.textContent = 'Heat exhaustion likely. Limit outdoor exposure. Take frequent breaks.'; }
+      else if (hi >= 32 || wbgt >= 25) { alertBox.classList.add('caution'); alertIcon.textContent = '🟡'; alertTitle.textContent = 'CAUTION'; alertMsg.textContent = 'Heat fatigue possible. Stay hydrated and take rest breaks.'; }
+      else { alertBox.classList.add('safe'); alertIcon.textContent = '🟢'; alertTitle.textContent = 'SAFE'; alertMsg.textContent = 'Normal outdoor activities safe. Maintain regular hydration.'; }
     }
 
     function hideResults() {
@@ -774,29 +750,11 @@
 
     function subscribeWA() {
       const phone = document.getElementById('phone').value.replace(/\D/g, '');
-      if (!phone) {
-        alert('Please enter your WhatsApp number');
-        return;
-      }
-      
+      if (!phone) { alert('Please enter your WhatsApp number'); return; }
       const city = document.getElementById('city').value || 'Not specified';
       const today = new Date().toLocaleDateString('en-IN');
       const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
-      
-      const msg = encodeURIComponent(
-`Welcome to HSE Heat Stress Alert System.
-Created by "NAZEER KADHAR", HSE Professional
-
-Name: [Please enter your name]
-Location: ${city}
-Organization name: [Please enter]
-Subscription period: from ${today} to ${nextMonth}
-
-Please process my 15 AED/month subscription for a number.
-
-Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`
-      );
-      
+      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\n\nPlease process my 15 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
       window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
       document.getElementById('waPaymentStep').style.display = 'block';
       document.querySelector('#waBox .btn-wa').style.display = 'none';
@@ -807,69 +765,31 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
       const city = document.getElementById('city').value || 'Multiple Sites';
       const today = new Date().toLocaleDateString('en-IN');
       const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
-      
-      const msg = encodeURIComponent(
-`Welcome to HSE Heat Stress Alert System.
-Created by "NAZEER KADHAR", HSE Professional
-
-Name: [Please enter your name]
-Location: ${city}
-Organization name: [Please enter]
-Subscription period: from ${today} to ${nextMonth}
-
-Please process my 50 AED/month subscription for a number.
-
-Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`
-      );
-      
+      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\n\nPlease process my 50 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
       window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
-      
       const box = document.querySelector('.premium-box');
-      box.innerHTML = `
-        <h3>✅ Step 1: Message Sent</h3>
-        <p style="color:#fff; margin:12px 0; line-height:1.4;">WhatsApp opened with your details. Please send the message to confirm.</p>
-        <button class="btn-premium" onclick="window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank')">💳 Step 2: Pay Securely (50 AED)</button>
-      `;
+      box.innerHTML = `<h3>✅ Step 1: Message Sent</h3><p style="color:#fff; margin:12px 0; line-height:1.4;">WhatsApp opened with your details. Please send the message to confirm.</p><button class="btn-premium" onclick="window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank')">💳 Step 2: Pay Securely (50 AED)</button>`;
     }
 
-    document.getElementById('city').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') checkHeat();
-    });
+    document.getElementById('city').addEventListener('keypress', function(e) { if (e.key === 'Enter') checkHeat(); });
     
     function useMyLocation() {
-      if (!navigator.geolocation) {
-        alert('Geolocation is not supported by your browser');
-        return;
-      }
-
+      if (!navigator.geolocation) { alert('Geolocation is not supported by your browser'); return; }
       document.getElementById('loading').style.display = 'block';
       hideResults();
-      
       navigator.geolocation.getCurrentPosition(async (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        
         try {
           const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
           const data = await res.json();
-          
-          if (data.cod !== 200) {
-            throw new Error(data.message);
-          }
-          
+          if (data.cod !== 200) throw new Error(data.message);
           document.getElementById('city').value = data.name + ',' + data.sys.country;
           calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
           fetchForecast(data.timezone);
           checkUaeBanWithCountry(data.sys.country);
-        } catch (error) {
-          alert('Error: ' + error.message);
-        } finally {
-          document.getElementById('loading').style.display = 'none';
-        }
-      }, () => {
-        alert('Unable to retrieve your location. Please enter city name manually.');
-        document.getElementById('loading').style.display = 'none';
-      });
+        } catch (error) { alert('Error: ' + error.message); } finally { document.getElementById('loading').style.display = 'none'; }
+      }, () => { alert('Unable to retrieve your location. Please enter city name manually.'); document.getElementById('loading').style.display = 'none'; });
     }
 
     async function fetchForecast(tzOffset) {
@@ -877,84 +797,41 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
         const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(document.getElementById('city').value)}&units=metric&appid=${API_KEY}`);
         const data = await res.json();
         if (!data.list) return;
-        
         document.getElementById('forecastSection').style.display = 'block';
         const grid = document.getElementById('forecastGrid');
         grid.innerHTML = '';
         let bestSlot = null;
         let bestHI = 999;
-        
-          data.list.slice(0, 5).forEach(slot => {
+        data.list.slice(0, 5).forEach(slot => {
           const dt = new Date((slot.dt + tzOffset) * 1000);
           const timeStr = dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
           const temp = slot.main.temp;
           const hum = slot.main.humidity;
-          
           let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
           if (temp < 26) hi = temp;
-          
           let riskClass = 'risk-safe', riskText = 'SAFE';
           if (hi >= 54) { riskClass = 'risk-extreme'; riskText = 'EXTREME'; }
           else if (hi >= 40) { riskClass = 'risk-high'; riskText = 'HIGH RISK'; }
           else if (hi >= 32) { riskClass = 'risk-caution'; riskText = 'CAUTION'; }
-          
           if (hi < bestHI) { bestHI = hi; bestSlot = { time: timeStr, hi: hi.toFixed(1) }; }
-          
-          grid.innerHTML += `
-            <div class="forecast-card">
-              <div class="forecast-time">⏰ ${timeStr}</div>
-              <div class="forecast-temp">${temp.toFixed(1)}°C</div>
-              <div class="forecast-hi" style="color:#bdc3c7;">HI: ${hi.toFixed(1)}°C</div>
-              <span class="forecast-risk ${riskClass}">${riskText}</span>
-            </div>
-          `;
+          grid.innerHTML += `<div class="forecast-card"><div class="forecast-time">⏰ ${timeStr}</div><div class="forecast-temp">${temp.toFixed(1)}°C</div><div class="forecast-hi" style="color:#bdc3c7;">HI: ${hi.toFixed(1)}°C</div><span class="forecast-risk ${riskClass}">${riskText}</span></div>`;
         });
-        
         const bestDiv = document.getElementById('bestWorkTime');
         const bestText = document.getElementById('bestTimeText');
-        if (bestSlot) {
-          bestDiv.style.display = 'block';
-          if (bestHI >= 40) {
-            bestText.textContent = `Lowest risk at ${bestSlot.time} (HI: ${bestSlot.hi}°C). Consider indoor/night shifts. Stay hydrated.`;
-            bestDiv.style.background = 'linear-gradient(135deg,#e67e22,#d35400)';
-          } else {
-            bestText.textContent = `Safest period: ${bestSlot.time} (HI: ${bestSlot.hi}°C). Normal outdoor work acceptable with standard breaks.`;
-            bestDiv.style.background = 'linear-gradient(135deg,#1e824c,#27ae60)';
-          }
-        }
+        if (bestSlot) { bestDiv.style.display = 'block'; bestDiv.style.background = bestHI >= 40 ? 'linear-gradient(135deg,#e67e22,#d35400)' : 'linear-gradient(135deg,#1e824c,#27ae60)'; bestText.textContent = bestHI >= 40 ? `Lowest risk at ${bestSlot.time} (HI: ${bestSlot.hi}°C). Consider indoor/night shifts.` : `Safest period: ${bestSlot.time} (HI: ${bestSlot.hi}°C). Normal outdoor work acceptable.`; }
       } catch (e) { console.log('Forecast skipped:', e); }
     }
 
     function generateWorkRest() {
       const hiText = document.getElementById('hiVal').textContent;
-      if (hiText === '--°C') {
-        alert('Please check heat stress for a location first.');
-        return;
-      }
+      if (hiText === '--°C') { alert('Please check heat stress first.'); return; }
       const hi = parseFloat(hiText);
       const workType = document.getElementById('workType').value;
-      
       let workMin, restMin, water, note;
-      
-      if (hi < 32) {
-        workMin = "Continuous"; restMin = "As needed"; water = "0.5 L/hr";
-        note = "✅ Conditions safe. Maintain standard hydration & breaks.";
-      } else if (hi >= 32 && hi < 40) {
-        if (workType==='light') { workMin=50; restMin=10; water="0.75 L/hr"; }
-        else if (workType==='moderate') { workMin=40; restMin=20; water="1 L/hr"; }
-        else { workMin=30; restMin=30; water="1.25 L/hr"; }
-        note = "⚠️ Heat stress increasing. Strictly follow cycles. Monitor for fatigue.";
-      } else if (hi >= 40 && hi < 46) {
-        if (workType==='light') { workMin=40; restMin=20; water="1 L/hr"; }
-        else if (workType==='moderate') { workMin=30; restMin=30; water="1.25 L/hr"; }
-        else { workMin=20; restMin=40; water="1.5 L/hr"; }
-        note = "🚨 HIGH RISK. Cease heavy labor if possible. Rest in shade/AC. Mandatory hydration.";
-      } else {
-        if (workType==='heavy') { workMin=10; restMin=50; water="1.5 L/hr"; }
-        else { workMin=30; restMin=30; water="1 L/hr"; }
-        note = "🚨 EXTREME DANGER. Outdoor work should be suspended. Activate emergency protocols.";
-      }
-      
+      if (hi < 32) { workMin = "Continuous"; restMin = "As needed"; water = "0.5 L/hr"; note = "✅ Conditions safe. Maintain standard hydration & breaks."; }
+      else if (hi >= 32 && hi < 40) { if (workType==='light') { workMin=50; restMin=10; water="0.75 L/hr"; } else if (workType==='moderate') { workMin=40; restMin=20; water="1 L/hr"; } else { workMin=30; restMin=30; water="1.25 L/hr"; } note = "⚠️ Heat stress increasing. Strictly follow cycles."; }
+      else if (hi >= 40 && hi < 46) { if (workType==='light') { workMin=40; restMin=20; water="1 L/hr"; } else if (workType==='moderate') { workMin=30; restMin=30; water="1.25 L/hr"; } else { workMin=20; restMin=40; water="1.5 L/hr"; } note = "🚨 HIGH RISK. Cease heavy labor if possible."; }
+      else { if (workType==='heavy') { workMin=10; restMin=50; water="1.5 L/hr"; } else { workMin=30; restMin=30; water="1 L/hr"; } note = "🚨 EXTREME DANGER. Suspend outdoor work."; }
       document.getElementById('workRestSection').style.display = 'block';
       document.getElementById('workRestResult').style.display = 'block';
       document.getElementById('wrHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${workType.charAt(0).toUpperCase()+workType.slice(1)} Work`;
@@ -967,160 +844,134 @@ Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Pleas
     function calculateHydration() {
       const weight = parseFloat(document.getElementById('workerWeight').value);
       const hiText = document.getElementById('hiVal').textContent;
-      if (!weight || weight < 40 || weight > 150) {
-        alert('Please enter a valid weight (40-150 kg)');
-        return;
-      }
-      if (hiText === '--°C') {
-        alert('Please check heat stress for a location first.');
-        return;
-      }
+      if (!weight || weight < 40 || weight > 150) { alert('Please enter a valid weight (40-150 kg)'); return; }
+      if (hiText === '--°C') { alert('Please check heat stress first.'); return; }
       const hi = parseFloat(hiText);
-      
-      let base = weight * 0.035;
-      let adjustment = 0;
-      
-      if (hi >= 46) adjustment = 1.5;
-      else if (hi >= 40) adjustment = 1.0;
-      else if (hi >= 32) adjustment = 0.5;
-      
+      let base = weight * 0.035; let adjustment = hi >= 46 ? 1.5 : hi >= 40 ? 1.0 : hi >= 32 ? 0.5 : 0;
       const total = (base + adjustment).toFixed(1);
       const interval = hi >= 40 ? "15" : hi >= 32 ? "20" : "30";
       const amount = Math.round((total * 1000) / (60/parseInt(interval)));
-      
       document.getElementById('hydrationSection').style.display = 'block';
       document.getElementById('hydrationResult').style.display = 'block';
       document.getElementById('hydHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${weight} kg`;
       document.getElementById('hydAmount').textContent = `💧 ${amount}ml every ${interval} min`;
-      document.getElementById('hydNote').textContent = `Total: ~${total} L/hr. Adjust for sweat loss. Urine should be pale yellow.`;
-      
+      document.getElementById('hydNote').textContent = `Total: ~${total} L/hr. Adjust for sweat loss.`;
       document.getElementById('autoHI').value = `${hi.toFixed(1)}°C`;
     }
 
     function toggleEmergency(type) {
-      ['exhaustion','stroke','firstaid'].forEach(t => {
-        document.getElementById(t+'Content').style.display = 'none';
-      });
-      const content = document.getElementById(type+'Content');
-      content.style.display = content.style.display === 'none' ? 'block' : 'none';
+      ['exhaustion','stroke','firstaid'].forEach(t => document.getElementById(t+'Content').style.display = 'none');
+      document.getElementById(type+'Content').style.display = 'block';
     }
-
-    const originalCalculateHeatIndex = calculateHeatIndex;
-    calculateHeatIndex = function(temp, hum, tzOffset) {
-      originalCalculateHeatIndex(temp, hum, tzOffset);
-      const hiText = document.getElementById('hiVal').textContent;
-      if (hiText !== '--°C') {
-        document.getElementById('autoHI').value = hiText;
-      }
-    };
 
     let isUaeLocation = false;
     function checkUaeBanWithCountry(countryCode) {
-      // 🔹 ROBUST UAE DETECTION (Works for ALL Emirates)
       const cityInput = document.getElementById('city').value.toUpperCase();
       const isUaeByCode = countryCode ? countryCode.toUpperCase() === 'AE' : false;
-      const isUaeByCity = cityInput.endsWith(',AE') || 
-                          cityInput.includes('DUBAI') || 
-                          cityInput.includes('ABU DHABI') || 
-                          cityInput.includes('SHARJAH') || 
-                          cityInput.includes('AJMAN') || 
-                          cityInput.includes('FUJAIRAH') || 
-                          cityInput.includes('UMM AL QUWAIN') || 
-                          cityInput.includes('RAS AL KHAIMAH');
-      
+      const isUaeByCity = cityInput.endsWith(',AE') || ['DUBAI','ABU DHABI','SHARJAH','AJMAN','FUJAIRAH','UMM AL QUWAIN','RAS AL KHAIMAH'].some(em => cityInput.includes(em));
       isUaeLocation = isUaeByCode || isUaeByCity;
       checkUaeBan();
     }
-
     function checkUaeBan() {
       const alertBox = document.getElementById('uaeBanAlert');
       const title = document.getElementById('uaeBanTitle');
       const message = document.getElementById('uaeBanMessage');
       const buttons = document.getElementById('banButtons');
-      
-      if (!isUaeLocation) {
-        title.textContent = "UAE Midday Break Not Applicable";
-        message.innerHTML = "Not applicable in your country as per law";
-        alertBox.style.background = 'linear-gradient(135deg,#7f8c8d,#95a5a6)';
-        buttons.style.display = 'none';
-        alertBox.style.display = 'block';
-        return;
-      }
-      
+      if (!isUaeLocation) { title.textContent = "UAE Midday Break Not Applicable"; message.innerHTML = "Not applicable in your country as per law"; alertBox.style.background = 'linear-gradient(135deg,#7f8c8d,#95a5a6)'; buttons.style.display = 'none'; alertBox.style.display = 'block'; return; }
       buttons.style.display = 'flex';
       const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' });
       const date = new Date(now);
       const totalMinutes = date.getHours() * 60 + date.getMinutes();
-      const banStart = 750, banEnd = 900;
-      
-      if (totalMinutes >= banStart && totalMinutes < banEnd) {
-        title.textContent = "UAE MIDDAY BREAK IN EFFECT";
-        message.innerHTML = "Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>";
-        alertBox.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
+      if (totalMinutes >= 750 && totalMinutes < 900) {
+        title.textContent = "UAE MIDDAY BREAK IN EFFECT"; message.innerHTML = "Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>"; alertBox.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      } else {
-        title.textContent = "UAE Midday Break Currently Inactive";
-        message.innerHTML = "Outdoor work allowed. Ban resumes at 12:30 PM UAE time.<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>";
-        alertBox.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
-      }
+      } else { title.textContent = "UAE Midday Break Currently Inactive"; message.innerHTML = "Outdoor work allowed. Ban resumes at 12:30 PM UAE time.<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>"; alertBox.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)'; }
       alertBox.style.display = 'block';
     }
-
-    function dismissBanAlert() {
-      document.getElementById('uaeBanAlert').style.display = 'none';
-    }
-
-    function overrideBanAlert() {
-      document.getElementById('overrideForm').style.display = 'block';
-    }
-
+    function dismissBanAlert() { document.getElementById('uaeBanAlert').style.display = 'none'; }
+    function overrideBanAlert() { document.getElementById('overrideForm').style.display = 'block'; }
     function validateOverride() {
-      const pin = document.getElementById('overridePin').value;
-      if (pin === '1234') {
-        alert('✅ Override accepted. Log this emergency work in your HSE records.');
+      if (document.getElementById('overridePin').value === '1234') {
         document.getElementById('uaeBanAlert').style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
         document.getElementById('uaeBanAlert').querySelector('h3').textContent = '⚠️ OVERRIDE ACTIVE - EMERGENCY WORK';
         document.getElementById('uaeBanAlert').querySelector('p').innerHTML = 'Emergency work authorized by HSE Officer.<br><strong style="color:#f1c40f;">per MOHRE rule - Ensure all safety measures are in place.</strong>';
         document.getElementById('overrideForm').style.display = 'none';
+      } else { alert('❌ Invalid PIN. Contact site HSE manager.'); }
+    }
+    document.addEventListener('DOMContentLoaded', () => { checkUaeBan(); setInterval(checkUaeBan, 60000); });
+
+    // 🔹 FEATURE 10: CUSTOM TBT GENERATOR (TOPIC-ONLY, DOWNLOADABLE)
+    function generateTBT() {
+      const topic = document.getElementById('tbtTopicInput').value.trim();
+      if (!topic) { alert('Please enter a topic (e.g., Scaffolding Safety)'); return; }
+      const loc = document.getElementById('city').value || 'Site Location';
+      const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const lang = document.getElementById('tbtLang').value;
+      
+      // Smart template mapping
+      const lower = topic.toLowerCase();
+      let hazards = [], controls = [];
+      
+      if (lower.includes('scaffold')) {
+        hazards = ['Unsecured base plates or inadequate bracing','Overloading with materials beyond design capacity','Missing guardrails or toe boards at height'];
+        controls = ['Inspect all tags & couplings before climbing','Never exceed load limits (clearly mark platform capacity)','100% tie-off required above 2 meters. Use tool lanyards'];
+      } else if (lower.includes('electrical') || lower.includes('wiring')) {
+        hazards = ['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO) procedures'];
+        controls = ['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits before touching'];
+      } else if (lower.includes('crane') || lower.includes('lifting') || lower.includes('rigging')) {
+        hazards = ['Suspended load swing or sudden drop','Defective slings, shackles, or hooks','Unauthorized personnel in drop zone'];
+        controls = ['Certified rigger must inspect all gear pre-lift','Establish & mark exclusion zone with barriers','Maintain clear radio communication. Use tag lines'];
+      } else if (lower.includes('excavation') || lower.includes('trench')) {
+        hazards = ['Trench collapse or soil slippage','Underground utility strikes (gas, water, electric)','Falling materials or equipment into trench'];
+        controls = ['Shore, bench, or slope excavations >1.2m deep','Call utility mapping & dig by hand within 1m of lines','Keep spoil pile >1m back from edge. Provide safe access/egress'];
       } else {
-        alert('❌ Invalid PIN. Contact site HSE manager for authorization.');
+        // Generic professional fallback
+        hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
+        controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
+      }
+
+      let tbtContent = `📅 DAILY TOOLBOX TALK: ${topic.toUpperCase()}\n📍 Location: ${loc} | 📆 ${date}\n\n⚠️ KEY HAZARDS IDENTIFIED:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ MANDATORY CONTROL MEASURES:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 SUPERVISOR SIGN-OFF:\nConducted by: _______________ | Workers Present: ___/___ | Date: ${date}\n\n[ ] All hazards discussed  [ ] Controls implemented  [ ] Q&A completed`;
+
+      // Language mapping (EN default, simple AR/HI placeholders for demo)
+      if (lang === 'ar') {
+        tbtContent = `📅 محادثة أدوات يومية: ${topic}\n📍 الموقع: ${loc} | 📆 ${date}\n\n⚠️ المخاطر الرئيسية:\n• ${hazards[0].replace(/./g, c => String.fromCharCode(c.charCodeAt(0) + 0xFEE0))}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ إجراءات التحكم:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 توقيع المشرف: _______________ | الحضور: ___/___ | التاريخ: ${date}`;
+      } else if (lang === 'hi') {
+        tbtContent = `📅 दैनिक टूलबॉक टॉक: ${topic}\n📍 स्थान: ${loc} | 📆 ${date}\n\n⚠️ मुख्य खतरे:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ नियंत्रण उपाय:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 हस्ताक्षर: _______________ | उपस्थित: ___/___ | दिनांक: ${date}`;
+      }
+
+      document.getElementById('tbtPreview').textContent = tbtContent;
+      document.getElementById('tbtPreview').style.display = 'block';
+      document.getElementById('tbtDownloads').style.display = 'flex';
+    }
+
+    function downloadTBT(format) {
+      const text = document.getElementById('tbtPreview').textContent;
+      const topic = document.getElementById('tbtTopicInput').value.trim().replace(/\s+/g, '_') || 'TBT';
+      const fileName = `${topic}_${new Date().toISOString().slice(0,10)}`;
+      
+      if (format === 'txt') {
+        const blob = new Blob([text], { type: 'text/plain' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${fileName}.txt`; a.click();
+      } else {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(12);
+        const lines = doc.splitTextToSize(text, 180);
+        doc.text(lines, 15, 20);
+        doc.save(`${fileName}.pdf`);
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      checkUaeBan();
-      setInterval(checkUaeBan, 60000);
-    });
-
     function subscribeTBT() {
-      const lang = document.getElementById('tbtLanguage').value;
+      const lang = document.getElementById('tbtLang').value;
       const city = document.getElementById('city').value || 'Not specified';
       const today = new Date().toLocaleDateString('en-IN');
       const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
-      
-      const msg = encodeURIComponent(
-`Welcome to HSE Heat Stress Alert System.
-Created by "NAZEER KADHAR", HSE Professional
-
-Name: [Please enter your name]
-Location: ${city}
-Organization name: [Please enter]
-Subscription period: from ${today} to ${nextMonth}
-Daily safety briefings(TBT)
-Please process my 20 AED/month subscription for a number.
-
-Disclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`
-      );
-      
+      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\nDaily safety briefings(TBT) - Language: ${lang.toUpperCase()}\nPlease process my 20 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
       window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
-      
-      setTimeout(() => {
-        if(confirm('✅ Message sent!\n\nClick OK to proceed to secure payment (20 AED)')) {
-          window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank');
-        }
-      }, 2000);
+      setTimeout(() => { if(confirm('✅ Message sent!\n\nClick OK to proceed to secure payment (20 AED)')) { window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank'); } }, 2000);
     }
   </script>
-
 </body>
 </html>
