@@ -1020,6 +1020,16 @@
 
     // 🔹 FEATURE 8: MULTI-SITE MONITORING LOGIC
     let savedSites = JSON.parse(localStorage.getItem('hse_sites') || '[]');
+    const UAE_KEYWORDS = ['dubai','sharjah','abu dhabi','ajman','fujairah','ras al khaimah','rak','uaq','umm al quwain','uae','emirates'];
+    
+    function autoFormatSite(site) {
+      const s = site.trim();
+      if (s.includes(',')) return s;
+      const lower = s.toLowerCase();
+      if (UAE_KEYWORDS.some(k => lower.includes(k))) return s + ',AE';
+      return s;
+    }
+
     function renderSites() {
       const grid = document.getElementById('siteGrid');
       const emptyMsg = document.getElementById('siteEmptyMsg');
@@ -1027,7 +1037,6 @@
       if (savedSites.length === 0) { emptyMsg.style.display = 'block'; return; }
       emptyMsg.style.display = 'none';
       savedSites.forEach(site => {
-        // Use data attribute to safely store site name
         const id = site.replace(/[^a-zA-Z0-9]/g,'');
         grid.innerHTML += `<div class="site-card" id="card-${id}" data-site="${site}">
           <button class="remove-btn" onclick="removeSiteFromCard(this)">×</button>
@@ -1046,8 +1055,8 @@
     }
     function addSite() {
       const input = document.getElementById('siteInput');
-      const val = input.value.trim();
-      if (!val) return alert('Please enter a location (e.g., Dubai,AE)');
+      const val = autoFormatSite(input.value);
+      if (!val || val === ',AE') return alert('Please enter a valid location');
       if (savedSites.includes(val)) return alert('Site already exists');
       savedSites.push(val);
       localStorage.setItem('hse_sites', JSON.stringify(savedSites));
@@ -1056,16 +1065,24 @@
     }
     async function refreshAllSites() {
       if (savedSites.length === 0) return;
-      // Reset all to loading state before fetching
+      // Reset all to loading state
       savedSites.forEach(site => {
         const id = site.replace(/[^a-zA-Z0-9]/g,'');
         const el = document.getElementById(`data-${id}`);
-        if(el) el.innerHTML = 'Loading...';
+        if(el) el.innerHTML = 'Fetching...';
       });
 
-      const promises = savedSites.map(async (site) => {
+      // Sequential fetch with delay to prevent API rate limits
+      for (const site of savedSites) {
+        const id = site.replace(/[^a-zA-Z0-9]/g,'');
+        const el = document.getElementById(`data-${id}`);
         try {
-          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
+          // Try exact input first
+          let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
+          // Fallback: if fails and no comma, try adding ,AE
+          if (!res.ok && !site.includes(',')) {
+            res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site + ',AE')}&units=metric&appid=${API_KEY}`);
+          }
           if (!res.ok) throw new Error('Not found');
           const data = await res.json();
           const temp = data.main.temp.toFixed(1);
@@ -1073,17 +1090,12 @@
           let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
           if (temp < 26) hi = temp;
           let risk = hi >= 40 ? '🔴 HIGH' : hi >= 32 ? '🟡 CAUTION' : '🟢 SAFE';
-          const id = site.replace(/[^a-zA-Z0-9]/g,'');
-          const el = document.getElementById(`data-${id}`);
           if (el) el.innerHTML = `🌡️ ${temp}°C | 💧 ${hum}%<br>HI: ${hi.toFixed(1)}°C ${risk}`;
-        } catch (e) {
-          console.error(`Error for ${site}:`, e);
-          const id = site.replace(/[^a-zA-Z0-9]/g,'');
-          const el = document.getElementById(`data-${id}`);
-          if (el) el.innerHTML = '⚠️ Error (Use City,Code e.g., Dubai,AE)';
+        } catch {
+          if (el) el.innerHTML = '⚠️ Location not found';
         }
-      });
-      await Promise.all(promises);
+        await new Promise(r => setTimeout(r, 300)); // 300ms delay between requests
+      }
     }
     document.addEventListener('DOMContentLoaded', renderSites);
     setInterval(refreshAllSites, 300000);
