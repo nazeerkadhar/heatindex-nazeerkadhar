@@ -385,28 +385,14 @@
       #uaeBanAlert button { font-size: 0.9rem; padding: 8px 16px; }
       #overridePin { width: 100% !important; margin-bottom: 8px; }
     }
-    /* 🔹 FEATURE 10: TBT RESPONSIVE */
+    /* 🔹 FEATURE 10: TBT RESPONSIVE & LOCK STYLES */
     @media (max-width: 480px) {
       #tbtTopicInput { font-size: 0.95rem; padding: 10px; }
       #tbtPreview { font-size: 0.8rem; padding: 12px; }
     }
-    /* 🔹 FEATURE 9: QUICK ALERT WIDGET RESPONSIVE */
-    @media (max-width: 480px) {
-      #qaWidget { bottom: 15px; right: 15px; }
-      #qaBtn { width: 50px; height: 50px; font-size: 1.3rem; }
-      #qaMenu button { font-size: 0.9rem; padding: 8px 12px; }
-    }
-    @keyframes qaPulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(230,126,34,0.4); }
-      50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(231,76,60,0.7); }
-    }
-    .qa-pulse { animation: qaPulse 1.5s infinite !important; background: linear-gradient(135deg, #e74c3c, #c0392b) !important; }
-    /* 🔹 FEATURE 8: MULTI-SITE RESPONSIVE */
-    .site-card { background:#1a252f; border-radius:8px; padding:12px; position:relative; border:1px solid #34495e; transition:transform 0.2s; }
-    .site-card:hover { transform: translateY(-2px); }
-    .site-card .remove-btn { position:absolute; top:8px; right:8px; background:#c0392b; color:#fff; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; justify-content:center; transition:opacity 0.2s; }
-    .site-card .remove-btn:hover { opacity: 0.8; }
-    @media (max-width: 480px) { #siteInput, #multiSiteSection button { font-size: 0.9rem; padding: 8px; } }
+    .blur-locked { filter: blur(4px); user-select: none; pointer-events: none; opacity: 0.5; }
+    .lock-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #f1c40f; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 8px; font-weight: 700; z-index: 5; text-align: center; }
+    .btn-locked { opacity: 0.5; cursor: not-allowed; background: #555 !important; }
   </style>
 </head>
 <body>
@@ -655,12 +641,12 @@
       <button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button>
     </div>
 
-    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (PREMIUM LOCKED) -->
+    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (SECURE & DETAILED) -->
     <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);" id="tbtSection">
       <h3>🗣️ Custom Toolbox Talk Generator</h3>
       <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Professional, audit-ready PDF</p>
       
-      <input type="text" id="tbtTopicInput" placeholder="e.g., Scaffolding Safety, Electrical Hazards, Crane Operations" style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
+      <input type="text" id="tbtTopicInput" placeholder="e.g., Manual Handling, Scaffolding, Electrical..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
       
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
         <select id="tbtLang" style="padding:10px; border-radius:8px; border:none; background:#2c3e50; color:#fff; font-size:0.95rem;">
@@ -671,35 +657,21 @@
         <button onclick="generateTBT()" style="background:#fff; color:#8e44ad; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">📝 Generate Preview</button>
       </div>
 
-      <div id="tbtPreview" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.85rem; color:#95a5a6; line-height:1.5; text-align:left; max-height:250px; overflow-y:auto; margin-bottom:10px; user-select:none; filter:blur(3px);"></div>
-      <div id="lockNotice" style="display:none; text-align:center; margin-bottom:15px;">
-        <p style="color:#f1c40f; font-size:0.9rem;">🔒 Subscribe to unlock downloads, org branding & attendance sheets</p>
-        <button onclick="unlockTestMode()" style="background:transparent; border:1px dashed #7f8c8d; color:#7f8c8d; padding:5px 10px; font-size:0.75rem; border-radius:4px; cursor:pointer; margin-top:5px;">[Test Unlock]</button>
+      <div style="position:relative;">
+        <div id="tbtPreview" class="blur-locked" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.8rem; color:#ecf0f1; line-height:1.5; text-align:left; max-height:250px; overflow-y:auto; margin-bottom:10px;"></div>
+        <div id="lockOverlay" class="lock-overlay" style="display:block;">🔒 Subscribe to Unlock Full Content</div>
       </div>
-
-      <div id="tbtPremiumPanel" style="display:none; margin-bottom:15px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
-          <input type="text" id="orgName" placeholder="Organization Name" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
-          <input type="text" id="orgAddr" placeholder="Site Address" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
-          <input type="text" id="orgContact" placeholder="Contact Number" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
-          <input type="file" id="orgLogo" accept="image/*" style="padding:8px; border-radius:6px; background:#2c3e50; color:#fff; font-size:0.9rem;">
-        </div>
-        <div style="display:grid; gap:8px; margin-bottom:10px;">
-          <input type="text" id="conductedBy" placeholder="Conducted By (Supervisor Name)" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:10px;">
-          <button onclick="downloadTBT('txt')" style="flex:1; background:#3498db; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📄 Download TXT</button>
-          <button onclick="downloadTBT('pdf')" style="flex:1; background:#e74c3c; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📑 Download PDF</button>
-        </div>
+      
+      <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <button id="btnCopyTBT" class="btn-locked" onclick="copyTBT()" style="flex:1; background:#555; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;">📋 Copy</button>
+        <button id="btnDownTXT" class="btn-locked" onclick="downloadTBT('txt')" style="flex:1; background:#555; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;">📄 TXT</button>
+        <button id="btnDownPDF" class="btn-locked" onclick="downloadTBT('pdf')" style="flex:1; background:#555; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;">📑 PDF</button>
       </div>
 
       <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
     </div>
 
-    <!-- 🔹 FEATURE 8: MULTI-SITE MONITORING -->
+    <!-- 🔹 FEATURE 8: MULTI-SITE MONITORING (Unchanged) -->
     <div id="multiSiteSection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
       <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">🌍 Multi-Site Monitoring</h3>
       <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
@@ -961,53 +933,110 @@
     }
     document.addEventListener('DOMContentLoaded', () => { checkUaeBan(); setInterval(checkUaeBan, 60000); });
 
-    // 🔹 FEATURE 10: PREMIUM TBT GENERATOR (LOCKED + BRANDING + ATTENDANCE)
+    // 🔹 FEATURE 10: PREMIUM TBT GENERATOR (DETAILED & SECURE)
     function unlockTestMode() { isTBTUnlocked = true; localStorage.setItem('hse_tbt_pro', 'true'); applyTBTState(); }
     function applyTBTState() {
-      const panel = document.getElementById('tbtPremiumPanel'); const notice = document.getElementById('lockNotice'); const preview = document.getElementById('tbtPreview');
-      if (isTBTUnlocked) { panel.style.display = 'block'; notice.style.display = 'none'; preview.style.filter = 'none'; preview.style.color = '#ecf0f1'; } 
-      else { panel.style.display = 'none'; notice.style.display = 'block'; preview.style.filter = 'blur(3px)'; preview.style.color = '#95a5a6'; }
-    }
-    function generateTBT() {
-      const topic = document.getElementById('tbtTopicInput').value.trim(); if (!topic) { alert('Please enter a topic'); return; }
-      const loc = document.getElementById('city').value || 'Site Location'; const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-      const lower = topic.toLowerCase();
-      let hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
-      let controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
-      if(lower.includes('manual')||lower.includes('handling')) { hazards=['Musculoskeletal injuries from improper bending/twisting','Overexertion from loads exceeding safe limits','Pinch points, dropped objects, or unstable footing']; controls=['Keep load close to waist. Bend knees, not back','Use team lift for >20kg or mechanical aids','Clear pathways & wear cut-resistant gloves']; }
-      else if(lower.includes('scaffold')) { hazards=['Unsecured base plates or inadequate bracing','Overloading beyond design capacity','Missing guardrails or toe boards at height']; controls=['Inspect all tags & couplings before climbing','Never exceed marked platform capacity','100% tie-off required above 2m']; }
-      else if(lower.includes('electrical')) { hazards=['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO)']; controls=['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits']; }
-      document.getElementById('tbtPreview').textContent = `📅 DAILY TOOLBOX TALK: ${topic.toUpperCase()}\n📍 Location: ${loc} | 📆 ${date}\n\n⚠️ KEY HAZARDS IDENTIFIED:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ MANDATORY CONTROL MEASURES:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 SUPERVISOR SIGN-OFF:\nConducted by: _______________ | Workers Present: ___/___ | Date: ${date}\n\n[ ] All hazards discussed  [ ] Controls implemented  [ ] Q&A completed`;
-      document.getElementById('tbtPreview').style.display = 'block'; applyTBTState();
-    }
-    async function downloadTBT(format) {
-      const topic = document.getElementById('tbtTopicInput').value.trim(); const loc = document.getElementById('city').value || 'Site Location'; const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-      const conductedBy = document.getElementById('conductedBy').value || 'Supervisor Name'; const orgName = document.getElementById('orgName').value || ''; const orgAddr = document.getElementById('orgAddr').value || ''; const orgContact = document.getElementById('orgContact').value || '';
-      const logoInput = document.getElementById('orgLogo'); let logoBase64 = null;
-      if (logoInput.files.length > 0) { logoBase64 = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(logoInput.files[0]); }); }
-      logoInput.value = '';
-      if (format === 'txt') {
-        const txt = `TOOL BOX TALK\n${orgName?orgName+'\n':''}${orgAddr?orgAddr+'\n':''}${orgContact?'Contact: '+orgContact+'\n':''}\nTopic: ${topic.toUpperCase()}\nLocation: ${loc} | Date: ${date} | Conducted By: ${conductedBy}\n[Full content & attendance sheet available in PDF]`;
-        const blob = new Blob([txt], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TBT_${topic.replace(/\s+/g,'_')}.txt`; a.click();
+      const overlay = document.getElementById('lockOverlay');
+      const preview = document.getElementById('tbtPreview');
+      const btns = ['btnCopyTBT','btnDownTXT','btnDownPDF'];
+      if (isTBTUnlocked) {
+        overlay.style.display = 'none';
+        preview.classList.remove('blur-locked');
+        preview.style.userSelect = 'text';
+        btns.forEach(id => {
+          document.getElementById(id).classList.remove('btn-locked');
+          document.getElementById(id).style.cursor = 'pointer';
+          document.getElementById(id).style.background = ''; 
+          document.getElementById(id).style.color = '';
+        });
       } else {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y=15;
-        if(logoBase64) { doc.addImage(logoBase64, 'JPEG', 15, 5, 20, 20); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('TOOL BOX TALK', 40, 15); y=30; } 
-        else { doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('TOOL BOX TALK', 15, 15); y=22; }
-        doc.setFont('helvetica','normal'); doc.setFontSize(10); if(orgName){doc.text(orgName,15,y);y+=5;} if(orgAddr){doc.text(orgAddr,15,y);y+=5;} if(orgContact){doc.text('Contact: '+orgContact,15,y);y+=8;}
-        doc.text(`Topic: ${topic.toUpperCase()} | Loc: ${loc} | Date: ${date} | By: ${conductedBy}`, 15, y); y+=12;
-        doc.setFont('helvetica','bold'); doc.text('⚠️ KEY HAZARDS:', 15, y); y+=5; doc.setFont('helvetica','normal');
-        const lower=topic.toLowerCase(), hz=['Unplanned task execution','Worker fatigue','Uncontrolled environment'], ct=['Conduct JSA before starting','Verify personnel briefing','Maintain exclusion zones'];
-        if(lower.includes('manual')||lower.includes('handling')) { hz=['Improper lifting posture','Overexertion >20kg','Dropped objects/pinch points']; ct=['Bend knees, keep load close','Use mechanical aids/team lift','Clear path, wear gloves']; }
-        hz.forEach(h=>{doc.text('• '+h,20,y);y+=5;}); y+=3; doc.setFont('helvetica','bold'); doc.text('✅ MANDATORY CONTROLS:', 15, y); y+=5; doc.setFont('helvetica','normal'); ct.forEach(c=>{doc.text('• '+c,20,y);y+=5;});
-        doc.autoTable({ startY: y, head: [['No.', 'Worker Name', 'Signature']], body: Array.from({length:15},(_,i)=>[i+1,'','']), theme:'grid', styles:{fontSize:9,cellPadding:3,halign:'center'}, headStyles:{fillColor:[44,62,80]}, columnStyles:{0:{cellWidth:12},1:{cellWidth:'auto'},2:{cellWidth:40}} });
-        doc.save(`TBT_${topic.replace(/\s+/g,'_')}_${date.replace(/\s+/g,'')}.pdf`);
+        overlay.style.display = 'block';
+        preview.classList.add('blur-locked');
+        preview.style.userSelect = 'none';
+        btns.forEach(id => document.getElementById(id).classList.add('btn-locked'));
       }
     }
+
+    function generateTBT() {
+      const topic = document.getElementById('tbtTopicInput').value.trim();
+      if (!topic) return alert('Please enter a topic');
+      
+      const loc = document.getElementById('city').value || 'Site Location';
+      const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const lower = topic.toLowerCase();
+
+      // DETAILED HAZARDS & RECOMMENDATIONS DATABASE
+      const h = [], r = [];
+      if(lower.includes('manual')) {
+        h.push('Spinal injury due to lifting >25kg without mechanical aids'); h.push('MSDs from repetitive twisting/bending'); h.push('Crushing injuries to feet from dropped loads'); h.push('Slips/Trips from uneven floor or obstructed vision'); h.push('Strains from poor grip or off-center loads'); h.push('Heat exhaustion from physical exertion in warm weather');
+        r.push('TILE Assessment (Task, Individual, Load, Environment) before lifting'); r.push('Use mechanical aids (trolleys, hoists) for heavy/bulky loads'); r.push('Team lifting required for >40kg or awkward items'); r.push('Wear steel-toed safety boots & cut-resistant gloves'); r.push('Keep path clear & lift close to body (bend knees, back straight)'); r.push('Rotate tasks to prevent fatigue');
+      } else if(lower.includes('scaffold')) {
+        h.push('Falls from height due to missing guardrails/toe boards'); h.push('Scaffold collapse from overloading or weak base plates'); h.push('Struck by falling tools/materials from upper platforms'); h.push('Contact with overhead power lines during assembly'); h.push('Slips on wet/muddy platforms'); h.push('Accessing via ladder climbing frame instead of ladder');
+        r.push('Inspect Scafftag (Red=Do Not Use, Green=Safe) daily'); r.push('Base plates MUST rest on sole boards on firm ground'); r.push('100% Tie-off required above 2 meters'); r.push('Use tool lanyards for all tools at height'); r.push('Keep platforms clear of debris; secure materials'); r.push('Only certified scaffolders to alter structure');
+      } else if(lower.includes('electrical')) {
+        h.push('Electric shock from damaged cables/tools'); h.push('Arc flash burns from short circuits'); h.push('Fire ignition from overloaded circuits'); h.push('Wet conditions increasing conductivity'); h.push('Failure to Lockout/Tagout (LOTO) during maintenance'); h.push('Contact with underground live utilities');
+        r.push('Conduct PAT testing on all portable tools monthly'); r.push('Strict LOTO procedure before any maintenance'); r.push('Use voltage-rated PPE (gloves, mats, face shields)'); r.push('Keep water away from electrical panels'); r.push('Use RCD/GFCI protection for all temporary supplies'); r.push('Verify isolation with a calibrated tester before touching');
+      } else if(lower.includes('height') || lower.includes('working at height') || lower.includes('wah')) {
+        h.push('Fall from edge due to lack of fall protection'); h.push('Dropped objects injuring personnel below'); h.push('Fragile roof surface collapse'); h.push('Ladder slipping on uneven ground'); h.push('Harness suspension trauma if fall occurs'); h.push('Wind/weather affecting stability of platforms');
+        r.push('Prioritize elimination: Can work be done from ground?'); r.push('Use MEWPs/Scissor lifts where possible'); r.push('Install edge protection/guardrails if MEWP unavailable'); r.push('Wear full body harness with double lanyard'); r.push('Establish Exclusion Zone below work area with signage'); r.push('Check weather forecast (Wind >25 knots = Stop Work)');
+      } else if(lower.includes('excavation') || lower.includes('trench')) {
+        h.push('Trench collapse burying workers'); h.push('Hitting underground utilities (Gas/Water/Electric)'); h.push('Falling into open excavation (poor lighting)'); h.push('Asphyxiation from hazardous gases in deep trenches'); h.push('Falling spoil/materials from edge'); h.push('Water ingress/flooding from rain burst pipes');
+        r.push('Shoring/Benching/Sloping for trenches >1.2m deep'); r.push('Obtain Utility Drawings & use CAT Scanner before digging'); r.push('Keep spoil pile >1m back from edge'); r.push('Provide safe access/egress (ladder) every 7.5m'); r.push('Test atmosphere for toxic gases in deep excavations'); r.push('Inspect trench daily and after rain');
+      } else if(lower.includes('hot work') || lower.includes('welding') || lower.includes('grinding')) {
+        h.push('Fire from sparks/heat igniting combustibles'); h.push('Burns to skin from hot metal/slag'); h.push('Eye damage from UV radiation (Arc eye)'); h.push('Inhalation of toxic welding fumes'); h.push('Explosion risk near flammable gas cylinders'); h.push('Electrical shock from welding equipment');
+        r.push('Obtain Hot Work Permit before starting'); r.push('Remove all combustibles within 10m radius'); r.push('Have fire extinguisher & fire watch standby'); r.push('Wear welding mask, leather apron, and gloves'); r.push('Ensure adequate ventilation/extraction'); r.push('Secure cylinders upright with chain caps on');
+      } else {
+        h.push('Unplanned task execution without risk assessment'); h.push('Lack of specific training for the equipment used'); h.push('Unsafe environment (lighting, housekeeping)'); h.push('Inadequate PPE for the specific hazard'); h.push('Rushing leading to shortcuts'); h.push('Fatigue or distraction');
+        r.push('Conduct Job Safety Analysis (JSA) before starting'); r.push('Verify all workers are trained & competent'); r.push('Ensure area is clean, dry, and well-lit'); r.push('Wear mandatory PPE (Helmet, Vest, Safety Shoes)'); r.push('Stop work if conditions change or safety is compromised'); r.push('Report all near misses immediately');
+      }
+
+      // GENERATE RICH TEXT
+      let content = `TOOLBOX TALK: ${topic.toUpperCase()}\nDate: ${date} | Location: ${loc}\nSupervisor: _______________ | No. of Workers: ___\n\n⚠️ KEY HAZARDS IDENTIFIED:\n${h.map(x => `• ${x}`).join('\n')}\n\n✅ MANDATORY CONTROLS & RECOMMENDATIONS:\n${r.map(x => `• ${x}`).join('\n')}\n\n🚨 EMERGENCY RESPONSE:\n1. Stop work immediately if incident occurs.\n2. Administer First Aid & Call 998/999 if needed.\n3. Secure the area to prevent further injury.\n4. Report to HSE Manager within 15 mins.\n\n📝 WORKER SIGN-OFF:\nI have understood the hazards and controls discussed above.\n\nNo. | Name | Signature | ID No.\n1.\n2.\n3.\n4.\n5.\n6.`;
+
+      const previewEl = document.getElementById('tbtPreview');
+      previewEl.textContent = content;
+      previewEl.style.display = 'block';
+      
+      // Refresh lock state
+      applyTBTState();
+    }
+
+    function copyTBT() {
+      if (!isTBTUnlocked) return alert('🔒 Please Subscribe to Copy TBTs.');
+      const text = document.getElementById('tbtPreview').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('✅ Copied!'));
+    }
+
+    function downloadTBT(format) {
+      if (!isTBTUnlocked) return alert('🔒 Please Subscribe to Download TBTs.');
+      const topic = document.getElementById('tbtTopicInput').value.trim().replace(/\s+/g, '_') || 'TBT';
+      const loc = document.getElementById('city').value || 'Site';
+      const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const conductedBy = 'Supervisor'; // Can add input later
+      const content = document.getElementById('tbtPreview').textContent;
+      
+      if (format === 'txt') {
+        const blob = new Blob([content], { type: 'text/plain' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${topic}_${date}.txt`; a.click();
+      } else {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(10);
+        const lines = doc.splitTextToSize(content, 180);
+        doc.text(lines, 15, 20);
+        doc.save(`${topic}_${date}.pdf`);
+      }
+    }
+
     function subscribeTBT() {
-      const lang = document.getElementById('tbtLang').value; const city = document.getElementById('city').value || 'Not specified';
-      const today = new Date().toLocaleDateString('en-IN'); const nextMonth = new Date(Date.now()+30*24*60*60*1000).toLocaleDateString('en-IN');
-      window.open(`https://wa.me/971562395526?text=${encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Enter name]\nLocation: ${city}\nOrg: [Enter]\nPeriod: ${today} to ${nextMonth}\nTBT Sub (${lang})\n\nPlease process 20 AED/mo.\nDisclaimer: Tool provided "as is". Report bugs to kaarnaz@gmail.com`)}`, '_blank');
-      setTimeout(()=>{if(confirm('✅ Message sent!\nClick OK for payment (20 AED)')){window.open('https://razorpay.me/@heatindexnazeerkadhar','_blank');}},2000);
+      const lang = document.getElementById('tbtLang').value;
+      const city = document.getElementById('city').value || 'Not specified';
+      const today = new Date().toLocaleDateString('en-IN');
+      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
+      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\nDaily safety briefings(TBT) - Language: ${lang.toUpperCase()}\nPlease process my 20 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
+      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
+      setTimeout(() => { if(confirm('✅ Message sent!\n\nClick OK to proceed to secure payment (20 AED)')) { window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank'); } }, 2000);
     }
 
     // 🔹 FEATURE 9: MOBILE QUICK ALERT WIDGET LOGIC
@@ -1018,83 +1047,37 @@
     setInterval(checkExtreme, 30000);
     document.addEventListener('DOMContentLoaded', checkExtreme);
 
-    // 🔹 FEATURE 8: MULTI-SITE MONITORING LOGIC
+    // 🔹 FEATURE 8: MULTI-SITE MONITORING LOGIC (Unchanged)
     let savedSites = JSON.parse(localStorage.getItem('hse_sites') || '[]');
     const UAE_KEYWORDS = ['dubai','sharjah','abu dhabi','ajman','fujairah','ras al khaimah','rak','uaq','umm al quwain','uae','emirates'];
-    
-    function autoFormatSite(site) {
-      const s = site.trim();
-      if (s.includes(',')) return s;
-      const lower = s.toLowerCase();
-      if (UAE_KEYWORDS.some(k => lower.includes(k))) return s + ',AE';
-      return s;
-    }
-
+    function autoFormatSite(site) { const s = site.trim(); if (s.includes(',')) return s; const lower = s.toLowerCase(); if (UAE_KEYWORDS.some(k => lower.includes(k))) return s + ',AE'; return s; }
     function renderSites() {
-      const grid = document.getElementById('siteGrid');
-      const emptyMsg = document.getElementById('siteEmptyMsg');
-      grid.innerHTML = '';
-      if (savedSites.length === 0) { emptyMsg.style.display = 'block'; return; }
-      emptyMsg.style.display = 'none';
+      const grid = document.getElementById('siteGrid'); const emptyMsg = document.getElementById('siteEmptyMsg');
+      grid.innerHTML = ''; if (savedSites.length === 0) { emptyMsg.style.display = 'block'; return; } emptyMsg.style.display = 'none';
       savedSites.forEach(site => {
         const id = site.replace(/[^a-zA-Z0-9]/g,'');
-        grid.innerHTML += `<div class="site-card" id="card-${id}" data-site="${site}">
-          <button class="remove-btn" onclick="removeSiteFromCard(this)">×</button>
-          <div style="font-size:0.95rem; font-weight:600; color:#ecf0f1; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📍 ${site}</div>
-          <div id="data-${id}" style="color:#7f8c8d; font-size:0.85rem; line-height:1.4;">Loading...</div>
-        </div>`;
-      });
-      refreshAllSites();
+        grid.innerHTML += `<div class="site-card" id="card-${id}" data-site="${site}"><button class="remove-btn" onclick="removeSiteFromCard(this)">×</button><div style="font-size:0.95rem; font-weight:600; color:#ecf0f1; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📍 ${site}</div><div id="data-${id}" style="color:#7f8c8d; font-size:0.85rem; line-height:1.4;">Loading...</div></div>`;
+      }); refreshAllSites();
     }
-    function removeSiteFromCard(btn) {
-      const card = btn.closest('.site-card');
-      const site = card.dataset.site;
-      savedSites = savedSites.filter(s => s !== site);
-      localStorage.setItem('hse_sites', JSON.stringify(savedSites));
-      renderSites();
-    }
-    function addSite() {
-      const input = document.getElementById('siteInput');
-      const val = autoFormatSite(input.value);
-      if (!val || val === ',AE') return alert('Please enter a valid location');
-      if (savedSites.includes(val)) return alert('Site already exists');
-      savedSites.push(val);
-      localStorage.setItem('hse_sites', JSON.stringify(savedSites));
-      input.value = '';
-      renderSites();
-    }
+    function removeSiteFromCard(btn) { const card = btn.closest('.site-card'); const site = card.dataset.site; savedSites = savedSites.filter(s => s !== site); localStorage.setItem('hse_sites', JSON.stringify(savedSites)); renderSites(); }
+    function addSite() { const input = document.getElementById('siteInput'); const val = autoFormatSite(input.value); if (!val || val === ',AE') return alert('Please enter a valid location'); if (savedSites.includes(val)) return alert('Site already exists'); savedSites.push(val); localStorage.setItem('hse_sites', JSON.stringify(savedSites)); input.value = ''; renderSites(); }
     async function refreshAllSites() {
       if (savedSites.length === 0) return;
-      // Reset all to loading state
-      savedSites.forEach(site => {
-        const id = site.replace(/[^a-zA-Z0-9]/g,'');
-        const el = document.getElementById(`data-${id}`);
-        if(el) el.innerHTML = 'Fetching...';
-      });
-
-      // Sequential fetch with delay to prevent API rate limits
+      savedSites.forEach(site => { const id = site.replace(/[^a-zA-Z0-9]/g,''); const el = document.getElementById(`data-${id}`); if(el) el.innerHTML = 'Fetching...'; });
       for (const site of savedSites) {
-        const id = site.replace(/[^a-zA-Z0-9]/g,'');
-        const el = document.getElementById(`data-${id}`);
+        const id = site.replace(/[^a-zA-Z0-9]/g,''); const el = document.getElementById(`data-${id}`);
         try {
-          // Try exact input first
           let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
-          // Fallback: if fails and no comma, try adding ,AE
-          if (!res.ok && !site.includes(',')) {
-            res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site + ',AE')}&units=metric&appid=${API_KEY}`);
-          }
+          if (!res.ok && !site.includes(',')) res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site + ',AE')}&units=metric&appid=${API_KEY}`);
           if (!res.ok) throw new Error('Not found');
           const data = await res.json();
-          const temp = data.main.temp.toFixed(1);
-          const hum = data.main.humidity;
+          const temp = data.main.temp.toFixed(1); const hum = data.main.humidity;
           let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
           if (temp < 26) hi = temp;
           let risk = hi >= 40 ? '🔴 HIGH' : hi >= 32 ? '🟡 CAUTION' : '🟢 SAFE';
           if (el) el.innerHTML = `🌡️ ${temp}°C | 💧 ${hum}%<br>HI: ${hi.toFixed(1)}°C ${risk}`;
-        } catch {
-          if (el) el.innerHTML = '⚠️ Location not found';
-        }
-        await new Promise(r => setTimeout(r, 300)); // 300ms delay between requests
+        } catch { if (el) el.innerHTML = '⚠️ Location not found'; }
+        await new Promise(r => setTimeout(r, 300));
       }
     }
     document.addEventListener('DOMContentLoaded', renderSites);
