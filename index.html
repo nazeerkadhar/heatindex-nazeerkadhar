@@ -385,14 +385,28 @@
       #uaeBanAlert button { font-size: 0.9rem; padding: 8px 16px; }
       #overridePin { width: 100% !important; margin-bottom: 8px; }
     }
-    /* 🔹 FEATURE 10: TBT RESPONSIVE & LOCK STYLES */
+    /* 🔹 FEATURE 10: TBT RESPONSIVE */
     @media (max-width: 480px) {
       #tbtTopicInput { font-size: 0.95rem; padding: 10px; }
       #tbtPreview { font-size: 0.8rem; padding: 12px; }
     }
-    .blur-locked { filter: blur(4px); user-select: none; pointer-events: none; opacity: 0.5; }
-    .lock-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #f1c40f; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 8px; font-weight: 700; z-index: 5; text-align: center; }
-    .btn-locked { opacity: 0.5; cursor: not-allowed; background: #555 !important; }
+    /* 🔹 FEATURE 9: QUICK ALERT WIDGET RESPONSIVE */
+    @media (max-width: 480px) {
+      #qaWidget { bottom: 15px; right: 15px; }
+      #qaBtn { width: 50px; height: 50px; font-size: 1.3rem; }
+      #qaMenu button { font-size: 0.9rem; padding: 8px 12px; }
+    }
+    @keyframes qaPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(230,126,34,0.4); }
+      50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(231,76,60,0.7); }
+    }
+    .qa-pulse { animation: qaPulse 1.5s infinite !important; background: linear-gradient(135deg, #e74c3c, #c0392b) !important; }
+    /* 🔹 FEATURE 8: MULTI-SITE RESPONSIVE */
+    .site-card { background:#1a252f; border-radius:8px; padding:12px; position:relative; border:1px solid #34495e; transition:transform 0.2s; }
+    .site-card:hover { transform: translateY(-2px); }
+    .site-card .remove-btn { position:absolute; top:8px; right:8px; background:#c0392b; color:#fff; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; justify-content:center; transition:opacity 0.2s; }
+    .site-card .remove-btn:hover { opacity: 0.8; }
+    @media (max-width: 480px) { #siteInput, #multiSiteSection button { font-size: 0.9rem; padding: 8px; } }
   </style>
 </head>
 <body>
@@ -641,32 +655,24 @@
       <button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button>
     </div>
 
-    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (SECURE & DETAILED) -->
+    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (DETAILED & SECURE) -->
     <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);" id="tbtSection">
       <h3>🗣️ Custom Toolbox Talk Generator</h3>
-      <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Professional, audit-ready PDF</p>
+      <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Professional, audit-ready TBT</p>
       
-      <input type="text" id="tbtTopicInput" placeholder="e.g., Manual Handling, Scaffolding, Electrical..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
-      
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-        <select id="tbtLang" style="padding:10px; border-radius:8px; border:none; background:#2c3e50; color:#fff; font-size:0.95rem;">
-          <option value="en">🇬 English</option>
-          <option value="ar">🇸🇦 العربية</option>
-          <option value="hi">🇮🇳 हिन्दी</option>
-        </select>
-        <button onclick="generateTBT()" style="background:#fff; color:#8e44ad; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">📝 Generate Preview</button>
-      </div>
-
-      <div style="position:relative;">
-        <div id="tbtPreview" class="blur-locked" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.8rem; color:#ecf0f1; line-height:1.5; text-align:left; max-height:250px; overflow-y:auto; margin-bottom:10px;"></div>
-        <div id="lockOverlay" class="lock-overlay" style="display:block;">🔒 Subscribe to Unlock Full Content</div>
-      </div>
+      <input type="text" id="tbtTopicInput" placeholder="e.g., Manual Handling, Scaffolding, Electrical, Working at Heights..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
       
       <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <button id="btnCopyTBT" class="btn-locked" onclick="copyTBT()" style="flex:1; background:#555; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;">📋 Copy</button>
-        <button id="btnDownTXT" class="btn-locked" onclick="downloadTBT('txt')" style="flex:1; background:#555; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;">📄 TXT</button>
-        <button id="btnDownPDF" class="btn-locked" onclick="downloadTBT('pdf')" style="flex:1; background:#555; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;">📑 PDF</button>
+        <button onclick="generateTBT()" style="flex:1; background:#fff; color:#8e44ad; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer;">📝 Generate Preview</button>
       </div>
+
+      <div id="tbtPreview" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.8rem; color:#ecf0f1; line-height:1.5; text-align:left; max-height:300px; overflow-y:auto; margin-bottom:15px; border-left: 3px solid #9b59b6;"></div>
+      
+      <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <button id="btnDownTXT" onclick="downloadTBT('txt')" style="flex:1; background:#555; color:#999; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;" disabled>📄 Download TXT</button>
+        <button id="btnDownPDF" onclick="downloadTBT('pdf')" style="flex:1; background:#555; color:#999; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:not-allowed;" disabled>📑 Download PDF</button>
+      </div>
+      <p id="tbtLockMsg" style="color:#f39c12; font-size:0.85rem; text-align:center; margin-top:-5px;">🔒 Subscribe to Enable Downloads</p>
 
       <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
     </div>
@@ -936,96 +942,62 @@
     // 🔹 FEATURE 10: PREMIUM TBT GENERATOR (DETAILED & SECURE)
     function unlockTestMode() { isTBTUnlocked = true; localStorage.setItem('hse_tbt_pro', 'true'); applyTBTState(); }
     function applyTBTState() {
-      const overlay = document.getElementById('lockOverlay');
-      const preview = document.getElementById('tbtPreview');
-      const btns = ['btnCopyTBT','btnDownTXT','btnDownPDF'];
+      const txtBtn = document.getElementById('btnDownTXT');
+      const pdfBtn = document.getElementById('btnDownPDF');
+      const lockMsg = document.getElementById('tbtLockMsg');
       if (isTBTUnlocked) {
-        overlay.style.display = 'none';
-        preview.classList.remove('blur-locked');
-        preview.style.userSelect = 'text';
-        btns.forEach(id => {
-          document.getElementById(id).classList.remove('btn-locked');
-          document.getElementById(id).style.cursor = 'pointer';
-          document.getElementById(id).style.background = ''; 
-          document.getElementById(id).style.color = '';
-        });
+        txtBtn.disabled = false; txtBtn.style.background = '#3498db'; txtBtn.style.color = '#fff'; txtBtn.style.cursor = 'pointer';
+        pdfBtn.disabled = false; pdfBtn.style.background = '#e74c3c'; pdfBtn.style.color = '#fff'; pdfBtn.style.cursor = 'pointer';
+        lockMsg.textContent = '✅ Downloads Enabled'; lockMsg.style.color = '#2ecc71';
       } else {
-        overlay.style.display = 'block';
-        preview.classList.add('blur-locked');
-        preview.style.userSelect = 'none';
-        btns.forEach(id => document.getElementById(id).classList.add('btn-locked'));
+        txtBtn.disabled = true; txtBtn.style.background = '#555'; txtBtn.style.color = '#999'; txtBtn.style.cursor = 'not-allowed';
+        pdfBtn.disabled = true; pdfBtn.style.background = '#555'; pdfBtn.style.color = '#999'; pdfBtn.style.cursor = 'not-allowed';
+        lockMsg.textContent = '🔒 Subscribe to Enable Downloads'; lockMsg.style.color = '#f39c12';
       }
     }
 
     function generateTBT() {
       const topic = document.getElementById('tbtTopicInput').value.trim();
       if (!topic) return alert('Please enter a topic');
-      
       const loc = document.getElementById('city').value || 'Site Location';
       const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
       const lower = topic.toLowerCase();
 
-      // DETAILED HAZARDS & RECOMMENDATIONS DATABASE
-      const h = [], r = [];
-      if(lower.includes('manual')) {
-        h.push('Spinal injury due to lifting >25kg without mechanical aids'); h.push('MSDs from repetitive twisting/bending'); h.push('Crushing injuries to feet from dropped loads'); h.push('Slips/Trips from uneven floor or obstructed vision'); h.push('Strains from poor grip or off-center loads'); h.push('Heat exhaustion from physical exertion in warm weather');
-        r.push('TILE Assessment (Task, Individual, Load, Environment) before lifting'); r.push('Use mechanical aids (trolleys, hoists) for heavy/bulky loads'); r.push('Team lifting required for >40kg or awkward items'); r.push('Wear steel-toed safety boots & cut-resistant gloves'); r.push('Keep path clear & lift close to body (bend knees, back straight)'); r.push('Rotate tasks to prevent fatigue');
+      let h = [], r = [], ppe = [];
+      if(lower.includes('manual') || lower.includes('lifting')) {
+        h = ['1. Spinal & muscular injuries from lifting >25kg without mechanical aids.', '2. MSDs (Musculoskeletal Disorders) from repetitive twisting, bending, or overreaching.', '3. Crushing injuries to hands/feet from dropped or shifting loads.', '4. Slips, trips & falls due to uneven flooring, wet surfaces, or obstructed vision.', '5. Strains from poor grip strength, unbalanced loads, or sudden jerking motions.', '6. Heat exhaustion & dehydration from sustained physical exertion in warm environments.', '7. Impact injuries from unsecured or poorly stacked materials.', '8. Inadequate team coordination during multi-person lifts.'];
+        r = ['1. Conduct TILE/TILEO assessment (Task, Individual, Load, Environment, Other factors) before any lift.', '2. Utilize mechanical aids (trolleys, pallet jacks, cranes, hoists) for all heavy/bulky items.', '3. Mandatory team lifting protocol for loads >40kg or awkwardly shaped objects.', '4. Maintain clear, dry, and well-lit pathways. Remove trip hazards immediately.', '5. Keep loads close to the waist. Lift with legs, keep back straight, avoid twisting.', '6. Implement job rotation to prevent fatigue. Mandate hydration breaks every 45 mins.', '7. Wear appropriate PPE: Steel-toed boots, impact gloves, and high-vis vest.', '8. Use standardized hand signals and clear verbal commands during team lifts.'];
+        ppe = ['• Safety Helmet\n• Steel-toed Boots (EN ISO 20345)\n• Impact/Cut-Resistant Gloves\n• High-Visibility Vest\n• Safety Glasses (if dust/debris present)'];
       } else if(lower.includes('scaffold')) {
-        h.push('Falls from height due to missing guardrails/toe boards'); h.push('Scaffold collapse from overloading or weak base plates'); h.push('Struck by falling tools/materials from upper platforms'); h.push('Contact with overhead power lines during assembly'); h.push('Slips on wet/muddy platforms'); h.push('Accessing via ladder climbing frame instead of ladder');
-        r.push('Inspect Scafftag (Red=Do Not Use, Green=Safe) daily'); r.push('Base plates MUST rest on sole boards on firm ground'); r.push('100% Tie-off required above 2 meters'); r.push('Use tool lanyards for all tools at height'); r.push('Keep platforms clear of debris; secure materials'); r.push('Only certified scaffolders to alter structure');
-      } else if(lower.includes('electrical')) {
-        h.push('Electric shock from damaged cables/tools'); h.push('Arc flash burns from short circuits'); h.push('Fire ignition from overloaded circuits'); h.push('Wet conditions increasing conductivity'); h.push('Failure to Lockout/Tagout (LOTO) during maintenance'); h.push('Contact with underground live utilities');
-        r.push('Conduct PAT testing on all portable tools monthly'); r.push('Strict LOTO procedure before any maintenance'); r.push('Use voltage-rated PPE (gloves, mats, face shields)'); r.push('Keep water away from electrical panels'); r.push('Use RCD/GFCI protection for all temporary supplies'); r.push('Verify isolation with a calibrated tester before touching');
-      } else if(lower.includes('height') || lower.includes('working at height') || lower.includes('wah')) {
-        h.push('Fall from edge due to lack of fall protection'); h.push('Dropped objects injuring personnel below'); h.push('Fragile roof surface collapse'); h.push('Ladder slipping on uneven ground'); h.push('Harness suspension trauma if fall occurs'); h.push('Wind/weather affecting stability of platforms');
-        r.push('Prioritize elimination: Can work be done from ground?'); r.push('Use MEWPs/Scissor lifts where possible'); r.push('Install edge protection/guardrails if MEWP unavailable'); r.push('Wear full body harness with double lanyard'); r.push('Establish Exclusion Zone below work area with signage'); r.push('Check weather forecast (Wind >25 knots = Stop Work)');
-      } else if(lower.includes('excavation') || lower.includes('trench')) {
-        h.push('Trench collapse burying workers'); h.push('Hitting underground utilities (Gas/Water/Electric)'); h.push('Falling into open excavation (poor lighting)'); h.push('Asphyxiation from hazardous gases in deep trenches'); h.push('Falling spoil/materials from edge'); h.push('Water ingress/flooding from rain burst pipes');
-        r.push('Shoring/Benching/Sloping for trenches >1.2m deep'); r.push('Obtain Utility Drawings & use CAT Scanner before digging'); r.push('Keep spoil pile >1m back from edge'); r.push('Provide safe access/egress (ladder) every 7.5m'); r.push('Test atmosphere for toxic gases in deep excavations'); r.push('Inspect trench daily and after rain');
-      } else if(lower.includes('hot work') || lower.includes('welding') || lower.includes('grinding')) {
-        h.push('Fire from sparks/heat igniting combustibles'); h.push('Burns to skin from hot metal/slag'); h.push('Eye damage from UV radiation (Arc eye)'); h.push('Inhalation of toxic welding fumes'); h.push('Explosion risk near flammable gas cylinders'); h.push('Electrical shock from welding equipment');
-        r.push('Obtain Hot Work Permit before starting'); r.push('Remove all combustibles within 10m radius'); r.push('Have fire extinguisher & fire watch standby'); r.push('Wear welding mask, leather apron, and gloves'); r.push('Ensure adequate ventilation/extraction'); r.push('Secure cylinders upright with chain caps on');
+        h = ['1. Falls from height due to missing guardrails, mid-rails, or toe boards.', '2. Scaffold collapse from overloading, inadequate bracing, or weak base plates.', '3. Struck-by injuries from falling tools, materials, or couplers.', '4. Electrocution from proximity to overhead power lines.', '5. Slips on muddy, wet, or icy access platforms.', '6. Improper access using cross-bracing instead of designated ladders/stair towers.', '7. Unstable ground conditions causing base plate settlement.', '8. Unauthorized alterations or removal of ties/components.'];
+        r = ['1. Verify Scafftag status (GREEN=Safe to Use, RED=Do Not Use/Under Construction).', '2. Base plates MUST rest on minimum 50mm thick sole boards on firm, level ground.', '3. 100% tie-off required with double lanyards above 1.8m/2m.', '4. Maintain minimum 4m clearance from energized power lines.', '5. Keep platforms clean, dry, and free of debris. Secure all materials.', '6. Only certified, trained scaffolders may erect, modify, or dismantle.', '7. Install toe boards (150mm min) and debris netting for falling object prevention.', '8. Conduct daily visual inspections before shift start and after extreme weather.'];
+        ppe = ['• Safety Helmet (Chin Strap)\n• Full Body Harness (Double Lanyard)\n• Anti-slip Safety Boots\n• Tool Lanyards\n• High-Vis Vest\n• Safety Glasses'];
       } else {
-        h.push('Unplanned task execution without risk assessment'); h.push('Lack of specific training for the equipment used'); h.push('Unsafe environment (lighting, housekeeping)'); h.push('Inadequate PPE for the specific hazard'); h.push('Rushing leading to shortcuts'); h.push('Fatigue or distraction');
-        r.push('Conduct Job Safety Analysis (JSA) before starting'); r.push('Verify all workers are trained & competent'); r.push('Ensure area is clean, dry, and well-lit'); r.push('Wear mandatory PPE (Helmet, Vest, Safety Shoes)'); r.push('Stop work if conditions change or safety is compromised'); r.push('Report all near misses immediately');
+        h = ['1. Unplanned task execution without proper Risk Assessment/Method Statement (RAMS).', '2. Lack of specific competency or training for equipment/tools being used.', '3. Inadequate housekeeping leading to slips, trips, and fire hazards.', '4. Insufficient or incorrect PPE for the identified task hazards.', '5. Working under time pressure leading to shortcuts and bypassed safety controls.', '6. Fatigue, distraction, or impaired judgment affecting situational awareness.', '7. Poor communication between crew members and site supervision.', '8. Uncontrolled environmental factors (extreme heat, wind, poor visibility).'];
+        r = ['1. Conduct a thorough JSA/RAMS review with all involved personnel before starting.', '2. Verify all workers hold valid certifications/training for specific tasks.', '3. Implement strict "Clean as you go" policy. Maintain clear emergency routes.', '4. Enforce mandatory PPE compliance. Inspect gear for damage before use.', '5. Empower STOP WORK authority to any worker identifying an unsafe condition.', '6. Mandate regular breaks. Rotate high-intensity tasks to prevent fatigue.', '7. Conduct a pre-task briefing. Agree on hand signals/radio channels if needed.', '8. Monitor weather/heat index. Adjust work schedules to avoid peak hazards.'];
+        ppe = ['• Safety Helmet\n• Safety Boots (Steel/Composite Toe)\n• High-Visibility Vest/Clothing\n• Impact/Cut Gloves\n• Safety Glasses/Goggles\n• Hearing Protection (if >85dB)'];
       }
 
-      // GENERATE RICH TEXT
-      let content = `TOOLBOX TALK: ${topic.toUpperCase()}\nDate: ${date} | Location: ${loc}\nSupervisor: _______________ | No. of Workers: ___\n\n⚠️ KEY HAZARDS IDENTIFIED:\n${h.map(x => `• ${x}`).join('\n')}\n\n✅ MANDATORY CONTROLS & RECOMMENDATIONS:\n${r.map(x => `• ${x}`).join('\n')}\n\n🚨 EMERGENCY RESPONSE:\n1. Stop work immediately if incident occurs.\n2. Administer First Aid & Call 998/999 if needed.\n3. Secure the area to prevent further injury.\n4. Report to HSE Manager within 15 mins.\n\n📝 WORKER SIGN-OFF:\nI have understood the hazards and controls discussed above.\n\nNo. | Name | Signature | ID No.\n1.\n2.\n3.\n4.\n5.\n6.`;
+      let content = `═══════════════════════════════════════════\n      DAILY TOOLBOX TALK (TBT) RECORD\n═══════════════════════════════════════════\n📋 TOPIC: ${topic.toUpperCase()}\n📍 LOCATION: ${loc}\n📅 DATE: ${date}\n👤 CONDUCTED BY: ____________________\n👥 NO. OF WORKERS: ______\n\n───────────────────────────────────────────\n⚠️  KEY HAZARDS IDENTIFIED:\n───────────────────────────────────────────\n${h.join('\n')}\n\n───────────────────────────────────────────\n✅ MANDATORY CONTROLS & RECOMMENDATIONS:\n───────────────────────────────────────────\n${r.join('\n')}\n\n───────────────────────────────────────────\n🦺 REQUIRED PPE:\n───────────────────────────────────────────\n${ppe.join('')}\n\n───────────────────────────────────────────\n🚨 EMERGENCY PROCEDURES:\n───────────────────────────────────────────\n1. STOP WORK immediately upon incident or near-miss.\n2. Secure the area. Evacuate personnel if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment/evidence.\n5. Report to HSE Manager within 15 minutes. Log in incident system.\n\n───────────────────────────────────────────\n📝 WORKER ACKNOWLEDGEMENT & SIGN-OFF:\n───────────────────────────────────────────\n"I confirm I have attended this TBT, understand the hazards,\nand agree to follow all control measures and site rules."\n\nNo. | Worker Name (Print) | Signature | ID/Passport No.\n1.  | ___________________ | _________ | ________________\n2.  | ___________________ | _________ | ________________\n3.  | ___________________ | _________ | ________________\n4.  | ___________________ | _________ | ________________\n5.  | ___________________ | _________ | ________________\n6.  | ___________________ | _________ | ________________\n7.  | ___________________ | _________ | ________________\n8.  | ___________________ | _________ | ________________\n\n═══════════════════════════════════════════\nGenerated by: HSE Heat Stress Alert System\nCreated by: Nazeer Kadhar, HSE Professional\n═══════════════════════════════════════════`;
 
       const previewEl = document.getElementById('tbtPreview');
       previewEl.textContent = content;
       previewEl.style.display = 'block';
-      
-      // Refresh lock state
       applyTBTState();
-    }
-
-    function copyTBT() {
-      if (!isTBTUnlocked) return alert('🔒 Please Subscribe to Copy TBTs.');
-      const text = document.getElementById('tbtPreview').textContent;
-      navigator.clipboard.writeText(text).then(() => alert('✅ Copied!'));
     }
 
     function downloadTBT(format) {
       if (!isTBTUnlocked) return alert('🔒 Please Subscribe to Download TBTs.');
       const topic = document.getElementById('tbtTopicInput').value.trim().replace(/\s+/g, '_') || 'TBT';
-      const loc = document.getElementById('city').value || 'Site';
-      const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-      const conductedBy = 'Supervisor'; // Can add input later
       const content = document.getElementById('tbtPreview').textContent;
-      
       if (format === 'txt') {
         const blob = new Blob([content], { type: 'text/plain' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${topic}_${date}.txt`; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${topic}_${Date.now()}.txt`; a.click();
       } else {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.setFont('courier', 'normal');
-        doc.setFontSize(10);
-        const lines = doc.splitTextToSize(content, 180);
-        doc.text(lines, 15, 20);
-        doc.save(`${topic}_${date}.pdf`);
+        const doc = new jsPDF(); doc.setFont('courier', 'normal'); doc.setFontSize(9);
+        const lines = doc.splitTextToSize(content, 180); doc.text(lines, 15, 20);
+        doc.save(`${topic}_${Date.now()}.pdf`);
       }
     }
 
