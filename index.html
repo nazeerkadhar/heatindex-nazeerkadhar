@@ -158,13 +158,28 @@
       <a href="tel:998" class="btn-action" style="display:block; text-align:center; text-decoration:none; background:#fff; color:#c0392b;">📞 Call 998/999</a>
     </div>
 
-    <!-- 7. TBT GENERATOR (UPDATED: EDITABLE BRANDING) -->
+    <!-- 7. WHATSAPP AUTOMATION (NEW) -->
+    <div class="section-box" id="whatsappSection">
+      <h3 class="section-title">💬 WhatsApp Alert Generator</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+        <input type="tel" id="waPhone" placeholder="Phone (e.g., 971501234567)" />
+        <select id="waType">
+          <option value="heat">🔥 Heat Stress Alert</option>
+          <option value="tbt">📋 TBT Summary</option>
+          <option value="schedule">⏱️ Work-Rest & Hydration</option>
+          <option value="emergency">🚨 Emergency Stop Work</option>
+        </select>
+      </div>
+      <input type="text" id="waNote" placeholder="Custom Note (Optional)" style="margin-bottom:10px;" />
+      <button onclick="sendWhatsApp()" class="btn-action" style="background:#25D366; color:#fff;">📲 Generate & Open WhatsApp</button>
+    </div>
+
+    <!-- 8. TBT GENERATOR -->
     <div class="tbt-box" id="tbtSection">
       <h3 class="section-title">🗣️ Custom Toolbox Talk Generator</h3>
       <p style="color:#ecf0f1; margin-bottom:15px; font-size:0.9rem;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding</p>
       
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; text-align:left;">
-        <!-- 🔹 EDITABLE FIELDS -->
         <input type="text" id="orgName" placeholder="Organization Name" />
         <input type="text" id="orgContact" placeholder="Contact Number" />
         <input type="text" id="tbtLocation" placeholder="Site Location (Auto-synced)" />
@@ -179,7 +194,7 @@
       <button onclick="downloadTBT()" class="btn-pdf">📑 Download A4 PDF</button>
     </div>
 
-    <!-- 8. MULTI-SITE -->
+    <!-- 9. MULTI-SITE -->
     <div class="section-box" id="multiSiteSection">
       <h3 class="section-title">🌍 Multi-Site Monitoring</h3>
       <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -190,7 +205,7 @@
       <div id="siteGrid" class="site-grid"></div>
     </div>
 
-    <!-- 9. HISTORY -->
+    <!-- 10. HISTORY -->
     <div class="section-box" id="historySection">
       <h3 class="section-title">📊 History & Reporting</h3>
       <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -211,6 +226,7 @@
     <button onclick="toggleQA()" style="background:#e67e22; color:#fff; border:none; width:50px; height:50px; border-radius:50%; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);">🚨</button>
     <div id="qaMenu" style="display:none; position:absolute; bottom:60px; right:0; background:#2c3e50; padding:10px; border-radius:10px; border:1px solid #34495e; min-width:150px;">
       <button onclick="qaScroll('hiCard')" style="display:block; width:100%; background:#e74c3c; color:#fff; border:none; padding:8px; margin:2px 0; border-radius:4px; cursor:pointer;">🔥 Heat Risk</button>
+      <button onclick="qaScroll('whatsappSection')" style="display:block; width:100%; background:#25D366; color:#fff; border:none; padding:8px; margin:2px 0; border-radius:4px; cursor:pointer;">💬 WhatsApp</button>
       <button onclick="qaScroll('tbtSection')" style="display:block; width:100%; background:#9b59b6; color:#fff; border:none; padding:8px; margin:2px 0; border-radius:4px; cursor:pointer;">🗣️ TBT</button>
     </div>
   </div>
@@ -316,6 +332,37 @@
       logActivity("Downloaded TBT PDF");
     }
 
+    // 🔹 WHATSAPP AUTOMATION LOGIC
+    function sendWhatsApp() {
+      const phone = document.getElementById('waPhone').value.replace(/\D/g,'');
+      if(!phone) return alert('Enter phone number with country code (e.g., 97150...)');
+      const type = document.getElementById('waType').value;
+      const note = document.getElementById('waNote').value;
+      const hi = document.getElementById('hiVal').textContent || '--';
+      const temp = document.getElementById('tempVal').textContent || '--';
+      const loc = document.getElementById('tbtLocation').value || document.getElementById('city').value || 'Site';
+      const tbtTopic = document.getElementById('tbtTopic').value || 'General';
+      const sup = document.getElementById('tbtSupervisor').value || 'Supervisor';
+
+      let msg = `*HSE ALERT SYSTEM*\n📍 Location: ${loc}\n⏰ ${new Date().toLocaleString()}\n\n`;
+      
+      if(type === 'heat') {
+        msg += `🔥 HEAT STRESS ALERT\n🌡️ Temp: ${temp}\n📈 Heat Index: ${hi}\n✅ Status: ${hi.includes('4') || hi.includes('5') ? 'HIGH RISK - Take frequent breaks' : 'CAUTION - Stay hydrated'}\n`;
+      } else if(type === 'tbt') {
+        msg += `📋 TBT CONDUCTED\n📖 Topic: ${tbtTopic}\n👷 Supervisor: ${sup}\n✅ All crew briefed & signed off.\n`;
+      } else if(type === 'schedule') {
+        msg += `⏱️ WORK-REST & HYDRATION\n📋 Follow posted schedule.\n💧 Drink 250ml every 20 mins.\n🛑 Stop if symptoms occur.\n`;
+      } else if(type === 'emergency') {
+        msg += `🚨 EMERGENCY NOTICE\n⚠️ STOP WORK IMMEDIATELY.\n📍 Location: ${loc}\n📞 Call 998/999 if needed.\n`;
+      }
+      
+      if(note) msg += `\n📝 Note: ${note}`;
+      msg += `\n\n_Sent via HSE Heat Stress Alert System_`;
+
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      logActivity(`WhatsApp ${type} alert sent to ${phone}`);
+    }
+
     // 🔹 HELPERS
     function generateWorkRest() {
        const hi = parseFloat(document.getElementById('hiVal').textContent);
@@ -396,7 +443,6 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.text('HSE ACTIVITY LOG', 15, 15);
-        // Simple fallback if autoTable not available
         doc.autoTable({ startY: 20, body: currentHistory.map(h => [h.date, h.action, h.details]) });
         doc.save('HSE_History.pdf');
       }
