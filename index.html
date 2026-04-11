@@ -9,7 +9,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%); color: #ecf0f1; min-height: 100vh; padding-bottom: 80px; }
     
-    /* ORIGINAL HEADER */
+    /* HEADER */
     .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 20px; border-bottom: 4px solid #e67e22; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; max-width: 950px; margin: 0 auto; padding: 0 10px; }
     .site-logo { height: 80px; width: auto; flex-shrink: 0; }
@@ -18,37 +18,72 @@
     .header-text .creator { color: #bdc3c7; font-size: 0.9rem; margin: 0; line-height: 1.4; }
     .header-text .creator strong { color: #e67e22; font-weight: 600; }
 
-    /* CONTAINER & INPUTS */
+    /* CONTAINER */
     .container { padding: 20px 15px; max-width: 850px; margin: 0 auto; }
+    
+    /* INPUT SECTION */
     .input-section { background: #2c3e50; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .input-section input { flex: 1; padding: 14px 18px; border: 2px solid #34495e; border-radius: 10px; background: #34495e; color: #fff; font-size: 1rem; outline: none; }
-    .btn-check { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(230,126,34,0.3); }
+    .input-section input:focus { border-color: #e67e22; }
+    .btn-check { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(230,126,34,0.3); transition: transform 0.2s; }
+    .btn-check:hover { transform: translateY(-2px); }
     
     /* CARDS */
-    .card { background: #2c3e50; border-radius: 12px; padding: 25px 20px; margin-bottom: 15px; text-align: center; border: 2px solid #34495e; display: none; }
+    .card { background: #2c3e50; border-radius: 12px; padding: 25px 20px; margin-bottom: 15px; text-align: center; border: 2px solid #34495e; display: none; transition: transform 0.2s; }
+    .card:hover { transform: translateY(-3px); }
     .card-label { font-size: 0.9rem; color: #95a5a6; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-weight: 600; }
     .card-value { font-size: 2.2rem; font-weight: 700; color: #fff; }
+    .card.heat-index { border-color: #e67e22; background: linear-gradient(135deg, #2c3e50 0%, #3d2817 100%); }
+    .card.wbgt { border-color: #9b59b6; }
 
-    /* TBT SECTION (ORIGINAL LAYOUT) */
-    .tbt-box { background: linear-gradient(135deg, #8e44ad, #9b59b6); border-radius: 12px; padding: 25px; margin-top: 20px; text-align: center; box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3); }
-    .tbt-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: left; }
-    .tbt-inputs input { padding: 10px; border-radius: 6px; border: none; background: #34495e; color: #fff; outline: none; }
-    .tbt-inputs input[readonly] { background: #222; color: #aaa; cursor: not-allowed; }
-    
-    #tbtPreview { display:none; background:#ffffff; color:#000000; padding:20px; border-radius:8px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; text-align: left; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #ccc; }
-    
-    .btn-tbt { width: 100%; background: #fff; color: #8e44ad; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 15px; font-size: 1rem; }
-    .btn-pdf { width: 100%; background: #e74c3c; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: 0.3s; }
-    .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4); }
+    /* ALERT */
+    .alert-box { background: linear-gradient(135deg, #2c1810 0%, #4a1c1c 100%); border: 3px solid #e74c3c; border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 20px; display: none; }
+    .alert-box.extreme { border-color: #e74c3c; }
+    .alert-box.caution { border-color: #f39c12; }
+    .alert-box.safe { border-color: #27ae60; }
+    .alert-icon { font-size: 3rem; margin-bottom: 12px; }
+    .alert-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 10px; }
+    .alert-box.extreme .alert-title { color: #e74c3c; }
+    .alert-box.caution .alert-title { color: #f39c12; }
+    .alert-box.safe .alert-title { color: #27ae60; }
+    .alert-msg { font-size: 1rem; color: #ecf0f1; line-height: 1.5; }
 
-    /* FOOTER & MOBILE */
+    /* SECTIONS */
+    .section-box { background: #2c3e50; border-radius: 12px; padding: 20px; margin-top: 20px; border: 2px solid #34495e; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .section-title { font-size: 1.2rem; color: #fff; margin: 0 0 15px 0; text-align: center; font-weight: 700; }
+    
+    /* FORM ELEMENTS */
+    input[type="text"], input[type="number"], input[type="tel"], input[type="password"], select {
+      width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #34495e; background: #34495e; color: #fff; font-size: 1rem; outline: none; margin-bottom: 10px;
+    }
+    input[readonly] { background: #222; color: #aaa; cursor: not-allowed; border: none; }
+    .btn-action { width: 100%; background: #2980b9; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+    .btn-action:hover { background: #3498db; }
+    
+    /* TBT SPECIFIC */
+    .tbt-box { background: linear-gradient(135deg, #8e44ad, #9b59b6); border-radius: 12px; padding: 25px; margin-top: 20px; text-align: center; }
+    .tbt-preview { background: #ffffff; color: #000000; padding: 20px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; text-align: left; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #ccc; }
+    .btn-tbt { width: 100%; background: #fff; color: #8e44ad; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; font-size: 1rem; }
+    .btn-pdf { width: 100%; background: #e74c3c; color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; }
+
+    /* HISTORY TABLE */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #fff; font-size: 0.85rem; }
+    th, td { border: 1px solid #34495e; padding: 8px; text-align: left; }
+    th { background: #34495e; }
+
+    /* MULTI-SITE GRID */
+    .site-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .site-card { background: #1a252f; padding: 10px; border-radius: 8px; position: relative; border: 1px solid #34495e; }
+    .remove-site { position: absolute; top: 5px; right: 5px; background: #c0392b; color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; }
+
+    /* FOOTER */
     .footer { text-align: center; padding: 30px 20px; color: #7f8c8d; font-size: 0.85rem; border-top: 1px solid #34495e; margin-top: 30px; }
+
+    /* MOBILE */
     @media (max-width: 768px) {
       .header-content { flex-direction: column; gap: 10px; }
-      .site-logo { height: 60px; }
       .input-section { flex-direction: column; }
       .btn-check { width: 100%; }
-      .tbt-inputs { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -66,70 +101,232 @@
   </div>
 
   <div class="container">
+    
+    <!-- 1. INPUT & HEAT CHECK -->
     <div class="input-section">
-      <input type="text" id="city" placeholder="Enter location (e.g., Abu Dhabi,AE)" />
+      <input type="text" id="city" placeholder="Enter location (e.g., Ras Al Khaimah,AE)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
     </div>
+    <div style="text-align:center; margin:-10px 0 20px 0;">
+      <button onclick="useMyLocation()" style="background:transparent; border:1px dashed #3498db; color:#3498db; padding:8px 16px; border-radius:20px; font-size:0.85rem; cursor:pointer;">📍 Use My Current Location</button>
+    </div>
 
-    <div class="card" id="hiCard"><div class="card-label">Heat Index</div><div class="card-value" id="hiVal">--</div></div>
-    <div class="card" id="tempCard"><div class="card-label">Temperature</div><div class="card-value" id="tempVal">--</div></div>
+    <div class="loading" id="loading" style="display:none; text-align:center; padding:20px;">⏳ Fetching data...</div>
 
-    <!-- TBT GENERATOR (ORIGINAL FORMAT, NO LOGIN) -->
+    <!-- 2. ALERTS & CARDS -->
+    <div class="alert-box" id="alertBox"><div class="alert-icon" id="alertIcon">🔴</div><div class="alert-title" id="alertTitle">EXTREME RISK</div><div class="alert-msg" id="alertMsg">Cease outdoor work.</div></div>
+    <div class="card" id="datetimeCard"><div class="card-label">📅 Date & Time</div><div class="card-value" id="datetimeVal" style="font-size:1.3rem;">--</div></div>
+    <div class="card" id="tempCard"><div class="card-label">Temperature</div><div class="card-value" id="tempVal">--°C</div></div>
+    <div class="card" id="humCard"><div class="card-label">Humidity</div><div class="card-value" id="humVal">--%</div></div>
+    <div class="card heat-index" id="hiCard"><div class="card-label">Heat Index</div><div class="card-value" id="hiVal">--°C</div></div>
+    <div class="card wbgt" id="wbgtCard"><div class="card-label">WBGT</div><div class="card-value" id="wbgtVal">--°C</div></div>
+
+    <!-- 3. FORECAST -->
+    <div class="section-box" id="forecastSection" style="display:none;">
+      <h3 class="section-title">📊 12-Hour Forecast</h3>
+      <div id="forecastGrid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;"></div>
+    </div>
+
+    <!-- 4. WORK-REST -->
+    <div class="section-box" id="workRestSection">
+      <h3 class="section-title">⏱️ Work-Rest Schedule</h3>
+      <select id="workType" style="margin-bottom:10px;"><option value="light">💡 Light</option><option value="moderate">🛠️ Moderate</option><option value="heavy">🔨 Heavy</option></select>
+      <button class="btn-action" onclick="generateWorkRest()">📋 Generate Schedule</button>
+      <div id="wrResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;">
+        <p style="font-size:1.2rem; color:#e67e22; font-weight:bold;" id="wrHeader"></p>
+        <p id="wrNote" style="color:#bdc3c7; margin-top:5px;"></p>
+      </div>
+    </div>
+
+    <!-- 5. HYDRATION -->
+    <div class="section-box" id="hydrationSection">
+      <h3 class="section-title">💧 Hydration Calculator</h3>
+      <input type="number" id="workerWeight" placeholder="Weight (kg)" min="40" max="150" />
+      <input type="text" id="autoHI" value="--°C" readonly />
+      <button class="btn-action" style="background:#27ae60;" onclick="calculateHydration()">💧 Calculate</button>
+      <div id="hydrationResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;">
+        <div style="font-size:1.2rem; font-weight:700; color:#3498db;" id="hydAmount"></div>
+      </div>
+    </div>
+
+    <!-- 6. EMERGENCY -->
+    <div class="section-box" id="emergencySection" style="border-color:#e74c3c; background:linear-gradient(135deg,#2c1810,#4a1c1c);">
+      <h3 class="section-title">🚨 Emergency Heat Response</h3>
+      <button class="btn-action" style="background:#e67e22;" onclick="toggleEmergency('exhaustion')">⚠️ Heat Exhaustion</button>
+      <div id="exhaustionContent" style="display:none; background:#1a252f; padding:10px; border-radius:6px; margin-bottom:10px; font-size:0.9rem;">• Heavy sweating • Cold, pale skin • Dizziness</div>
+      <button class="btn-action" style="background:#c0392b;" onclick="toggleEmergency('stroke')">🔴 Heat Stroke</button>
+      <div id="strokeContent" style="display:none; background:#1a252f; padding:10px; border-radius:6px; margin-bottom:10px; font-size:0.9rem;">• Hot, dry skin • No sweating • Confusion</div>
+      <a href="tel:998" class="btn-action" style="display:block; text-align:center; text-decoration:none; background:#fff; color:#c0392b;">📞 Call 998/999</a>
+    </div>
+
+    <!-- 7. TBT GENERATOR (UPDATED LOGIC) -->
     <div class="tbt-box" id="tbtSection">
-      <h3>🗣️ Custom Toolbox Talk Generator</h3>
-      <p style="font-size:0.9rem; margin-bottom:15px; color:#ecf0f1;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding, etc.</p>
+      <h3 class="section-title">🗣️ Custom Toolbox Talk Generator</h3>
+      <p style="color:#ecf0f1; margin-bottom:15px; font-size:0.9rem;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding</p>
       
-      <div class="tbt-inputs">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; text-align:left;">
         <input type="text" id="orgName" value="Nazeer Kadhar HSE Professional" readonly />
         <input type="text" id="orgContact" value="00971562395526" readonly />
         <input type="text" id="tbtLocation" placeholder="Site Location (Auto-synced)" />
         <input type="text" id="tbtSupervisor" placeholder="Supervisor Name" />
       </div>
 
-      <input type="text" id="tbtTopic" placeholder="Enter Topic (e.g., Wheel Loader, Heat Stress)..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; margin-bottom:10px; outline:none;">
+      <input type="text" id="tbtTopic" placeholder="Enter Topic (e.g., Wheel Loader, Heat Stress)..." style="font-size:1rem;" />
       <button onclick="generateTBT()" class="btn-tbt">📝 Generate Preview</button>
 
-      <div id="tbtPreview"></div>
+      <div id="tbtPreview" class="tbt-preview" style="display:none;"></div>
+      
       <button onclick="downloadTBT()" class="btn-pdf">📑 Download A4 PDF</button>
+    </div>
+
+    <!-- 8. MULTI-SITE -->
+    <div class="section-box" id="multiSiteSection">
+      <h3 class="section-title">🌍 Multi-Site Monitoring</h3>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <input type="text" id="siteInput" placeholder="Site (e.g., Dubai,AE)" style="flex:1; margin-bottom:0;" />
+        <button onclick="addSite()" style="background:#27ae60; color:#fff; border:none; padding:0 20px; border-radius:8px; cursor:pointer;">+ Add</button>
+        <button onclick="refreshAllSites()" style="background:#2980b9; color:#fff; border:none; padding:0 20px; border-radius:8px; cursor:pointer;">🔄</button>
+      </div>
+      <div id="siteGrid" class="site-grid"></div>
+    </div>
+
+    <!-- 9. HISTORY -->
+    <div class="section-box" id="historySection">
+      <h3 class="section-title">📊 History & Reporting</h3>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <button onclick="loadHistory()" style="flex:1; background:#27ae60; color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer;">🔍 Load Logs</button>
+        <button onclick="exportHistory('csv')" style="flex:1; background:#3498db; color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer;">📄 CSV</button>
+        <button onclick="exportHistory('pdf')" style="flex:1; background:#e67e22; color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer;">📑 PDF</button>
+      </div>
+      <div id="historyTableContainer" style="max-height:200px; overflow-y:auto;"></div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer"><p>© 2026 HSE Heat Stress Alert System</p><p style="margin-top:5px;">Created by <strong>Nazeer Kadhar</strong></p></div>
+
+  <!-- WIDGET -->
+  <div id="qaWidget" style="position:fixed; bottom:20px; right:20px; z-index:9999;">
+    <button onclick="toggleQA()" style="background:#e67e22; color:#fff; border:none; width:50px; height:50px; border-radius:50%; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3);">🚨</button>
+    <div id="qaMenu" style="display:none; position:absolute; bottom:60px; right:0; background:#2c3e50; padding:10px; border-radius:10px; border:1px solid #34495e; min-width:150px;">
+      <button onclick="qaScroll('hiCard')" style="display:block; width:100%; background:#e74c3c; color:#fff; border:none; padding:8px; margin:2px 0; border-radius:4px; cursor:pointer;">🔥 Heat Risk</button>
+      <button onclick="qaScroll('tbtSection')" style="display:block; width:100%; background:#9b59b6; color:#fff; border:none; padding:8px; margin:2px 0; border-radius:4px; cursor:pointer;">🗣️ TBT</button>
     </div>
   </div>
 
-  <div class="footer"><p>© 2026 HSE Heat Stress Alert System</p><p style="margin-top:5px;">Created by <strong>Nazeer Kadhar</strong></p></div>
-
   <script>
+    // 🔹 GLOBAL STATE
+    const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
+    let currentHistory = [];
+
     // 🔹 HEAT CHECK & AUTO-SYNC
-    function checkHeat() {
+    async function checkHeat() {
       const city = document.getElementById('city').value.trim();
-      if (!city) return alert('Please enter a location.');
+      if (!city) return alert('Please enter location.');
       
-      // Auto-sync to TBT location field
-      document.getElementById('tbtLocation').value = city;
-      
-      // Simulate response (replace with your real API if needed)
-      document.getElementById('hiCard').style.display = 'block';
-      document.getElementById('tempCard').style.display = 'block';
-      document.getElementById('hiVal').textContent = '42°C';
-      document.getElementById('tempVal').textContent = '38°C';
-      alert(`✅ Heat Index updated for ${city}. Location synced to TBT generator.`);
+      document.getElementById('loading').style.display = 'block';
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
+        const data = await res.json();
+        if(data.cod !== 200) throw new Error('Location not found');
+        
+        // Update Cards
+        const temp = data.main.temp;
+        const hum = data.main.humidity;
+        let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+        if(temp < 26) hi = temp;
+        
+        document.getElementById('tempVal').textContent = temp.toFixed(1) + '°C';
+        document.getElementById('humVal').textContent = hum + '%';
+        document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
+        document.getElementById('wbgtVal').textContent = (0.667 * temp + 0.333 * (temp - 0.4 * (100 - hum) / 100)).toFixed(1) + '°C';
+        document.getElementById('autoHI').value = hi.toFixed(1) + '°C';
+        
+        ['datetimeCard','tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id => document.getElementById(id).style.display = 'block');
+        
+        // Sync TBT Location
+        document.getElementById('tbtLocation').value = city;
+
+        logActivity(`Checked Heat: ${city}`, `HI: ${hi.toFixed(1)}`);
+      } catch(e) { alert(e.message); } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    // 🔹 SPECIFIC TOPIC DATABASE (FIXED FALLBACK)
+    // 🔹 SPECIFIC TOPIC DATABASE (FIXED)
     function getTopicData(topic) {
       const lower = topic.toLowerCase();
       let hazards = [], controls = [];
 
+      // 1. HEAT STRESS SPECIFIC
       if (lower.includes('heat') || lower.includes('hot') || lower.includes('summer') || lower.includes('sun')) {
-        hazards = ["1. Heat Stroke (High body temp, confusion, dry skin).","2. Heat Exhaustion (Heavy sweating, cold skin, dizziness).","3. Severe Dehydration & Muscle Cramps.","4. Sunburn & Long-term Skin Damage.","5. Slips/Trips from sweat on slippery surfaces.","6. Reduced Focus leading to accidents.","7. Fogged safety glasses due to humidity.","8. Chemical burns from hot surfaces."];
-        controls = ["1. Drink 250ml water every 20 mins (1L/hour).","2. Rest in shaded/AC areas every 45-60 mins.","3. Wear breathable, light-colored clothing.","4. Monitor Heat Index (WBGT) continuously.","5. Use Buddy System to watch for symptoms.","6. Reschedule heavy work for early morning/night.","7. Wear wide-brim hard hats & UV sunglasses.","8. Keep emergency ice packs in First Aid kit."];
+        hazards = [
+          "1. Heat Stroke (High body temp, confusion, dry skin).",
+          "2. Heat Exhaustion (Heavy sweating, cold skin, dizziness).",
+          "3. Severe Dehydration & Muscle Cramps.",
+          "4. Sunburn & Long-term Skin Damage.",
+          "5. Slips/Trips from sweat on slippery surfaces.",
+          "6. Reduced Focus leading to accidents.",
+          "7. Fogged safety glasses due to humidity.",
+          "8. Chemical burns from hot surfaces."
+        ];
+        controls = [
+          "1. Drink 250ml water every 20 mins (1L/hour).",
+          "2. Rest in shaded/AC areas every 45-60 mins.",
+          "3. Wear breathable, light-colored clothing.",
+          "4. Monitor Heat Index (WBGT) continuously.",
+          "5. Use Buddy System to watch for symptoms.",
+          "6. Reschedule heavy work for early morning/night.",
+          "7. Wear wide-brim hard hats & UV sunglasses.",
+          "8. Keep emergency ice packs in First Aid kit."
+        ];
       } 
-      else if (lower.includes('wheel') || lower.includes('loader') || lower.includes('jcb') || lower.includes('cat') || lower.includes('excavator') || lower.includes('bulldozer')) {
-        hazards = ["1. Blind spots hitting pedestrians or vehicles.","2. Tip-over on uneven, soft, or sloped ground.","3. Hydraulic hose burst (High-pressure fluid injection).","4. Struck-by falling bucket loads or attachments.","5. Noise & Vibration fatigue for operator.","6. Pinch points between bucket and frame.","7. Fire from fuel leaks near hot engine parts.","8. Carbon Monoxide poisoning in enclosed spaces."];
-        controls = ["1. ALWAYS use Banksman/Spotter when reversing.","2. Keep bucket low while traveling; never carry over people.","3. Inspect hydraulic lines daily for wear/leaks.","4. Wear seatbelt; ensure ROPS/FOPS protection is intact.","5. Maintain 3m exclusion zone around equipment.","6. Park on level ground, lower bucket, engage brake.","7. Keep fire extinguisher accessible on board.","8. Check engine alarms and backup beepers daily."];
+      // 2. WHEEL LOADER SPECIFIC
+      else if (lower.includes('wheel') || lower.includes('loader') || lower.includes('jcb') || lower.includes('cat') || lower.includes('excavator')) {
+        hazards = [
+          "1. Blind spots hitting pedestrians or vehicles.",
+          "2. Tip-over on uneven, soft, or sloped ground.",
+          "3. Hydraulic hose burst (High-pressure fluid injection).",
+          "4. Struck-by falling bucket loads or attachments.",
+          "5. Noise & Vibration fatigue for operator.",
+          "6. Pinch points between bucket and frame.",
+          "7. Fire from fuel leaks near hot engine parts.",
+          "8. Carbon Monoxide poisoning in enclosed spaces."
+        ];
+        controls = [
+          "1. ALWAYS use Banksman/Spotter when reversing.",
+          "2. Keep bucket low while traveling; never carry over people.",
+          "3. Inspect hydraulic lines daily for wear/leaks.",
+          "4. Wear seatbelt; ensure ROPS/FOPS protection is intact.",
+          "5. Maintain 3m exclusion zone around equipment.",
+          "6. Park on level ground, lower bucket, engage brake.",
+          "7. Keep fire extinguisher accessible on board.",
+          "8. Check engine alarms and backup beepers daily."
+        ];
       }
-      else if (lower.includes('scaffold') || lower.includes('scaffolding') || lower.includes('height') || lower.includes('wah')) {
-        hazards = ["1. Fall from height (>2m) due to missing guardrails.","2. Platform collapse from overloading.","3. Struck-by falling tools/materials.","4. Electrocution from proximity to power lines.","5. Slips on wet/muddy platforms.","6. Unstable ground settlement.","7. Improper access via cross-bracing.","8. Unauthorized structural alterations."];
-        controls = ["1. Check Green Scafftag before every use.","2. 100% tie-off with harness above 2m.","3. Secure all tools with lanyards.","4. Inspect base plates & sole boards daily.","5. Install toe boards & debris netting.","6. Only certified scaffolders to modify.","7. Maintain 4m clearance from power lines.","8. Clear debris immediately (Clean as you go)."];
+      // 3. SCAFFOLDING SPECIFIC
+      else if (lower.includes('scaffold') || lower.includes('height') || lower.includes('wah')) {
+        hazards = [
+          "1. Fall from height (>2m) due to missing guardrails.",
+          "2. Platform collapse from overloading.",
+          "3. Struck-by falling tools/materials.",
+          "4. Electrocution from proximity to power lines.",
+          "5. Slips on wet/muddy platforms.",
+          "6. Unstable ground settlement.",
+          "7. Improper access via cross-bracing.",
+          "8. Unauthorized structural alterations."
+        ];
+        controls = [
+          "1. Check Green Scafftag before every use.",
+          "2. 100% tie-off with harness above 2m.",
+          "3. Secure all tools with lanyards.",
+          "4. Inspect base plates & sole boards daily.",
+          "5. Install toe boards & debris netting.",
+          "6. Only certified scaffolders to modify.",
+          "7. Maintain 4m clearance from power lines.",
+          "8. Clear debris immediately (Clean as you go)."
+        ];
       }
+      // 4. GENERIC FALLBACK
       else {
         hazards = ["1. Unplanned execution without Risk Assessment.","2. Lack of competency for specific equipment.","3. Poor housekeeping (slips/trips/fire hazards).","4. Incorrect or insufficient PPE.","5. Rushing leading to safety shortcuts.","6. Fatigue or distraction impairing judgment.","7. Poor crew communication.","8. Uncontrolled environmental factors."];
         controls = ["1. Conduct JSA before starting.","2. Verify worker certifications.","3. Strict 'Clean as you go' policy.","4. Enforce PPE compliance. Inspect gear.","5. Empower STOP WORK authority.","6. Mandate breaks & task rotation.","7. Conduct pre-task briefings.","8. Monitor weather/heat index."];
@@ -137,10 +334,10 @@
       return { hazards, controls };
     }
 
-    // 🔹 GENERATE PREVIEW
+    // 🔹 GENERATE TBT PREVIEW
     function generateTBT() {
-      const topicInput = document.getElementById('tbtTopic').value.trim();
-      if (!topicInput) return alert('Please enter a topic.');
+      const topic = document.getElementById('tbtTopic').value.trim();
+      if (!topic) return alert('Enter a topic.');
 
       const org = document.getElementById('orgName').value;
       const contact = document.getElementById('orgContact').value;
@@ -148,16 +345,35 @@
       const sup = document.getElementById('tbtSupervisor').value || '_____________';
       const date = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
 
-      const data = getTopicData(topicInput);
-      let content = `${org}\nContact: ${contact}\nTOOLBOX TALK RECORD\nTopic: ${topicInput.toUpperCase()}\nDate: ${date} | Location: ${loc}\nSupervisor: ${sup} | Workers: ______\n\nHAZARDS IDENTIFIED:\n${data.hazards.map((h,i)=>`${i+1}. ${h}`).join('\n')}\n\nCONTROL MEASURES & RECOMMENDATIONS:\n${data.controls.map((c,i)=>`${i+1}. ${c}`).join('\n')}\n\nREQUIRED PPE:\n• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses\n\nEMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.\n\nWORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
+      const data = getTopicData(topic);
+
+      // BUILDING CLEAN TEXT
+      let content = `${org}\nContact: ${contact}\n`;
+      content += `TOOLBOX TALK RECORD\n`;
+      content += `Topic: ${topic.toUpperCase()}\n`;
+      content += `Date: ${date} | Location: ${loc}\n`;
+      content += `Supervisor: ${sup} | Workers: ______\n\n`;
       
-      for(let i=1; i<=15; i++) content += `${i}. | ______________ | _________ | ______________\n`;
+      content += `HAZARDS IDENTIFIED:\n`;
+      data.hazards.forEach(h => content += `• ${h}\n`);
+      content += `\nCONTROL MEASURES & RECOMMENDATIONS:\n`;
+      data.controls.forEach(c => content += `• ${c}\n`);
+      
+      content += `\nREQUIRED PPE:\n• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses`;
+      
+      content += `\n\nEMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.`;
+      
+      content += `\n\nWORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
+      
+      // 15 LINES FIX
+      for(let i=1; i<=15; i++) content += `${i}.  | ______________ | _________ | ______________\n`;
 
       document.getElementById('tbtPreview').textContent = content;
       document.getElementById('tbtPreview').style.display = 'block';
+      logActivity(`Generated TBT: ${topic}`);
     }
 
-    // 🔹 DOWNLOAD PDF (EXACT ORIGINAL FORMAT)
+    // 🔹 DOWNLOAD PDF (STRICTLY CLEAN TEXT)
     function downloadTBT() {
       const content = document.getElementById('tbtPreview').textContent;
       if (!content) return alert('Generate preview first.');
@@ -167,13 +383,117 @@
       const doc = new jsPDF(); 
       
       doc.setFont('Courier', 'normal');
-      doc.setFontSize(11);
+      doc.setFontSize(10);
       
       const lines = doc.splitTextToSize(content, 180); 
       doc.text(lines, 12, 15);
       
       doc.save(`${topic}_${Date.now()}.pdf`);
+      logActivity("Downloaded TBT PDF");
     }
+
+    // 🔹 HELPERS
+    function generateWorkRest() {
+       const hi = parseFloat(document.getElementById('hiVal').textContent);
+       if(!hi) return alert('Check heat stress first.');
+       const type = document.getElementById('workType').value;
+       let w, r;
+       if(hi >= 45) { w=15; r=45; } else if(hi >= 35) { w=30; r=30; } else { w=50; r=10; }
+       document.getElementById('wrHeader').textContent = `Work ${w} mins | Rest ${r} mins`;
+       document.getElementById('wrNote').textContent = `Heat Index: ${hi}°C | Type: ${type}`;
+       document.getElementById('wrResult').style.display = 'block';
+       logActivity("Generated Work-Rest");
+    }
+
+    function calculateHydration() {
+      const w = parseFloat(document.getElementById('workerWeight').value);
+      if(!w) return alert('Enter weight');
+      document.getElementById('hydAmount').textContent = `💧 ${(w * 0.035).toFixed(1)} Liters / Hour`;
+      document.getElementById('hydrationResult').style.display = 'block';
+    }
+
+    function toggleEmergency(t) {
+      const el = document.getElementById(t+'Content');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function useMyLocation() {
+      if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&units=metric&appid=${API_KEY}`)
+        .then(r => r.json()).then(d => {
+           document.getElementById('city').value = d.name + ',' + d.sys.country;
+           checkHeat();
+        });
+      });
+    }
+
+    // 🔹 MULTI-SITE
+    let sites = JSON.parse(localStorage.getItem('hse_sites') || '[]');
+    function addSite() {
+      const s = document.getElementById('siteInput').value.trim();
+      if(s && !sites.includes(s)) { sites.push(s); localStorage.setItem('hse_sites', JSON.stringify(sites)); renderSites(); }
+    }
+    function removeSite(s) { sites = sites.filter(x => x!==s); localStorage.setItem('hse_sites', JSON.stringify(sites)); renderSites(); }
+    function renderSites() {
+      const grid = document.getElementById('siteGrid');
+      grid.innerHTML = sites.map(s => `<div class="site-card">${s}<button class="remove-site" onclick="removeSite('${s}')">×</button><div id="site-data-${s.replace(/[^a-zA-Z0-9]/g,'')}" style="margin-top:5px; font-size:0.8rem; color:#95a5a6;">Loading...</div></div>`).join('');
+      refreshAllSites();
+    }
+    async function refreshAllSites() {
+      sites.forEach(async site => {
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
+          const d = await res.json();
+          if(d.cod===200) {
+            const id = 'site-data-'+site.replace(/[^a-zA-Z0-9]/g,'');
+            document.getElementById(id).innerHTML = `🌡️ ${d.main.temp.toFixed(1)}°C | 💧 ${d.main.humidity}%`;
+          }
+        } catch(e) {}
+      });
+    }
+
+    // 🔹 HISTORY LOGGING
+    function logActivity(action, details='') {
+      const entry = { date: new Date().toLocaleString(), action, details };
+      currentHistory.unshift(entry);
+      if(currentHistory.length > 50) currentHistory.pop();
+    }
+
+    function loadHistory() {
+      const container = document.getElementById('historyTableContainer');
+      if(currentHistory.length === 0) { container.innerHTML = '<p style="text-align:center; color:#7f8c8d;">No history found.</p>'; return; }
+      container.innerHTML = `<table><tr><th>Date</th><th>Action</th><th>Details</th></tr>` + 
+        currentHistory.map(h => `<tr><td>${h.date}</td><td>${h.action}</td><td>${h.details}</td></tr>`).join('') + `</table>`;
+    }
+
+    function exportHistory(type) {
+      if(currentHistory.length === 0) return alert('Load history first.');
+      if(type === 'csv') {
+        let csv = 'Date,Action,Details\n' + currentHistory.map(h => `"${h.date}","${h.action}","${h.details}"`).join('\n');
+        const blob = new Blob([csv], {type: 'text/csv'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'HSE_History.csv'; a.click();
+      } else {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text('HSE ACTIVITY LOG', 15, 15);
+        doc.autoTable({ startY: 20, body: currentHistory.map(h => [h.date, h.action, h.details]) });
+        doc.save('HSE_History.pdf');
+      }
+    }
+
+    // 🔹 WIDGET
+    function toggleQA() {
+      const m = document.getElementById('qaMenu');
+      m.style.display = m.style.display === 'block' ? 'none' : 'block';
+    }
+    function qaScroll(id) {
+      toggleQA();
+      document.getElementById(id).scrollIntoView({behavior:'smooth'});
+    }
+
+    // Init
+    renderSites();
+    if(localStorage.getItem('hse_history')) currentHistory = JSON.parse(localStorage.getItem('hse_history'));
   </script>
 </body>
 </html>
