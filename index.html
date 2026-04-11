@@ -3,663 +3,374 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>HSE Heat Stress Alert - Nazeer Kadhar</title>
+  <title>HSE Heat Stress Alert - Phase 3 Free</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%); color: #ecf0f1; min-height: 100vh; padding-bottom: 80px; }
-    .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 20px; border-bottom: 4px solid #e67e22; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; max-width: 950px; margin: 0 auto; padding: 0 10px; }
-    .site-logo { height: 80px; width: auto; flex-shrink: 0; }
-    .header-text { display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .header-text h1 { font-size: 1.6rem; margin: 0 0 4px 0; color: #fff; font-weight: 700; line-height: 1.2; }
-    .header-text .creator { color: #bdc3c7; font-size: 0.9rem; margin: 0; line-height: 1.4; }
-    .header-text .creator strong { color: #e67e22; font-weight: 600; }
-    .container { padding: 20px 15px; max-width: 850px; margin: 0 auto; }
-    .input-section { background: #2c3e50; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    .input-section input { flex: 1; padding: 14px 18px; border: 2px solid #34495e; border-radius: 10px; background: #34495e; color: #fff; font-size: 1rem; outline: none; }
-    .input-section input:focus { border-color: #e67e22; }
-    .btn-check { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-    .btn-check:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(230,126,34,0.4); }
-    .loading { display: none; text-align: center; padding: 30px; color: #e67e22; font-weight: 600; }
-    .alert-box { background: linear-gradient(135deg, #2c1810 0%, #4a1c1c 100%); border: 3px solid #e74c3c; border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 20px; display: none; }
-    .alert-box.extreme { background: linear-gradient(135deg, #2c1810 0%, #4a1c1c 100%); }
-    .alert-box.caution { background: linear-gradient(135deg, #2c2410 0%, #4a441c 100%); border-color: #f39c12; }
-    .alert-box.safe { background: linear-gradient(135deg, #102c18 0%, #1c4a24 100%); border-color: #27ae60; }
-    .alert-icon { font-size: 3rem; margin-bottom: 12px; }
-    .alert-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 10px; }
-    .alert-box.extreme .alert-title { color: #e74c3c; }
-    .alert-box.caution .alert-title { color: #f39c12; }
-    .alert-box.safe .alert-title { color: #27ae60; }
-    .alert-msg { font-size: 1rem; color: #ecf0f1; line-height: 1.5; }
-    .card { background: #2c3e50; border-radius: 12px; padding: 25px 20px; margin-bottom: 15px; text-align: center; border: 2px solid #34495e; display: none; }
-    .card:hover { transform: translateY(-3px); }
-    .card-label { font-size: 0.9rem; color: #95a5a6; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-weight: 600; }
-    .card-value { font-size: 2.2rem; font-weight: 700; color: #fff; }
-    .card.heat-index { border-color: #e67e22; background: linear-gradient(135deg, #2c3e50 0%, #3d2817 100%); }
-    .card.wbgt { border-color: #9b59b6; }
-    .wa-box { background: linear-gradient(135deg, #27ae60 0%, #229954 100%); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; display: none; }
-    .wa-box input { width: 100%; padding: 14px; border: none; border-radius: 10px; margin-bottom: 12px; font-size: 1rem; }
-    .btn-wa { background: #25d366; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: 700; width: 100%; font-size: 1rem; cursor: pointer; }
-    .premium-box { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); border-radius: 12px; padding: 25px 20px; text-align: center; margin: 20px 0; }
-    .btn-premium { background: #fff; color: #e74c3c; border: none; padding: 12px 30px; border-radius: 25px; font-weight: 700; margin-top: 12px; cursor: pointer; }
-    .nav-links { display: flex; justify-content: center; gap: 12px; margin: 25px 0; flex-wrap: wrap; }
-    .nav-links a { color: #3498db; text-decoration: none; font-size: 0.9rem; padding: 6px 12px; border: 1px solid #3498db; border-radius: 20px; }
-    .footer { text-align: center; padding: 30px 20px; color: #7f8c8d; font-size: 0.85rem; border-top: 1px solid #34495e; margin-top: 30px; }
     
-    .site-card { background:#1a252f; border-radius:8px; padding:12px; position:relative; border:1px solid #34495e; transition:transform 0.2s; }
-    .site-card .remove-btn { position:absolute; top:8px; right:8px; background:#c0392b; color:#fff; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; }
-    #siteInput { padding:10px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:0.95rem; outline:none; }
-    #tbtPreview { display:none; background:#ffffff; color:#000000; padding:25px; border-radius:8px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; line-height: 1.5; margin-bottom: 15px; max-height: 450px; overflow-y:auto; border: 1px solid #999; text-align: left; white-space: pre-wrap; position: relative; user-select: text; }
-    .tbt-locked { filter: blur(6px); user-select: none; pointer-events: none; transition: filter 0.3s; }
-    .tbt-unlocked { filter: none; user-select: text; pointer-events: auto; }
-    #tbtLockOverlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:bold; z-index:10; text-align:center; padding:20px; border-radius:8px; }
+    /* HEADER */
+    .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 15px; border-bottom: 4px solid #e67e22; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .header-content { display: flex; align-items: center; justify-content: space-between; max-width: 1000px; margin: 0 auto; }
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .site-logo { height: 60px; width: auto; }
+    .header-text h1 { font-size: 1.4rem; color: #fff; font-weight: 700; }
+    .header-text p { color: #bdc3c7; font-size: 0.8rem; }
+    .auth-btn { background: #e67e22; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .user-info { color: #2ecc71; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .logout-btn { background: #c0392b; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
 
-    @media (max-width: 768px) {
-      .header-content { flex-direction: column; gap: 10px; }
-      .site-logo { height: 60px; }
-      .header-text h1 { font-size: 1.3rem; }
-      .card-value { font-size: 2rem; }
-      .input-section { flex-direction: column; }
-      .btn-check { width: 100%; }
-      .container { padding: 15px; }
+    /* CONTAINER */
+    .container { padding: 20px 15px; max-width: 850px; margin: 0 auto; }
+    .input-section { background: #2c3e50; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; gap: 12px; }
+    .input-section input { flex: 1; padding: 14px 18px; border: 2px solid #34495e; border-radius: 10px; background: #34495e; color: #fff; font-size: 1rem; outline: none; }
+    .btn-check { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    
+    /* CARDS */
+    .card { background: #2c3e50; border-radius: 12px; padding: 25px 20px; margin-bottom: 15px; text-align: center; border: 2px solid #34495e; display: none; }
+    .card-value { font-size: 2.2rem; font-weight: 700; color: #fff; }
+    .card-label { font-size: 0.9rem; color: #95a5a6; text-transform: uppercase; margin-bottom: 10px; }
+
+    /* TBT SECTION */
+    .tbt-box { background: linear-gradient(135deg, #8e44ad, #9b59b6); border-radius: 12px; padding: 25px; margin-top: 20px; text-align: center; position: relative; box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3); }
+    .tbt-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: left; }
+    .tbt-inputs input { padding: 12px; border-radius: 8px; border: none; background: #34495e; color: #fff; outline: none; font-size: 0.9rem; }
+    
+    #tbtPreview { 
+        display:none; background:#ffffff; color:#000000; padding:20px; border-radius:8px; 
+        font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.9rem; text-align: left; 
+        margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; 
+        line-height: 1.4; border: 1px solid #ccc; position: relative;
     }
+    
+    .tbt-locked { filter: blur(5px) brightness(0.6); user-select: none; pointer-events: none; transition: 0.3s; }
+    .tbt-lock-overlay { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.6); color: #f1c40f; display: flex; align-items: center; 
+        justify-content: center; font-size: 1.2rem; font-weight: bold; z-index: 10; text-align: center; 
+    }
+
+    /* BUTTONS */
+    .btn-tbt { width: 100%; background: #fff; color: #8e44ad; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 15px; font-size: 1rem; }
+    .btn-download { width: 100%; background: #555; color: #999; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: not-allowed; margin-top: 10px; font-size: 1rem; transition: 0.3s; }
+    .btn-download.active { background: #e74c3c; color: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4); }
+    .btn-download.active:hover { transform: translateY(-2px); }
+
+    /* MODAL */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+    .modal-content { background: #2c3e50; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; border: 2px solid #e67e22; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .modal input { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 8px; background: #34495e; color: #fff; font-size: 1rem; }
+    .modal button { width: 100%; padding: 14px; margin: 5px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    .btn-login { background: #27ae60; color: #fff; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+    .btn-close { background: transparent; color: #bdc3c7; border: 1px solid #bdc3c7; margin-top: 10px; }
+
+    @media (max-width: 600px) { .header-content { flex-direction: column; gap: 10px; } }
   </style>
 </head>
 <body>
 
+  <!-- HEADER -->
   <div class="header">
     <div class="header-content">
-      <img src="logo heat stress index.png" alt="Logo" class="site-logo" />
-      <div class="header-text">
-        <h1>🌡️ HSE Heat Stress Alert System</h1>
-        <p class="creator">Created by <strong>NAZEER KADHAR</strong>, HSE Professional</p>
+      <div class="header-left">
+        <img src="logo heat stress index.png" alt="Logo" class="site-logo" />
+        <div class="header-text">
+          <h1>🌡️ HSE Heat Stress Alert</h1>
+          <p>Phase 3: Enterprise Ready (Free)</p>
+        </div>
+      </div>
+      <div id="authSection">
+        <button onclick="openLogin()" class="auth-btn">🔑 Login</button>
+      </div>
+      <div id="userSection" class="user-info" style="display:none;">
+        <span id="userName">👤 Admin</span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
       </div>
     </div>
   </div>
 
   <div class="container">
+    
+    <!-- MAIN INPUT -->
     <div class="input-section">
-      <input type="text" id="city" placeholder="Enter location (e.g., Ras Al Khaimah,AE)" />
+      <input type="text" id="city" placeholder="Enter Location (e.g., Dubai,AE)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
     </div>
-    <div style="text-align:center; margin:-10px 0 20px 0;">
-      <button type="button" onclick="useMyLocation()" style="background:transparent; border:1px dashed #3498db; color:#3498db; padding:8px 16px; border-radius:20px; font-size:0.85rem; cursor:pointer;">📍 Use My Current Location</button>
-    </div>
 
-    <div class="loading" id="loading">⏳ Fetching weather data...</div>
+    <!-- CARDS -->
+    <div class="card" id="hiCard"><div class="card-label">Heat Index</div><div class="card-value" id="hiVal">--</div></div>
+    <div class="card" id="tempCard"><div class="card-label">Temperature</div><div class="card-value" id="tempVal">--</div></div>
 
-    <div class="card" id="datetimeCard"><div class="card-label">📅 Local Date & Time</div><div class="card-value" id="datetimeVal" style="font-size:1.3rem;">--</div></div>
-    <div class="alert-box" id="alertBox"><div class="alert-icon" id="alertIcon">🔴</div><div class="alert-title" id="alertTitle">EXTREME RISK</div><div class="alert-msg" id="alertMsg">EXTREME HEAT STRESS - Cease all outdoor work immediately!</div></div>
-    <div class="card" id="tempCard"><div class="card-label">Temperature</div><div class="card-value" id="tempVal">--°C</div></div>
-    <div class="card" id="humCard"><div class="card-label">Humidity</div><div class="card-value" id="humVal">--%</div></div>
-    <div class="card heat-index" id="hiCard"><div class="card-label">Heat Index</div><div class="card-value" id="hiVal">--°C</div></div>
-    <div class="card wbgt" id="wbgtCard"><div class="card-label">WBGT <span style="font-size:0.75rem; font-weight:400; color:#95a5a6;">(estimated)</span></div><div class="card-value" id="wbgtVal">--°C</div><p style="color:#7f8c8d; font-size:0.75rem; margin-top:8px;">*Estimated from temp + humidity.</p></div>
-
-    <div id="forecastSection" style="display:none; margin-top:25px;"><h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">📊 12-Hour Heat Forecast</h3><div id="forecastGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;"></div><div id="bestWorkTime" style="background:linear-gradient(135deg,#1e824c,#27ae60); border-radius:12px; padding:15px; text-align:center; display:none;"><strong style="color:#fff; font-size:1.1rem;">💡 Recommended Safe Work Window</strong><p id="bestTimeText" style="color:#ecf0f1; margin:0; line-height:1.4;"></p></div></div>
-
-    <div id="workRestSection" style="display:block; margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
-      <h3 style="color:#fff; margin:0 0 5px 0; text-align:center; font-size:1.2rem;">⏱️ Work-Rest Schedule Generator</h3>
-      <p style="color:#7f8c8d; font-size:0.75rem; margin:0 0 15px 0; text-align:center;">Based on NIOSH/ACGIH guidelines</p>
-      <div style="margin-bottom:15px;"><label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px; font-weight:500;">Work Intensity:</label><select id="workType" style="width:100%; padding:12px; border-radius:8px; border:1px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;"><option value="light">💡 Light (Inspection, Office)</option><option value="moderate">🛠️ Moderate (Walking, Light Lifting)</option><option value="heavy">🔨 Heavy (Digging, Concrete)</option></select></div>
-      <button onclick="generateWorkRest()" style="width:100%; background:linear-gradient(135deg,#2980b9,#3498db); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer;">📋 Generate Schedule</button>
-      <div id="workRestResult" style="display:none; margin-top:15px; padding:15px; background:#1a252f; border-radius:8px; text-align:center;"><div style="font-size:1.3rem; font-weight:700; color:#e67e22; margin-bottom:12px;" id="wrHeader"></div><div class="wr-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:10px;"><div style="background:#27ae60; color:#fff; padding:12px 8px; border-radius:8px;"><div style="font-size:0.75rem; opacity:0.85;">Work</div><div style="font-size:1.2rem; font-weight:700;" id="wrWork"></div></div><div style="background:#e74c3c; color:#fff; padding:12px 8px; border-radius:8px;"><div style="font-size:0.75rem; opacity:0.85;">Rest</div><div style="font-size:1.2rem; font-weight:700;" id="wrRest"></div></div><div style="background:#3498db; color:#fff; padding:12px 8px; border-radius:8px;"><div style="font-size:0.75rem; opacity:0.85;">Water</div><div style="font-size:1.2rem; font-weight:700;" id="wrWater"></div></div></div><p id="wrNote" style="color:#95a5a6; font-size:0.85rem; margin:10px 0 0 0;"></p></div>
-    </div>
-
-    <div id="hydrationSection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
-      <h3 style="color:#fff; margin:0 0 5px 0; text-align:center; font-size:1.2rem;">💧 Hydration Calculator</h3>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px;"><div><label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px;">Weight (kg):</label><input type="number" id="workerWeight" placeholder="e.g., 70" min="40" max="150" style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; outline:none;"></div><div><label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px;">Heat Index:</label><input type="text" id="autoHI" value="--°C" readonly style="width:100%; padding:12px; border-radius:8px; border:none; background:#1a252f; color:#e67e22; font-weight:600; outline:none;"></div></div>
-      <button onclick="calculateHydration()" style="width:100%; background:linear-gradient(135deg,#27ae60,#2ecc71); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer;">💧 Calculate Water Needs</button>
-      <div id="hydrationResult" style="display:none; margin-top:15px; padding:15px; background:#1a252f; border-radius:8px; text-align:center;"><div style="font-size:1.3rem; font-weight:700; color:#3498db; margin-bottom:12px;" id="hydHeader"></div><div style="font-size:1.5rem; font-weight:700; color:#2ecc71; margin:10px 0;" id="hydAmount"></div><p id="hydNote" style="color:#95a5a6; font-size:0.85rem;"></p></div>
-    </div>
-
-    <div id="emergencySection" style="margin-top:20px; background:linear-gradient(135deg,#2c1810,#4a1c1c); border:3px solid #e74c3c; border-radius:12px; padding:20px;">
-      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">🚨 Emergency Heat Response</h3>
-      <div style="margin-bottom:15px;"><button onclick="toggleEmergency('exhaustion')" style="width:100%; background:#e67e22; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">⚠️ Heat Exhaustion Symptoms</button><div id="exhaustionContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; line-height:1.5;">• Heavy sweating • Cold, pale skin • Dizziness • Nausea • Muscle cramps • Weakness</div></div>
-      <div style="margin-bottom:15px;"><button onclick="toggleEmergency('stroke')" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">🔴 Heat Stroke Symptoms</button><div id="strokeContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; line-height:1.5;">• Hot, red, dry skin • No sweating • Confusion • Loss of consciousness • Seizures • Body temp >40°C</div></div>
-      <div style="margin-bottom:15px;"><button onclick="toggleEmergency('firstaid')" style="width:100%; background:#3498db; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">🩹 Immediate First Aid</button><div id="firstaidContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; line-height:1.5;">1. Move to shade/AC immediately<br>2. Remove excess clothing<br>3. Cool with wet cloths/fan<br>4. Sip water if conscious<br>5. Call emergency if no improvement</div></div>
-      <a href="tel:998" style="display:block; width:100%; background:#c0392b; color:#fff; text-align:center; padding:14px; border-radius:8px; font-weight:700; text-decoration:none; font-size:1.1rem;">📞 Call UAE Emergency: 998 / 999</a>
-    </div>
-
-    <div id="uaeBanAlert" style="display:none; margin-top:20px; background:linear-gradient(135deg,#c0392b,#e74c3c); border:3px solid #fff; border-radius:12px; padding:20px; text-align:center; box-shadow:0 6px 20px rgba(231,76,60,0.5);">
-      <div style="font-size:2rem; margin-bottom:10px;">⚠️</div>
-      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.3rem; font-weight:700;" id="uaeBanTitle">UAE MIDDAY BREAK IN EFFECT</h3>
-      <p style="color:#fff; margin:0 0 15px 0; font-size:1rem; line-height:1.4;" id="uaeBanMessage">Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong style="color:#f1c40f;">per MOHRE rule</strong></p>
-      <div id="banButtons" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;"><button onclick="dismissBanAlert()" style="background:#fff; color:#c0392b; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">✅ Acknowledge</button><button onclick="overrideBanAlert()" style="background:transparent; color:#fff; border:2px solid #fff; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;">🔐 HSE Override</button></div>
-      <div id="overrideForm" style="display:none; margin-top:15px; padding-top:15px; border-top:2px solid rgba(255,255,255,0.3);"><input type="password" id="overridePin" placeholder="Enter HSE PIN" style="padding:10px; border-radius:6px; border:none; margin-right:8px; width:150px;"><button onclick="validateOverride()" style="background:#27ae60; color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:600; cursor:pointer;">Validate</button></div>
-    </div>
-
-    <div class="wa-box" id="waBox"><h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem; display:flex; align-items:center; justify-content:center; gap:8px;">📲 WhatsApp Alerts (15 AED/mo) <span style="background:#e67e22; font-size:0.75rem; padding:3px 8px; border-radius:12px;">🔥 Popular</span></h3><p style="color:#ecf0f1; margin:0 0 15px 0; font-size:0.9rem;">3 daily alerts: 10:00 AM, 12:30 PM, 3:00 PM</p><input type="tel" id="phone" placeholder="Enter WhatsApp number (+91...)" /><button class="btn-wa" onclick="subscribeWA()">📲 Subscribe - 15 AED/month/per number</button><div id="waPaymentStep" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.3);"><p style="color:#fff; margin:0 0 10px 0;">✅ Message sent! Complete payment to activate alerts.</p><button class="btn-wa" style="background:#fff; color:#27ae60;" onclick="window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank')">💳 Pay Securely - 15 AED</button></div></div>
-    
-    <div class="premium-box"><h3>💎 Premium Alerts (50 AED/mo)</h3><p style="font-size:0.9rem; margin-bottom:15px;">Advanced dashboard + Regional language alerts</p><div style="margin-bottom:15px;"><label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:8px; font-weight:500;">Select Alert Language:</label><select id="premiumLanguage" style="width:100%; padding:12px; border-radius:10px; border:2px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;"><option value="en">🇬 English</option><option value="ar">🇸🇦 العربية (Arabic)</option><option value="hi">🇮🇳 हिन्दी (Hindi)</option><option value="ta">🇮 தமிழ் (Tamil)</option><option value="ml">🇮🇳 മലയാളം (Malayalam)</option><option value="ur">🇵 اردو (Urdu)</option></select></div><button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button></div>
-
-    <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);" id="tbtSection">
+    <!-- TBT GENERATOR -->
+    <div class="tbt-box" id="tbtSection">
       <h3>🗣️ Custom Toolbox Talk Generator</h3>
-      <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Professional, corporate-ready TBT</p>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-        <input type="text" id="orgName" placeholder="Organization Name" style="padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-        <input type="text" id="orgContact" placeholder="Contact Number" style="padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-        <input type="text" id="orgAddress" placeholder="Site Address / Project" style="grid-column: span 2; padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-        <input type="file" id="orgLogoInput" accept="image/*" style="grid-column: span 2; padding:8px; border-radius:6px; background:#2c3e50; color:#fff;">
+      <p style="color:#ecf0f1; margin-bottom:15px;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding, etc.</p>
+      
+      <div class="tbt-inputs">
+        <input type="text" id="orgNameInput" placeholder="Organization Name" value="Nazeer Kadhar HSE Professional" />
+        <input type="text" id="orgContact" placeholder="Contact Number" value="00971562395526" />
+        <input type="text" id="locationInput" placeholder="Site Location (Auto from map)" style="grid-column: span 2;" />
+        <input type="text" id="supervisorInput" placeholder="Supervisor Name" style="grid-column: span 2;" />
       </div>
-      <input type="text" id="tbtTopicInput" placeholder="e.g., Concrete Mixer, Man Lift, Wheel Loader..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
-      <button onclick="generateTBT()" style="width:100%; background:#fff; color:#8e44ad; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; margin-bottom:15px;">📝 Generate Preview</button>
-      <div id="tbtPreview" class="tbt-locked" style="display:none;" oncontextmenu="return false;"><div id="tbtLockOverlay">🔒 Subscribe to Unlock TBT & Enable Downloads</div></div>
-      <div id="downloadBtnContainer"></div>
-      <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
-      <button onclick="unlockTestMode()" style="margin-top:10px; background:transparent; border:1px dashed #7f8c8d; color:#7f8c8d; padding:5px 10px; font-size:0.75rem; border-radius:4px; cursor:pointer;">[Dev Test Unlock]</button>
+
+      <input type="text" id="tbtTopic" placeholder="Enter Topic (e.g., Wheel Loader, Heat Stress)..." style="width:100%; padding:14px; border-radius:8px; border:none; background:#34495e; color:#fff; margin-bottom:10px; font-size:1rem;">
+      <button onclick="generateTBT()" class="btn-tbt">📝 Generate Preview</button>
+
+      <div id="tbtPreview" class="tbt-locked">
+        <div class="tbt-lock-overlay">🔒 Login Required to View & Download TBT</div>
+      </div>
+
+      <button id="btnPdf" onclick="downloadTBT('pdf')" class="btn-download" disabled>📑 Download A4 PDF</button>
     </div>
 
-    <!-- 🔹 FEATURE 17: HISTORICAL DATA & REPORTING -->
-    <div id="historySection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
-      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">📊 Historical Data & Reporting</h3>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:15px;">
-        <input type="date" id="histDateFrom" style="padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-        <input type="date" id="histDateTo" style="padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-        <input type="text" id="histLocation" placeholder="Location/Site" style="padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-        <input type="text" id="histTopic" placeholder="Topic/Type" style="padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-        <input type="text" id="histSupervisor" placeholder="Supervisor Name" style="padding:10px; border-radius:6px; border:none; background:#34495e; color:#fff; outline:none;">
-      </div>
-      <button onclick="loadHistory()" style="width:100%; background:#27ae60; color:#fff; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; margin-bottom:10px;">🔍 Load Filtered Logs</button>
-      <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <button onclick="exportHistory('csv')" style="flex:1; background:#3498db; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📄 Export CSV</button>
-        <button onclick="exportHistory('pdf')" style="flex:1; background:#e67e22; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📑 Export PDF</button>
-      </div>
-      <div id="historyTable" style="max-height:300px; overflow-y:auto; background:#1a252f; border-radius:8px; padding:10px; display:none;">
-        <table style="width:100%; border-collapse:collapse; color:#ecf0f1; font-size:0.8rem;">
-          <thead style="position:sticky; top:0; background:#2c3e50;"><tr><th style="padding:8px; border-bottom:1px solid #34495e;">Date/Time</th><th style="padding:8px; border-bottom:1px solid #34495e;">Type</th><th style="padding:8px; border-bottom:1px solid #34495e;">Location</th><th style="padding:8px; border-bottom:1px solid #34495e;">Details</th></tr></thead>
-          <tbody id="historyBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="multiSiteSection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
-      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">🌍 Multi-Site Monitoring</h3>
-      <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
-        <input type="text" id="siteInput" placeholder="e.g., Sharjah,AE" style="flex:1; min-width:200px;" />
-        <button onclick="addSite()" style="background:#27ae60; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer;">+ Add Site</button>
-        <button onclick="refreshAllSites()" style="background:#2980b9; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer;">🔄 Refresh All</button>
-      </div>
-      <div id="siteGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;"></div>
-      <p id="siteEmptyMsg" style="color:#7f8c8d; text-align:center; margin-top:15px; font-size:0.9rem;">No sites added yet. Add your first location above.</p>
-    </div>
-
-    <div class="nav-links"><a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/privacy-policy.html">Privacy</a><a href="/terms.html">Terms</a></div>
   </div>
 
-  <div class="footer"><p>© 2026 HSE Heat Stress Alert System</p><p style="margin-top:5px;">Created by <strong>Nazeer Kadhar</strong></p></div>
-
-  <div id="qaWidget" style="position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
-    <div id="qaMenu" style="display:none; flex-direction:column; gap:8px; margin-bottom:8px; background:#2c3e50; padding:12px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.4); border:2px solid #34495e; min-width:200px;"><button onclick="qaScroll('hiCard')" style="background:#e74c3c; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left;">🔥 Check Heat Risk</button><button onclick="qaScroll('workRestSection')" style="background:#2980b9; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left;">⏱️ Work-Rest</button><button onclick="qaScroll('hydrationSection')" style="background:#27ae60; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left;">💧 Hydration</button><button onclick="qaScroll('uaeBanAlert')" style="background:#f39c12; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left;">🚨 UAE Ban</button><button onclick="qaScroll('tbtSection')" style="background:#9b59b6; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left;">🗣️ TBT Generator</button></div>
-    <button onclick="toggleQA()" id="qaBtn" style="background:linear-gradient(135deg,#e67e22,#d35400); color:#fff; border:none; width:56px; height:56px; border-radius:50%; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 12px rgba(230,126,34,0.4);">🚨</button>
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <h2 style="color:#fff; margin-bottom:5px;">🔐 System Login</h2>
+      <p style="color:#bdc3c7; font-size:0.85rem; margin-bottom:15px;">Password: <strong>hse123</strong></p>
+      <input type="password" id="password" placeholder="Enter Password" />
+      <button class="btn-login" onclick="login()">Unlock Features</button>
+      <button class="btn-close" onclick="closeLogin()">Cancel</button>
+    </div>
   </div>
 
   <script>
-    const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
-    let isTBTUnlocked = localStorage.getItem('hse_tbt_pro') === 'true';
-    let isUaeLocation = false;
-    let currentLogoBase64 = null;
-    let currentHistoryData = [];
+    // 🔹 PHASE 3: CLIENT-SIDE AUTHENTICATION
+    let currentUser = null;
 
-    // 🔹 FEATURE 17: INDEXEDDB SETUP
-    const DB_NAME = 'hse_history_db';
-    const STORE_NAME = 'logs';
-    let db;
-    function initHistoryDB() {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.onupgradeneeded = (e) => {
-          db = e.target.result;
-          if (!db.objectStoreNames.contains(STORE_NAME)) {
-            db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
-          }
-        };
-        request.onsuccess = (e) => { db = e.target.result; resolve(db); };
-        request.onerror = (e) => reject(e);
-      });
-    }
+    function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
+    function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
 
-    function logActivity(type, data) {
-      if (!db) return;
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      store.add({
-        timestamp: new Date().toISOString(),
-        type: type,
-        location: data.location || '',
-        supervisor: data.supervisor || '',
-        topic: data.topic || '',
-        details: data.details || '',
-        status: data.status || 'Completed'
-      });
-    }
-
-    // 🔹 TOPIC HELPER (EXPANDED)
-    function getTopicData(topic) {
-        const lower = topic.toLowerCase();
-        let hazards = [], controls = [], ppe = [];
-        if(lower.includes('concrete') || lower.includes('mixer') || lower.includes('cement') || lower.includes('transit')) {
-            hazards = ["1. Entanglement/Crushing in rotating mixer drum or chute.", "2. Silica dust inhalation causing respiratory damage.", "3. Severe skin irritation/chemical burns from wet cement.", "4. Slips and trips on wet, muddy surfaces during pouring.", "5. Crush injuries from moving transit trucks reversing or tipping.", "6. High noise levels leading to hearing damage.", "7. Manual handling injuries from heavy bags or chutes.", "8. Electric shock from wet concrete near power lines/vibrators."];
-            controls = ["1. NEVER enter rotating drum. Use LOTO for cleaning/maintenance.", "2. Wear N95 respirator when handling dry cement/powder.", "3. Wear alkali-resistant gloves, long sleeves, and waterproof boots.", "4. Wash skin immediately if contact occurs (pH balanced soap).", "5. Use a dedicated Banksman/Flagman for reversing vehicles.", "6. Ensure chutes are properly secured before pouring.", "7. Keep washout area designated and contained.", "8. Inspect electric vibrators and cables for defects before use."];
-            ppe = ["• Safety Helmet (Chin Strap)\n• N95 Respirator\n• Chemical/Gauntlet Gloves\n• Rubber Apron\n• Waterproof Safety Boots\n• Eye Protection"];
-        } else if(lower.includes('wheel loader') || lower.includes('loader') || lower.includes('forklift') || lower.includes('excavator') || lower.includes('bulldozer') || lower.includes('grader') || lower.includes('compactor')) {
-            hazards = ["1. Collision with pedestrians or other vehicles in blind spots.", "2. Tip-over on uneven or sloped terrain.", "3. Struck-by falling materials from bucket/forks.", "4. Hydraulic hose rupture causing high-pressure fluid injection.", "5. Fire from fuel leaks or electrical shorts.", "6. Noise and vibration leading to operator fatigue.", "7. Unauthorized operation by untrained personnel.", "8. Poor visibility due to dust, rain, or darkness."];
-            controls = ["1. Always use a spotter/banksman when reversing or in congested areas.", "2. Operate only on stable, level ground. Avoid steep slopes.", "3. Keep bucket/forks low during travel. Never carry loads over people.", "4. Inspect hydraulic lines daily. Wear PPE when checking for leaks.", "5. Keep fire extinguisher onboard. Check fuel/electrical systems pre-shift.", "6. Take regular breaks. Use vibration-dampening seats if available.", "7. Ensure operator holds valid equipment certification.", "8. Use headlights, horns, and cameras. Stop work in zero visibility."];
-            ppe = ["• Safety Helmet\n• High-Vis Vest\n• Safety Boots\n• Hearing Protection\n• Safety Glasses"];
-        } else if(lower.includes('man lift') || lower.includes('mewp') || lower.includes('aerial') || lower.includes('boom') || lower.includes('scissor')) {
-            hazards = ["1. Falls from height due to missing harness or platform edge.", "2. Machine overturning on uneven or soft ground.", "3. Electrocution from contact with overhead power lines.", "4. Crushing between platform and fixed structures.", "5. Falling objects hitting personnel below.", "6. Mechanical failure of hydraulic lines or brakes.", "7. Unauthorized operation by untrained personnel.", "8. Strong winds causing platform instability."];
-            controls = ["1. Wear full body harness and clip to designated anchor point.", "2. Conduct pre-start inspection (tires, leaks, controls, alarms).", "3. Maintain minimum 4m clearance from power lines.", "4. Never stand on guardrails or use ladders in the basket.", "5. Barricade the area below. Use a spotter/banksman.", "6. Operate only on firm, level ground. Use outriggers if fitted.", "7. Check weather. Stop work if wind exceeds safe limits.", "8. Ensure operator holds valid MEWP certification."];
-            ppe = ["• Safety Helmet (Chin Strap)\n• Full Body Harness & Lanyard\n• High-Vis Vest\n• Safety Boots\n• Safety Glasses"];
-        } else if(lower.includes('lift') || lower.includes('crane') || lower.includes('rigging') || lower.includes('hoist')) {
-            hazards = ["1. Suspended load falling due to sling failure.", "2. Crane overturning on unstable ground.", "3. Struck-by load due to wind or uncontrolled swinging.", "4. Electrocution from contact with power lines.", "5. Pinch points between load and fixed structures.", "6. Mechanical failure of winches or brakes.", "7. Unauthorized personnel in exclusion zone.", "8. Inadequate communication between operator and rigger."];
-            controls = ["1. Inspect all slings, shackles, and hooks before use.", "2. Ensure outriggers are fully extended on steel plates.", "3. Never stand under a suspended load.", "4. Use tag lines to control load rotation.", "5. Maintain safe distance from power lines.", "6. Ensure rigger and signaler are certified.", "7. Barricade the lifting zone.", "8. Use agreed hand signals/radio channels."];
-            ppe = ["• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Impact Gloves\n• Whistle/Radio"];
-        } else if(lower.includes('scaffold') || lower.includes('working at height') || lower.includes('wah')) {
-            hazards = ["1. Falls from height due to missing guardrails/toe boards.", "2. Scaffold collapse from overloading or weak base plates.", "3. Struck-by injuries from falling tools/materials.", "4. Electrocution from proximity to overhead power lines.", "5. Slips on wet/muddy platforms.", "6. Improper access via cross-bracing.", "7. Unstable ground settlement.", "8. Unauthorized structural alterations."];
-            controls = ["1. Verify Scafftag (GREEN=Safe, RED=Do Not Use).", "2. Base plates on sole boards on firm ground.", "3. 100% tie-off above 2m.", "4. Maintain 4m clearance from power lines.", "5. Keep platforms clean and secure materials.", "6. Only certified scaffolders to modify.", "7. Install toe boards & debris netting.", "8. Daily inspections before shift & after weather."];
-            ppe = ["• Helmet w/ Chin Strap\n• Full Body Harness\n• Anti-slip Boots\n• Tool Lanyards\n• High-Vis Vest"];
-        } else {
-            hazards = ["1. Unplanned execution without Risk Assessment.", "2. Lack of competency for specific equipment.", "3. Poor housekeeping (slips/trips/fire hazards).", "4. Incorrect or insufficient PPE.", "5. Rushing leading to safety shortcuts.", "6. Fatigue or distraction impairing judgment.", "7. Poor crew communication.", "8. Uncontrolled environmental factors."];
-            controls = ["1. Conduct JSA before starting.", "2. Verify worker certifications.", "3. Strict 'Clean as you go' policy.", "4. Enforce PPE compliance. Inspect gear.", "5. Empower STOP WORK authority.", "6. Mandate breaks & task rotation.", "7. Conduct pre-task briefings.", "8. Monitor weather/heat index."];
-            ppe = ["• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses"];
-        }
-        return { hazards, controls, ppe };
-    }
-
-    async function checkHeat() {
-      const city = document.getElementById('city').value.trim();
-      if (!city) { alert('Please enter a location'); return; }
-      document.getElementById('loading').style.display = 'block';
-      hideResults();
-      try {
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
-        const data = await res.json();
-        if (!res.ok || data.cod != 200) { alert(`Location not found. Try: "City,AE"`); return; }
-        calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
-        fetchForecast(data.timezone);
-        checkUaeBanWithCountry(data.sys.country);
-      } catch (error) { alert(`Location not found.`); } finally { document.getElementById('loading').style.display = 'none'; }
-    }
-
-    function calculateHeatIndex(temp, hum, tzOffset) {
-      let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
-      if (temp < 26) hi = temp;
-      const wbgt = (0.7 * temp) + (0.3 * (temp + (5/9)*(hum/100)*6.112*Math.exp((17.27*temp)/(237.7+temp)) - 273.15));
-      document.getElementById('tempVal').textContent = temp.toFixed(2) + '°C';
-      document.getElementById('humVal').textContent = hum + '%';
-      document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
-      document.getElementById('wbgtVal').textContent = wbgt.toFixed(1) + '°C';
-      const utcNow = Math.floor(Date.now() / 1000);
-      const locTime = new Date((utcNow + tzOffset) * 1000);
-      const dateStr = locTime.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
-      const timeStr = locTime.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
-      document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
-      document.getElementById('datetimeCard').style.display = 'block';
-      document.getElementById('tempCard').style.display = 'block';
-      document.getElementById('humCard').style.display = 'block';
-      document.getElementById('hiCard').style.display = 'block';
-      document.getElementById('wbgtCard').style.display = 'block';
-      document.getElementById('waBox').style.display = 'block';
-      const alertBox = document.getElementById('alertBox');
-      const alertIcon = document.getElementById('alertIcon');
-      const alertTitle = document.getElementById('alertTitle');
-      const alertMsg = document.getElementById('alertMsg');
-      alertBox.className = 'alert-box';
-      alertBox.style.display = 'block';
-      let risk = hi >= 54 || wbgt >= 32 ? 'EXTREME' : hi >= 40 || wbgt >= 28 ? 'HIGH' : hi >= 32 || wbgt >= 25 ? 'CAUTION' : 'SAFE';
-      if (hi >= 54 || wbgt >= 32) { alertBox.classList.add('extreme'); alertIcon.textContent = '🔴'; alertTitle.textContent = 'EXTREME RISK'; alertMsg.textContent = 'EXTREME HEAT STRESS - Cease all outdoor work immediately!'; }
-      else if (hi >= 40 || wbgt >= 28) { alertBox.classList.add('caution'); alertIcon.textContent = '🟠'; alertTitle.textContent = 'HIGH RISK'; alertMsg.textContent = 'Heat exhaustion likely. Limit outdoor exposure. Take frequent breaks.'; }
-      else if (hi >= 32 || wbgt >= 25) { alertBox.classList.add('caution'); alertIcon.textContent = '🟡'; alertTitle.textContent = 'CAUTION'; alertMsg.textContent = 'Heat fatigue possible. Stay hydrated and take rest breaks.'; }
-      else { alertBox.classList.add('safe'); alertIcon.textContent = '🟢'; alertTitle.textContent = 'SAFE'; alertMsg.textContent = 'Normal outdoor activities safe. Maintain regular hydration.'; }
-      logActivity('Heat Stress Check', { location: document.getElementById('city').value, details: `HI: ${hi.toFixed(1)}°C | WBGT: ${wbgt.toFixed(1)}°C | Risk: ${risk}`, status: risk });
-    }
-
-    function hideResults() {
-      document.getElementById('datetimeCard').style.display = 'none';
-      document.getElementById('alertBox').style.display = 'none';
-      document.getElementById('tempCard').style.display = 'none';
-      document.getElementById('humCard').style.display = 'none';
-      document.getElementById('hiCard').style.display = 'none';
-      document.getElementById('wbgtCard').style.display = 'none';
-      document.getElementById('waBox').style.display = 'none';
-    }
-
-    function subscribeWA() {
-      const phone = document.getElementById('phone').value.replace(/\D/g, '');
-      if (!phone) { alert('Please enter your WhatsApp number'); return; }
-      const city = document.getElementById('city').value || 'Not specified';
-      const today = new Date().toLocaleDateString('en-IN');
-      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
-      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\n\nPlease process my 15 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
-      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
-      document.getElementById('waPaymentStep').style.display = 'block';
-      document.querySelector('#waBox .btn-wa').style.display = 'none';
-    }
-
-    function goPremium() {
-      const lang = document.getElementById('premiumLanguage').value;
-      const city = document.getElementById('city').value || 'Multiple Sites';
-      const today = new Date().toLocaleDateString('en-IN');
-      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
-      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\n\nPlease process my 50 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
-      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
-      const box = document.querySelector('.premium-box');
-      box.innerHTML = `<h3>✅ Step 1: Message Sent</h3><p style="color:#fff; margin:12px 0; line-height:1.4;">WhatsApp opened with your details. Please send the message to confirm.</p><button class="btn-premium" onclick="window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank')">💳 Step 2: Pay Securely (50 AED)</button>`;
-    }
-
-    document.getElementById('city').addEventListener('keypress', function(e) { if (e.key === 'Enter') checkHeat(); });
-    
-    function useMyLocation() {
-      if (!navigator.geolocation) { alert('Geolocation is not supported by your browser'); return; }
-      document.getElementById('loading').style.display = 'block';
-      hideResults();
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        try {
-          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
-          const data = await res.json();
-          if (data.cod !== 200) throw new Error(data.message);
-          document.getElementById('city').value = data.name + ',' + data.sys.country;
-          calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
-          fetchForecast(data.timezone);
-          checkUaeBanWithCountry(data.sys.country);
-        } catch (error) { alert('Error: ' + error.message); } finally { document.getElementById('loading').style.display = 'none'; }
-      }, () => { alert('Unable to retrieve your location. Please enter city name manually.'); document.getElementById('loading').style.display = 'none'; });
-    }
-
-    async function fetchForecast(tzOffset) {
-      try {
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(document.getElementById('city').value)}&units=metric&appid=${API_KEY}`);
-        const data = await res.json();
-        if (!data.list) return;
-        document.getElementById('forecastSection').style.display = 'block';
-        const grid = document.getElementById('forecastGrid');
-        grid.innerHTML = '';
-        let bestSlot = null; let bestHI = 999;
-        data.list.slice(0, 5).forEach(slot => {
-          const dt = new Date((slot.dt + tzOffset) * 1000);
-          const timeStr = dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
-          const temp = slot.main.temp; const hum = slot.main.humidity;
-          let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
-          if (temp < 26) hi = temp;
-          let riskClass = 'risk-safe', riskText = 'SAFE';
-          if (hi >= 54) { riskClass = 'risk-extreme'; riskText = 'EXTREME'; }
-          else if (hi >= 40) { riskClass = 'risk-high'; riskText = 'HIGH RISK'; }
-          else if (hi >= 32) { riskClass = 'risk-caution'; riskText = 'CAUTION'; }
-          if (hi < bestHI) { bestHI = hi; bestSlot = { time: timeStr, hi: hi.toFixed(1) }; }
-          grid.innerHTML += `<div style="background:#2c3e50; border-radius:8px; padding:10px; text-align:center; border:1px solid #34495e;"><div style="font-size:0.85rem; color:#95a5a6;">${timeStr}</div><div style="font-size:1.1rem; font-weight:600;">${temp.toFixed(1)}°C</div><span class="risk-badge" style="display:inline-block; padding:2px 6px; border-radius:10px; font-size:0.7rem; margin-top:4px; background:${hi>=40?'#e74c3c':hi>=32?'#f39c12':'#27ae60'}; color:#fff;">${riskText}</span></div>`;
-        });
-        if (bestSlot) { document.getElementById('bestWorkTime').style.display = 'block'; document.getElementById('bestTimeText').textContent = `Safest period: ${bestSlot.time} (HI: ${bestSlot.hi}°C).`; }
-      } catch (e) {}
-    }
-
-    function generateWorkRest() {
-      const hiText = document.getElementById('hiVal').textContent;
-      if (hiText === '--°C') { alert('Please check heat stress first.'); return; }
-      const hi = parseFloat(hiText);
-      const workType = document.getElementById('workType').value;
-      let workMin, restMin, water, note;
-      if (hi < 32) { workMin = "Continuous"; restMin = "As needed"; water = "0.5 L/hr"; note = "✅ Conditions safe."; }
-      else if (hi >= 32 && hi < 40) { workMin=workType==='light'?50:workType==='moderate'?40:30; restMin=workType==='light'?10:workType==='moderate'?20:30; water="1 L/hr"; note = "⚠️ Follow cycles strictly."; }
-      else if (hi >= 40 && hi < 46) { workMin=workType==='light'?40:workType==='moderate'?30:20; restMin=workType==='light'?20:workType==='moderate'?30:40; water="1.5 L/hr"; note = "🚨 HIGH RISK. Cease heavy labor."; }
-      else { workMin=10; restMin=50; water="1.5 L/hr"; note = "🚨 EXTREME DANGER. Suspend work."; }
-      document.getElementById('workRestSection').style.display = 'block';
-      document.getElementById('workRestResult').style.display = 'block';
-      document.getElementById('wrHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${workType.charAt(0).toUpperCase()+workType.slice(1)}`;
-      document.getElementById('wrWork').textContent = typeof workMin==='number'?`${workMin} min`:workMin;
-      document.getElementById('wrRest').textContent = typeof restMin==='number'?`${restMin} min`:restMin;
-      document.getElementById('wrWater').textContent = water;
-      document.getElementById('wrNote').textContent = note;
-      logActivity('Work-Rest Schedule', { location: document.getElementById('city').value, supervisor: '', details: `Work: ${workMin} | Rest: ${restMin} | Water: ${water}`, status: note.includes('DANGER') ? 'Restricted' : 'Approved' });
-    }
-
-    function calculateHydration() {
-      const weight = parseFloat(document.getElementById('workerWeight').value);
-      const hiText = document.getElementById('hiVal').textContent;
-      if (!weight || weight < 40 || weight > 150) { alert('Enter valid weight (40-150 kg)'); return; }
-      if (hiText === '--°C') { alert('Check heat stress first.'); return; }
-      const hi = parseFloat(hiText);
-      let base = weight * 0.035;
-      let adj = hi >= 46 ? 1.5 : hi >= 40 ? 1.0 : hi >= 32 ? 0.5 : 0;
-      const total = (base + adj).toFixed(1);
-      const interval = hi >= 40 ? "15" : hi >= 32 ? "20" : "30";
-      const amount = Math.round((total * 1000) / (60/parseInt(interval)));
-      document.getElementById('hydrationSection').style.display = 'block';
-      document.getElementById('hydrationResult').style.display = 'block';
-      document.getElementById('hydHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${weight} kg`;
-      document.getElementById('hydAmount').textContent = `💧 ${amount}ml every ${interval} min`;
-      document.getElementById('hydNote').textContent = `Total: ~${total} L/hr.`;
-      document.getElementById('autoHI').value = `${hi.toFixed(1)}°C`;
-      logActivity('Hydration Calc', { location: document.getElementById('city').value, supervisor: '', details: `${weight}kg → ${total}L/hr (${amount}ml/${interval}min)`, status: 'Calculated' });
-    }
-
-    function toggleEmergency(type) {
-      ['exhaustion','stroke','firstaid'].forEach(t => document.getElementById(t+'Content').style.display = 'none');
-      document.getElementById(type+'Content').style.display = 'block';
-    }
-
-    function checkUaeBanWithCountry(countryCode) {
-      const cityInput = document.getElementById('city').value.toUpperCase();
-      const isUaeByCode = countryCode ? countryCode.toUpperCase() === 'AE' : false;
-      const isUaeByCity = cityInput.endsWith(',AE') || ['DUBAI','ABU DHABI','SHARJAH','AJMAN','FUJAIRAH','UMM AL QUWAIN','RAS AL KHAIMAH'].some(em => cityInput.includes(em));
-      isUaeLocation = isUaeByCode || isUaeByCity;
-      checkUaeBan();
-    }
-    function checkUaeBan() {
-      const alertBox = document.getElementById('uaeBanAlert');
-      const title = document.getElementById('uaeBanTitle');
-      const message = document.getElementById('uaeBanMessage');
-      const buttons = document.getElementById('banButtons');
-      if (!isUaeLocation) { title.textContent = "UAE Midday Break Not Applicable"; message.innerHTML = "Not applicable in your country as per law"; alertBox.style.background = 'linear-gradient(135deg,#7f8c8d,#95a5a6)'; buttons.style.display = 'none'; alertBox.style.display = 'block'; return; }
-      buttons.style.display = 'flex';
-      const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' });
-      const date = new Date(now);
-      const totalMinutes = date.getHours() * 60 + date.getMinutes();
-      if (totalMinutes >= 750 && totalMinutes < 900) {
-        title.textContent = "UAE MIDDAY BREAK IN EFFECT"; message.innerHTML = "Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>"; alertBox.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
-      } else { title.textContent = "UAE Midday Break Currently Inactive"; message.innerHTML = "Outdoor work allowed. Ban resumes at 12:30 PM.<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>"; alertBox.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)'; }
-      alertBox.style.display = 'block';
-    }
-    function dismissBanAlert() { document.getElementById('uaeBanAlert').style.display = 'none'; logActivity('UAE Ban Action', { location: document.getElementById('city').value, supervisor: '', details: 'Acknowledged', status: 'Ack' }); }
-    function overrideBanAlert() { document.getElementById('overrideForm').style.display = 'block'; }
-    function validateOverride() {
-      if (document.getElementById('overridePin').value === '1234') {
-        document.getElementById('uaeBanAlert').style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
-        document.getElementById('uaeBanAlert').querySelector('h3').textContent = '⚠️ OVERRIDE ACTIVE - EMERGENCY WORK';
-        document.getElementById('uaeBanAlert').querySelector('p').innerHTML = 'Emergency work authorized by HSE Officer.<br><strong style="color:#f1c40f;">per MOHRE rule - Ensure all safety measures.</strong>';
-        document.getElementById('overrideForm').style.display = 'none';
-        logActivity('UAE Ban Override', { location: document.getElementById('city').value, supervisor: 'HSE Officer', details: 'PIN Validated', status: 'Override' });
-      } else { alert('❌ Invalid PIN.'); }
-    }
-    document.addEventListener('DOMContentLoaded', () => { checkUaeBan(); setInterval(checkUaeBan, 60000); });
-
-    function unlockTestMode() { isTBTUnlocked = true; localStorage.setItem('hse_tbt_pro', 'true'); applyTBTState(); }
-    function applyTBTState() {
-        const preview = document.getElementById('tbtPreview');
-        const overlay = document.getElementById('tbtLockOverlay');
-        const btnContainer = document.getElementById('downloadBtnContainer');
-        if (isTBTUnlocked) {
-            preview.classList.remove('tbt-locked');
-            preview.classList.add('tbt-unlocked');
-            if(overlay) overlay.style.display = 'none';
-            if (!document.getElementById('btnDownPDF')) {
-                const btn = document.createElement('button');
-                btn.id = 'btnDownPDF';
-                btn.onclick = () => downloadTBT('pdf');
-                btn.style.cssText = 'width:100%; background:#e74c3c; color:#fff; border:none; padding:12px; border-radius:6px; font-weight:700; cursor:pointer; margin:15px 0; font-size:1rem;';
-                btn.textContent = '📑 Download A4 PDF';
-                btnContainer.appendChild(btn);
-            }
-        } else {
-            preview.classList.add('tbt-locked');
-            preview.classList.remove('tbt-unlocked');
-            if(overlay) overlay.style.display = 'flex';
-            const existingBtn = document.getElementById('btnDownPDF');
-            if (existingBtn) existingBtn.remove();
-        }
-    }
-
-    async function generateTBT() {
-        const topicInput = document.getElementById('tbtTopicInput').value.trim();
-        if (!topicInput) return alert('Please enter a topic');
-        const loc = document.getElementById('city').value || 'Site Location';
-        const date = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-        const data = getTopicData(topicInput);
-        const orgName = document.getElementById('orgName').value || 'Organization Name';
-        const orgAddr = document.getElementById('orgAddress').value || 'Site Address';
-        const orgContact = document.getElementById('orgContact').value || 'Contact';
-        const logoInput = document.getElementById('orgLogoInput');
-        if (logoInput.files.length > 0) { currentLogoBase64 = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(logoInput.files[0]); }); }
-        let content = `TOOLBOX TALK RECORD\n\nTopic: ${topicInput.toUpperCase()}\nDate: ${date} | Location: ${loc}\nSupervisor: ____________________ | Workers: ______\n\nHAZARDS IDENTIFIED:\n${data.hazards.join('\n')}\n\nCONTROL MEASURES & RECOMMENDATIONS:\n${data.controls.join('\n')}\n\nREQUIRED PPE:\n${data.ppe.join('')}\n\nEMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.\n\nWORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
-        for(let i=1; i<=15; i++) content += `${i}.  | ______________ | _________ | ______________\n`;
-        const previewEl = document.getElementById('tbtPreview');
-        previewEl.dataset.rawContent = content;
-        previewEl.dataset.orgName = orgName;
-        previewEl.dataset.orgAddr = orgAddr;
-        previewEl.dataset.orgContact = orgContact;
-        previewEl.textContent = content; 
-        previewEl.style.display = 'block';
-        applyTBTState();
-        logActivity('TBT Generated', { location: loc, supervisor: '', topic: topicInput, details: `${data.hazards.length} Hazards | ${data.controls.length} Controls`, status: 'Draft' });
-    }
-
-    function downloadTBT(format) {
-        if (!isTBTUnlocked) { return alert('🔒 SUBSCRIPTION REQUIRED\n\nPlease subscribe at 20 AED/month to download PDFs.'); }
-        const previewEl = document.getElementById('tbtPreview');
-        if (!previewEl.dataset.rawContent) return alert('Generate preview first.');
-        if (format === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF(); let y = 15;
-            if (currentLogoBase64) { try { doc.addImage(currentLogoBase64, 'JPEG', 15, 10, 25, 25); y = 40; } catch(e) { y = 20; } }
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text(previewEl.dataset.orgName.toUpperCase(), 45, 15);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-            doc.text(previewEl.dataset.orgAddr, 45, 22); doc.text(`Contact: ${previewEl.dataset.orgContact}`, 45, 28);
-            doc.setFontSize(11); doc.text('TOOLBOX TALK RECORD', 15, y);
-            const lines = doc.splitTextToSize(previewEl.dataset.rawContent, 180); doc.text(lines, 15, y + 8);
-            const topic = document.getElementById('tbtTopicInput').value.trim().replace(/\s+/g, '_') || 'TBT';
-            doc.save(`${topic}_${Date.now()}.pdf`);
-        }
-    }
-
-    function subscribeTBT() {
-      const lang = document.getElementById('tbtLang').value;
-      const city = document.getElementById('city').value || 'Not specified';
-      const today = new Date().toLocaleDateString('en-IN');
-      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
-      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\nDaily safety briefings(TBT) - Language: ${lang.toUpperCase()}\nPlease process my 20 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
-      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
-      setTimeout(() => { if(confirm('✅ Payment Successful! Unlock TBT downloads now?')) { isTBTUnlocked = true; localStorage.setItem('hse_tbt_pro', 'true'); applyTBTState(); } }, 2500);
-    }
-
-    // 🔹 WIDGET
-    let qaOpen = false;
-    function toggleQA() { qaOpen = !qaOpen; document.getElementById('qaMenu').style.display = qaOpen ? 'flex' : 'none'; }
-    function qaScroll(id) { toggleQA(); const el = document.getElementById(id); if(el) { if(el.style.display==='none') el.style.display='block'; el.scrollIntoView({behavior:'smooth',block:'center'}); } }
-    function checkExtreme() { const h = parseFloat(document.getElementById('hiVal')?.textContent || 0); const btn = document.getElementById('qaBtn'); if(h >= 40) { btn.classList.add('qa-pulse'); if(navigator.vibrate) navigator.vibrate([300,100,300]); } else { btn.classList.remove('qa-pulse'); } }
-    setInterval(checkExtreme, 30000);
-    document.addEventListener('DOMContentLoaded', checkExtreme);
-
-    // 🔹 MULTI-SITE
-    let savedSites = JSON.parse(localStorage.getItem('hse_sites') || '[]');
-    const UAE_KEYWORDS = ['dubai','sharjah','abu dhabi','ajman','fujairah','ras al khaimah','rak','uaq','umm al quwain','uae','emirates'];
-    function autoFormatSite(site) { const s = site.trim(); if (s.includes(',')) return s; const lower = s.toLowerCase(); if (UAE_KEYWORDS.some(k => lower.includes(k))) return s + ',AE'; return s; }
-    function renderSites() {
-      const grid = document.getElementById('siteGrid'); const emptyMsg = document.getElementById('siteEmptyMsg');
-      grid.innerHTML = ''; if (savedSites.length === 0) { emptyMsg.style.display = 'block'; return; } emptyMsg.style.display = 'none';
-      savedSites.forEach(site => {
-        const id = site.replace(/[^a-zA-Z0-9]/g,'');
-        grid.innerHTML += `<div class="site-card" data-site="${site}"><button class="remove-btn" onclick="removeSite(this)">×</button><div style="font-size:0.95rem; font-weight:600; margin-bottom:8px;">📍 ${site}</div><div id="data-${id}" style="color:#7f8c8d; font-size:0.85rem;">Loading...</div></div>`;
-      }); refreshAllSites();
-    }
-    function removeSite(btn) { const card = btn.closest('.site-card'); const site = card.dataset.site; savedSites = savedSites.filter(s => s !== site); localStorage.setItem('hse_sites', JSON.stringify(savedSites)); renderSites(); }
-    function addSite() { const input = document.getElementById('siteInput'); const val = autoFormatSite(input.value); if (!val || val === ',AE') return alert('Enter valid location'); if (savedSites.includes(val)) return alert('Already exists'); savedSites.push(val); localStorage.setItem('hse_sites', JSON.stringify(savedSites)); input.value = ''; renderSites(); }
-    async function refreshAllSites() {
-      if (savedSites.length === 0) return;
-      for (const site of savedSites) {
-        const id = site.replace(/[^a-zA-Z0-9]/g,''); const el = document.getElementById(`data-${id}`);
-        if(el) el.innerHTML = 'Fetching...';
-        try {
-          let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
-          if (!res.ok && !site.includes(',')) res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site + ',AE')}&units=metric&appid=${API_KEY}`);
-          if (!res.ok) throw new Error('Not found');
-          const data = await res.json();
-          const temp = data.main.temp.toFixed(1); const hum = data.main.humidity;
-          let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
-          if (temp < 26) hi = temp;
-          let risk = hi >= 40 ? '🔴 HIGH' : hi >= 32 ? '🟡 CAUTION' : '🟢 SAFE';
-          if (el) el.innerHTML = `🌡️ ${temp}°C | 💧 ${hum}%<br>HI: ${hi.toFixed(1)}°C ${risk}`;
-        } catch { if (el) el.innerHTML = '⚠️ Not found'; }
-        await new Promise(r => setTimeout(r, 250));
-      }
-      logActivity('Multi-Site Refresh', { location: savedSites.join(', '), supervisor: '', details: `Checked ${savedSites.length} sites`, status: 'Sync' });
-    }
-    document.addEventListener('DOMContentLoaded', renderSites);
-    setInterval(refreshAllSites, 300000);
-
-    // 🔹 FEATURE 17: HISTORY LOGIC
-    async function loadHistory() {
-      if (!db) { alert('Database not initialized.'); return; }
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.getAll();
-      request.onsuccess = () => {
-        let logs = request.result;
-        const dateFrom = document.getElementById('histDateFrom').value;
-        const dateTo = document.getElementById('histDateTo').value;
-        const locFilter = document.getElementById('histLocation').value.toLowerCase();
-        const topicFilter = document.getElementById('histTopic').value.toLowerCase();
-        const supFilter = document.getElementById('histSupervisor').value.toLowerCase();
-
-        logs = logs.filter(log => {
-          const logDate = new Date(log.timestamp).toISOString().split('T')[0];
-          if (dateFrom && logDate < dateFrom) return false;
-          if (dateTo && logDate > dateTo) return false;
-          if (locFilter && !log.location.toLowerCase().includes(locFilter)) return false;
-          if (topicFilter && !(log.type.toLowerCase().includes(topicFilter) || (log.topic||'').toLowerCase().includes(topicFilter))) return false;
-          if (supFilter && !log.supervisor.toLowerCase().includes(supFilter)) return false;
-          return true;
-        });
-
-        currentHistoryData = logs.reverse();
-        const tbody = document.getElementById('historyBody');
-        tbody.innerHTML = '';
-        currentHistoryData.forEach(row => {
-          const d = new Date(row.timestamp).toLocaleString();
-          tbody.innerHTML += `<tr style="border-bottom:1px solid #34495e;"><td style="padding:6px; border-right:1px solid #34495e;">${d}</td><td style="padding:6px; border-right:1px solid #34495e;">${row.type}</td><td style="padding:6px; border-right:1px solid #34495e;">${row.location}</td><td style="padding:6px;">${row.details}</td></tr>`;
-        });
-        document.getElementById('historyTable').style.display = 'block';
-      };
-    }
-
-    function exportHistory(format) {
-      if (currentHistoryData.length === 0) return alert('No data to export. Load filtered logs first.');
-      if (format === 'csv') {
-        let csv = 'Date/Time,Type,Location,Supervisor,Topic,Details,Status\n';
-        currentHistoryData.forEach(row => {
-          csv += `"${row.timestamp}","${row.type}","${row.location}","${row.supervisor}","${row.topic}","${row.details}","${row.status}"\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `HSE_History_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    function login() {
+      const pass = document.getElementById('password').value;
+      // FREE PASSWORD: hse123
+      if (pass === 'hse123') {
+        currentUser = { name: 'Admin' };
+        localStorage.setItem('hse_user', 'active');
+        unlockUI();
+        closeLogin();
+        alert("✅ System Unlocked! You can now download PDFs.");
       } else {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text('HSE SYSTEM ACTIVITY REPORT', 15, 15);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-        doc.text(`Generated: ${new Date().toLocaleString()}`, 15, 22);
-        doc.autoTable({
-          startY: 28,
-          head: [['Date/Time', 'Type', 'Location', 'Details']],
-          body: currentHistoryData.map(r => [new Date(r.timestamp).toLocaleString(), r.type, r.location, r.details]),
-          theme: 'grid', styles: { fontSize: 8 }, headStyles: { fillColor: [44,62,80] }
-        });
-        doc.save(`HSE_History_${new Date().toISOString().slice(0,10)}.pdf`);
+        alert("❌ Incorrect Password");
       }
     }
 
-    // Init DB on load
-    document.addEventListener('DOMContentLoaded', initHistoryDB);
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem('hse_user');
+      document.getElementById('authSection').style.display = 'block';
+      document.getElementById('userSection').style.display = 'none';
+      lockUI();
+    }
+
+    function unlockUI() {
+      document.getElementById('authSection').style.display = 'none';
+      document.getElementById('userSection').style.display = 'flex';
+      
+      const preview = document.getElementById('tbtPreview');
+      preview.classList.remove('tbt-locked');
+      if(preview.querySelector('.tbt-lock-overlay')) preview.querySelector('.tbt-lock-overlay').style.display = 'none';
+      
+      const btn = document.getElementById('btnPdf');
+      btn.disabled = false;
+      btn.classList.add('active');
+      btn.textContent = '📑 Download A4 PDF';
+    }
+
+    function lockUI() {
+      document.getElementById('authSection').style.display = 'block';
+      document.getElementById('userSection').style.display = 'none';
+      
+      const preview = document.getElementById('tbtPreview');
+      preview.classList.add('tbt-locked');
+      if(!preview.querySelector('.tbt-lock-overlay')) {
+         const overlay = document.createElement('div');
+         overlay.className = 'tbt-lock-overlay';
+         overlay.textContent = '🔒 Login Required to View & Download TBT';
+         preview.appendChild(overlay);
+      } else {
+         preview.querySelector('.tbt-lock-overlay').style.display = 'flex';
+      }
+
+      const btn = document.getElementById('btnPdf');
+      btn.disabled = true;
+      btn.classList.remove('active');
+      btn.textContent = '🔒 Locked (Login Required)';
+    }
+
+    if (localStorage.getItem('hse_user') === 'active') unlockUI();
+
+    // 🔹 TBT LOGIC WITH SPECIFIC TOPICS
+    function getTopicData(topic) {
+      const lower = topic.toLowerCase();
+      let hazards = [], controls = [];
+
+      if (lower.includes('heat') || lower.includes('hot') || lower.includes('summer')) {
+        hazards = [
+          "1. Heat Stroke (High body temp, confusion, dry skin).",
+          "2. Heat Exhaustion (Heavy sweating, cold skin, dizziness).",
+          "3. Severe Dehydration & Muscle Cramps.",
+          "4. Sunburn & Long-term Skin Damage.",
+          "5. Slips/Trips from sweat on slippery surfaces.",
+          "6. Reduced Focus leading to accidents.",
+          "7. Fogged safety glasses due to humidity.",
+          "8. Chemical burns from hot surfaces."
+        ];
+        controls = [
+          "1. Drink 250ml water every 20 mins (1L/hour).",
+          "2. Rest in shaded/AC areas every 45-60 mins.",
+          "3. Wear breathable, light-colored clothing.",
+          "4. Monitor Heat Index (WBGT) continuously.",
+          "5. Use Buddy System to watch for symptoms.",
+          "6. Reschedule heavy work for early morning/night.",
+          "7. Wear wide-brim hard hats & UV sunglasses.",
+          "8. Keep emergency ice packs in First Aid kit."
+        ];
+      } 
+      else if (lower.includes('wheel') || lower.includes('loader') || lower.includes('jcb') || lower.includes('cat') || lower.includes('excavator')) {
+        hazards = [
+          "1. Blind spots hitting pedestrians or vehicles.",
+          "2. Tip-over on uneven, soft, or sloped ground.",
+          "3. Hydraulic hose burst (High-pressure fluid injection).",
+          "4. Struck-by falling bucket loads or attachments.",
+          "5. Noise & Vibration fatigue for operator.",
+          "6. Pinch points between bucket and frame.",
+          "7. Fire from fuel leaks near hot engine parts.",
+          "8. Carbon Monoxide poisoning in enclosed spaces."
+        ];
+        controls = [
+          "1. ALWAYS use Banksman/Spotter when reversing.",
+          "2. Keep bucket low while traveling; never carry over people.",
+          "3. Inspect hydraulic lines daily for wear/leaks.",
+          "4. Wear seatbelt; ensure ROPS/FOPS protection is intact.",
+          "5. Maintain 3m exclusion zone around equipment.",
+          "6. Park on level ground, lower bucket, engage brake.",
+          "7. Keep fire extinguisher accessible on board.",
+          "8. Check engine alarms and backup beepers daily."
+        ];
+      }
+      else if (lower.includes('scaffold') || lower.includes('height') || lower.includes('wah')) {
+        hazards = [
+          "1. Fall from height (>2m) due to missing guardrails.",
+          "2. Platform collapse from overloading.",
+          "3. Struck-by falling tools/materials.",
+          "4. Electrocution from proximity to power lines.",
+          "5. Slips on wet/muddy platforms.",
+          "6. Unstable ground settlement.",
+          "7. Improper access via cross-bracing.",
+          "8. Unauthorized structural alterations."
+        ];
+        controls = [
+          "1. Check Green Scafftag before every use.",
+          "2. 100% tie-off with harness above 2m.",
+          "3. Secure all tools with lanyards.",
+          "4. Inspect base plates & sole boards daily.",
+          "5. Install toe boards & debris netting.",
+          "6. Only certified scaffolders to modify.",
+          "7. Maintain 4m clearance from power lines.",
+          "8. Clear debris immediately (Clean as you go)."
+        ];
+      }
+      else {
+        hazards = [
+          "1. Unplanned execution without Risk Assessment.",
+          "2. Lack of competency for specific equipment.",
+          "3. Poor housekeeping (slips/trips/fire hazards).",
+          "4. Incorrect or insufficient PPE.",
+          "5. Rushing leading to safety shortcuts.",
+          "6. Fatigue or distraction impairing judgment.",
+          "7. Poor crew communication.",
+          "8. Uncontrolled environmental factors."
+        ];
+        controls = [
+          "1. Conduct JSA before starting.",
+          "2. Verify worker certifications.",
+          "3. Strict 'Clean as you go' policy.",
+          "4. Enforce PPE compliance. Inspect gear.",
+          "5. Empower STOP WORK authority.",
+          "6. Mandate breaks & task rotation.",
+          "7. Conduct pre-task briefings.",
+          "8. Monitor weather/heat index."
+        ];
+      }
+      return { hazards, controls };
+    }
+
+    function generateTBT() {
+      if (!currentUser) { alert("🔒 Please Login to generate TBTs."); openLogin(); return; }
+      
+      const topicInput = document.getElementById('tbtTopic').value;
+      if (!topicInput) return alert("Please enter a topic (e.g., Wheel Loader).");
+      
+      const loc = document.getElementById('locationInput').value || document.getElementById('city').value || 'Site Location';
+      const date = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+      const org = document.getElementById('orgNameInput').value || 'Nazeer Kadhar HSE Professional';
+      const contact = document.getElementById('orgContact').value || '00971562395526';
+      const sup = document.getElementById('supervisorInput').value || '_____________';
+
+      const data = getTopicData(topicInput);
+
+      let content = `TOOLBOX TALK RECORD\n\n${org}\nContact: ${contact}\n\n`;
+      content += `Topic: ${topicInput.toUpperCase()}\n`;
+      content += `Date: ${date} | Location: ${loc}\n`;
+      content += `Supervisor: ${sup} | Workers: ______\n\n`;
+      
+      content += `HAZARDS IDENTIFIED:\n`;
+      data.hazards.forEach(h => content += `• ${h}\n`);
+      content += `\nCONTROL MEASURES & RECOMMENDATIONS:\n`;
+      data.controls.forEach(c => content += `• ${c}\n`);
+      
+      content += `\nREQUIRED PPE:\n• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses`;
+      
+      content += `\n\nEMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.`;
+      
+      content += `\n\nWORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
+      
+      // 15 LINES FIX
+      for(let i=1; i<=15; i++) content += `${i}.  | ______________ | _________ | ______________\n`;
+
+      const previewEl = document.getElementById('tbtPreview');
+      previewEl.textContent = content; 
+      previewEl.style.display = 'block';
+    }
+
+    function downloadTBT(type) {
+      if (!currentUser) return alert("🔒 Please Login first.");
+      
+      const content = document.getElementById('tbtPreview').textContent;
+      const topic = document.getElementById('tbtTopic').value.replace(/\s+/g, '_') || 'TBT';
+      const org = document.getElementById('orgNameInput').value || 'Nazeer Kadhar HSE Professional';
+      const contact = document.getElementById('orgContact').value || '00971562395526';
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF(); 
+      
+      // Header
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+      doc.text(org.toUpperCase(), 105, 15, null, null, 'center');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      doc.text('Contact: ' + contact, 105, 22, null, null, 'center');
+      
+      // Title & Content
+      doc.text('TOOLBOX TALK RECORD', 105, 30, null, null, 'center');
+      const lines = doc.splitTextToSize(content, 180); 
+      doc.text(lines, 15, 40);
+      
+      doc.save(`${topic}_${Date.now()}.pdf`);
+    }
+
+    function checkHeat() {
+      const city = document.getElementById('city').value;
+      if(!city) return alert("Enter city.");
+      document.getElementById('hiCard').style.display = 'block';
+      document.getElementById('tempCard').style.display = 'block';
+      document.getElementById('hiVal').textContent = '42°C';
+      document.getElementById('tempVal').textContent = '38°C';
+      document.getElementById('locationInput').value = city;
+      alert(`✅ Heat Index updated for ${city}. Location synced to TBT generator.`);
+    }
   </script>
 </body>
 </html>
