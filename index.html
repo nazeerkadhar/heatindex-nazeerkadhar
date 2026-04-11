@@ -141,7 +141,7 @@
     
     <div class="premium-box"><h3>💎 Premium Alerts (50 AED/mo)</h3><p style="font-size:0.9rem; margin-bottom:15px;">Advanced dashboard + Regional language alerts</p><div style="margin-bottom:15px;"><label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:8px; font-weight:500;">Select Alert Language:</label><select id="premiumLanguage" style="width:100%; padding:12px; border-radius:10px; border:2px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;"><option value="en">🇬 English</option><option value="ar">🇸🇦 العربية (Arabic)</option><option value="hi">🇮🇳 हिन्दी (Hindi)</option><option value="ta">🇮 தமிழ் (Tamil)</option><option value="ml">🇮🇳 മലയാളം (Malayalam)</option><option value="ur">🇵 اردو (Urdu)</option></select></div><button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button></div>
 
-    <!-- 🔹 TBT SECTION - STRICT LOCK & BRANDING -->
+    <!-- 🔹 TBT SECTION - ABSOLUTE LOCK & BRANDING -->
     <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);" id="tbtSection">
       <h3>🗣️ Custom Toolbox Talk Generator</h3>
       <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Professional, corporate-ready TBT</p>
@@ -154,7 +154,7 @@
         <input type="file" id="orgLogoInput" accept="image/*" style="grid-column: span 2; padding:8px; border-radius:6px; background:#2c3e50; color:#fff;">
       </div>
 
-      <input type="text" id="tbtTopicInput" placeholder="e.g., Concrete Mixer, Man Lift, Crane Lift..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
+      <input type="text" id="tbtTopicInput" placeholder="e.g., Concrete Mixer, Man Lift, Wheel Loader..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
       <button onclick="generateTBT()" style="width:100%; background:#fff; color:#8e44ad; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; margin-bottom:15px;">📝 Generate Preview</button>
 
       <!-- Preview Area -->
@@ -162,8 +162,8 @@
         <div id="tbtLockOverlay">🔒 Subscribe to Unlock TBT & Enable Downloads</div>
       </div>
       
-      <!-- Download Button (HIDDEN BY DEFAULT) -->
-      <button id="btnDownPDF" onclick="downloadTBT('pdf')" style="display:none; width:100%; background:#e74c3c; color:#fff; border:none; padding:12px; border-radius:6px; font-weight:700; cursor:pointer; margin: 15px 0; font-size:1rem;">📑 Download A4 PDF</button>
+      <!-- Download Button Container (EMPTY until unlocked) -->
+      <div id="downloadBtnContainer"></div>
       
       <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
       <button onclick="unlockTestMode()" style="margin-top:10px; background:transparent; border:1px dashed #7f8c8d; color:#7f8c8d; padding:5px 10px; font-size:0.75rem; border-radius:4px; cursor:pointer;">[Dev Test Unlock]</button>
@@ -196,7 +196,7 @@
     let isUaeLocation = false;
     let currentLogoBase64 = null;
 
-    // 🔹 HELPER: GET SPECIFIC TOPIC DATA
+    // 🔹 HELPER: GET SPECIFIC TOPIC DATA (EXPANDED)
     function getTopicData(topic) {
         const lower = topic.toLowerCase();
         let hazards = [], controls = [], ppe = [];
@@ -207,25 +207,31 @@
             controls = ["1. NEVER enter rotating drum. Use LOTO for cleaning/maintenance.", "2. Wear N95 respirator when handling dry cement/powder.", "3. Wear alkali-resistant gloves, long sleeves, and waterproof boots.", "4. Wash skin immediately if contact occurs (pH balanced soap).", "5. Use a dedicated Banksman/Flagman for reversing vehicles.", "6. Ensure chutes are properly secured before pouring.", "7. Keep washout area designated and contained.", "8. Inspect electric vibrators and cables for defects before use."];
             ppe = ["• Safety Helmet (Chin Strap)\n• N95 Respirator\n• Chemical/Gauntlet Gloves\n• Rubber Apron\n• Waterproof Safety Boots\n• Eye Protection"];
         } 
-        // 2. MAN LIFT / MEWP
+        // 2. WHEEL LOADER / HEAVY EQUIPMENT
+        else if(lower.includes('wheel loader') || lower.includes('loader') || lower.includes('forklift') || lower.includes('excavator') || lower.includes('bulldozer') || lower.includes('grader') || lower.includes('compactor')) {
+            hazards = ["1. Collision with pedestrians or other vehicles in blind spots.", "2. Tip-over on uneven or sloped terrain.", "3. Struck-by falling materials from bucket/forks.", "4. Hydraulic hose rupture causing high-pressure fluid injection.", "5. Fire from fuel leaks or electrical shorts.", "6. Noise and vibration leading to operator fatigue.", "7. Unauthorized operation by untrained personnel.", "8. Poor visibility due to dust, rain, or darkness."];
+            controls = ["1. Always use a spotter/banksman when reversing or in congested areas.", "2. Operate only on stable, level ground. Avoid steep slopes.", "3. Keep bucket/forks low during travel. Never carry loads over people.", "4. Inspect hydraulic lines daily. Wear PPE when checking for leaks.", "5. Keep fire extinguisher onboard. Check fuel/electrical systems pre-shift.", "6. Take regular breaks. Use vibration-dampening seats if available.", "7. Ensure operator holds valid equipment certification.", "8. Use headlights, horns, and cameras. Stop work in zero visibility."];
+            ppe = ["• Safety Helmet\n• High-Vis Vest\n• Safety Boots\n• Hearing Protection\n• Safety Glasses"];
+        }
+        // 3. MAN LIFT / MEWP
         else if(lower.includes('man lift') || lower.includes('mewp') || lower.includes('aerial') || lower.includes('boom') || lower.includes('scissor')) {
             hazards = ["1. Falls from height due to missing harness or platform edge.", "2. Machine overturning on uneven or soft ground.", "3. Electrocution from contact with overhead power lines.", "4. Crushing between platform and fixed structures.", "5. Falling objects hitting personnel below.", "6. Mechanical failure of hydraulic lines or brakes.", "7. Unauthorized operation by untrained personnel.", "8. Strong winds causing platform instability."];
             controls = ["1. Wear full body harness and clip to designated anchor point.", "2. Conduct pre-start inspection (tires, leaks, controls, alarms).", "3. Maintain minimum 4m clearance from power lines.", "4. Never stand on guardrails or use ladders in the basket.", "5. Barricade the area below. Use a spotter/banksman.", "6. Operate only on firm, level ground. Use outriggers if fitted.", "7. Check weather. Stop work if wind exceeds safe limits.", "8. Ensure operator holds valid MEWP certification."];
             ppe = ["• Safety Helmet (Chin Strap)\n• Full Body Harness & Lanyard\n• High-Vis Vest\n• Safety Boots\n• Safety Glasses"];
         }
-        // 3. CRANE / LIFTING
+        // 4. CRANE / LIFTING
         else if(lower.includes('lift') || lower.includes('crane') || lower.includes('rigging') || lower.includes('hoist')) {
             hazards = ["1. Suspended load falling due to sling failure.", "2. Crane overturning on unstable ground.", "3. Struck-by load due to wind or uncontrolled swinging.", "4. Electrocution from contact with power lines.", "5. Pinch points between load and fixed structures.", "6. Mechanical failure of winches or brakes.", "7. Unauthorized personnel in exclusion zone.", "8. Inadequate communication between operator and rigger."];
             controls = ["1. Inspect all slings, shackles, and hooks before use.", "2. Ensure outriggers are fully extended on steel plates.", "3. Never stand under a suspended load.", "4. Use tag lines to control load rotation.", "5. Maintain safe distance from power lines.", "6. Ensure rigger and signaler are certified.", "7. Barricade the lifting zone.", "8. Use agreed hand signals/radio channels."];
             ppe = ["• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Impact Gloves\n• Whistle/Radio"];
         }
-        // 4. SCAFFOLDING
+        // 5. SCAFFOLDING
         else if(lower.includes('scaffold') || lower.includes('working at height') || lower.includes('wah')) {
             hazards = ["1. Falls from height due to missing guardrails/toe boards.", "2. Scaffold collapse from overloading or weak base plates.", "3. Struck-by injuries from falling tools/materials.", "4. Electrocution from proximity to overhead power lines.", "5. Slips on wet/muddy platforms.", "6. Improper access via cross-bracing.", "7. Unstable ground settlement.", "8. Unauthorized structural alterations."];
             controls = ["1. Verify Scafftag (GREEN=Safe, RED=Do Not Use).", "2. Base plates on sole boards on firm ground.", "3. 100% tie-off above 2m.", "4. Maintain 4m clearance from power lines.", "5. Keep platforms clean and secure materials.", "6. Only certified scaffolders to modify.", "7. Install toe boards & debris netting.", "8. Daily inspections before shift & after weather."];
             ppe = ["• Helmet w/ Chin Strap\n• Full Body Harness\n• Anti-slip Boots\n• Tool Lanyards\n• High-Vis Vest"];
         }
-        // 5. GENERAL FALLBACK
+        // 6. GENERAL FALLBACK
         else {
             hazards = ["1. Unplanned execution without Risk Assessment.", "2. Lack of competency for specific equipment.", "3. Poor housekeeping (slips/trips/fire hazards).", "4. Incorrect or insufficient PPE.", "5. Rushing leading to safety shortcuts.", "6. Fatigue or distraction impairing judgment.", "7. Poor crew communication.", "8. Uncontrolled environmental factors."];
             controls = ["1. Conduct JSA before starting.", "2. Verify worker certifications.", "3. Strict 'Clean as you go' policy.", "4. Enforce PPE compliance. Inspect gear.", "5. Empower STOP WORK authority.", "6. Mandate breaks & task rotation.", "7. Conduct pre-task briefings.", "8. Monitor weather/heat index."];
@@ -437,26 +443,39 @@
     }
     document.addEventListener('DOMContentLoaded', () => { checkUaeBan(); setInterval(checkUaeBan, 60000); });
 
-    // 🔹 TBT GENERATOR & STRICT LOCK
+    // 🔹 TBT GENERATOR & ABSOLUTE LOCK
     function unlockTestMode() { isTBTUnlocked = true; localStorage.setItem('hse_tbt_pro', 'true'); applyTBTState(); }
+    
     function applyTBTState() {
         const preview = document.getElementById('tbtPreview');
         const overlay = document.getElementById('tbtLockOverlay');
-        const btn = document.getElementById('btnDownPDF');
+        const btnContainer = document.getElementById('downloadBtnContainer');
         const msg = document.getElementById('tbtLockMsg');
 
         if (isTBTUnlocked) {
             preview.classList.remove('tbt-locked');
             preview.classList.add('tbt-unlocked');
             if(overlay) overlay.style.display = 'none';
-            btn.style.display = 'block'; // ONLY SHOW BUTTON AFTER UNLOCK
-            btn.disabled = false; btn.style.cursor = 'pointer';
+            
+            // CREATE DOWNLOAD BUTTON DYNAMICALLY (only if not exists)
+            if (!document.getElementById('btnDownPDF')) {
+                const btn = document.createElement('button');
+                btn.id = 'btnDownPDF';
+                btn.onclick = () => downloadTBT('pdf');
+                btn.style.cssText = 'width:100%; background:#e74c3c; color:#fff; border:none; padding:12px; border-radius:6px; font-weight:700; cursor:pointer; margin:15px 0; font-size:1rem;';
+                btn.textContent = '📑 Download A4 PDF';
+                btnContainer.appendChild(btn);
+            }
             msg.textContent = '✅ Downloads Enabled'; msg.style.color = '#2ecc71';
         } else {
             preview.classList.add('tbt-locked');
             preview.classList.remove('tbt-unlocked');
             if(overlay) overlay.style.display = 'flex';
-            btn.style.display = 'none'; // HIDE BUTTON
+            
+            // REMOVE DOWNLOAD BUTTON FROM DOM
+            const existingBtn = document.getElementById('btnDownPDF');
+            if (existingBtn) existingBtn.remove();
+            
             msg.textContent = '🔒 Subscription Required to Download PDF'; msg.style.color = '#f39c12';
         }
     }
@@ -510,9 +529,26 @@
         applyTBTState();
     }
 
-    // 🔒 HARD PDF BLOCK - BUTTON HIDDEN UNTIL UNLOCKED
+    // 🔒 ABSOLUTE DOWNLOAD BLOCK - TRIPLE CHECK
     function downloadTBT(format) {
-        if (!isTBTUnlocked) return alert('🔒 Please subscribe first.');
+        // CHECK 1: Flag
+        if (!isTBTUnlocked) {
+            console.error('Download blocked: Not unlocked');
+            return alert('🔒 SUBSCRIPTION REQUIRED\n\nPlease subscribe at 20 AED/month to download PDFs.');
+        }
+        // CHECK 2: Button existence (should not be callable if not in DOM)
+        const btn = document.getElementById('btnDownPDF');
+        if (!btn) {
+            console.error('Download blocked: Button not in DOM');
+            return;
+        }
+        // CHECK 3: Re-verify flag at execution time
+        if (localStorage.getItem('hse_tbt_pro') !== 'true') {
+            console.error('Download blocked: localStorage mismatch');
+            isTBTUnlocked = false;
+            applyTBTState();
+            return alert('🔒 Session expired. Please re-subscribe.');
+        }
         
         const previewEl = document.getElementById('tbtPreview');
         const content = previewEl.dataset.rawContent;
@@ -605,6 +641,13 @@
     }
     document.addEventListener('DOMContentLoaded', renderSites);
     setInterval(refreshAllSites, 300000);
+    
+    // 🔹 CONSOLE PROTECTION (Prevent tampering)
+    Object.freeze({
+        downloadTBT,
+        isTBTUnlocked,
+        applyTBTState
+    });
   </script>
 </body>
 </html>
