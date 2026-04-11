@@ -56,7 +56,6 @@
     input[type="text"], input[type="number"], input[type="tel"], input[type="password"], select {
       width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #34495e; background: #34495e; color: #fff; font-size: 1rem; outline: none; margin-bottom: 10px;
     }
-    input[readonly] { background: #222; color: #aaa; cursor: not-allowed; border: none; }
     .btn-action { width: 100%; background: #2980b9; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
     .btn-action:hover { background: #3498db; }
     
@@ -159,14 +158,15 @@
       <a href="tel:998" class="btn-action" style="display:block; text-align:center; text-decoration:none; background:#fff; color:#c0392b;">📞 Call 998/999</a>
     </div>
 
-    <!-- 7. TBT GENERATOR (UPDATED LOGIC) -->
+    <!-- 7. TBT GENERATOR (UPDATED: EDITABLE BRANDING) -->
     <div class="tbt-box" id="tbtSection">
       <h3 class="section-title">🗣️ Custom Toolbox Talk Generator</h3>
       <p style="color:#ecf0f1; margin-bottom:15px; font-size:0.9rem;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding</p>
       
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; text-align:left;">
-        <input type="text" id="orgName" value="Nazeer Kadhar HSE Professional" readonly />
-        <input type="text" id="orgContact" value="00971562395526" readonly />
+        <!-- 🔹 EDITABLE FIELDS -->
+        <input type="text" id="orgName" placeholder="Organization Name" />
+        <input type="text" id="orgContact" placeholder="Contact Number" />
         <input type="text" id="tbtLocation" placeholder="Site Location (Auto-synced)" />
         <input type="text" id="tbtSupervisor" placeholder="Supervisor Name" />
       </div>
@@ -231,7 +231,6 @@
         const data = await res.json();
         if(data.cod !== 200) throw new Error('Location not found');
         
-        // Update Cards
         const temp = data.main.temp;
         const hum = data.main.humidity;
         let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
@@ -245,255 +244,15 @@
         
         ['datetimeCard','tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id => document.getElementById(id).style.display = 'block');
         
-        // Sync TBT Location
         document.getElementById('tbtLocation').value = city;
-
         logActivity(`Checked Heat: ${city}`, `HI: ${hi.toFixed(1)}`);
       } catch(e) { alert(e.message); } finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    // 🔹 SPECIFIC TOPIC DATABASE (FIXED)
+    // 🔹 SPECIFIC TOPIC DATABASE
     function getTopicData(topic) {
       const lower = topic.toLowerCase();
       let hazards = [], controls = [];
 
-      // 1. HEAT STRESS SPECIFIC
       if (lower.includes('heat') || lower.includes('hot') || lower.includes('summer') || lower.includes('sun')) {
-        hazards = [
-          "1. Heat Stroke (High body temp, confusion, dry skin).",
-          "2. Heat Exhaustion (Heavy sweating, cold skin, dizziness).",
-          "3. Severe Dehydration & Muscle Cramps.",
-          "4. Sunburn & Long-term Skin Damage.",
-          "5. Slips/Trips from sweat on slippery surfaces.",
-          "6. Reduced Focus leading to accidents.",
-          "7. Fogged safety glasses due to humidity.",
-          "8. Chemical burns from hot surfaces."
-        ];
-        controls = [
-          "1. Drink 250ml water every 20 mins (1L/hour).",
-          "2. Rest in shaded/AC areas every 45-60 mins.",
-          "3. Wear breathable, light-colored clothing.",
-          "4. Monitor Heat Index (WBGT) continuously.",
-          "5. Use Buddy System to watch for symptoms.",
-          "6. Reschedule heavy work for early morning/night.",
-          "7. Wear wide-brim hard hats & UV sunglasses.",
-          "8. Keep emergency ice packs in First Aid kit."
-        ];
-      } 
-      // 2. WHEEL LOADER SPECIFIC
-      else if (lower.includes('wheel') || lower.includes('loader') || lower.includes('jcb') || lower.includes('cat') || lower.includes('excavator')) {
-        hazards = [
-          "1. Blind spots hitting pedestrians or vehicles.",
-          "2. Tip-over on uneven, soft, or sloped ground.",
-          "3. Hydraulic hose burst (High-pressure fluid injection).",
-          "4. Struck-by falling bucket loads or attachments.",
-          "5. Noise & Vibration fatigue for operator.",
-          "6. Pinch points between bucket and frame.",
-          "7. Fire from fuel leaks near hot engine parts.",
-          "8. Carbon Monoxide poisoning in enclosed spaces."
-        ];
-        controls = [
-          "1. ALWAYS use Banksman/Spotter when reversing.",
-          "2. Keep bucket low while traveling; never carry over people.",
-          "3. Inspect hydraulic lines daily for wear/leaks.",
-          "4. Wear seatbelt; ensure ROPS/FOPS protection is intact.",
-          "5. Maintain 3m exclusion zone around equipment.",
-          "6. Park on level ground, lower bucket, engage brake.",
-          "7. Keep fire extinguisher accessible on board.",
-          "8. Check engine alarms and backup beepers daily."
-        ];
-      }
-      // 3. SCAFFOLDING SPECIFIC
-      else if (lower.includes('scaffold') || lower.includes('height') || lower.includes('wah')) {
-        hazards = [
-          "1. Fall from height (>2m) due to missing guardrails.",
-          "2. Platform collapse from overloading.",
-          "3. Struck-by falling tools/materials.",
-          "4. Electrocution from proximity to power lines.",
-          "5. Slips on wet/muddy platforms.",
-          "6. Unstable ground settlement.",
-          "7. Improper access via cross-bracing.",
-          "8. Unauthorized structural alterations."
-        ];
-        controls = [
-          "1. Check Green Scafftag before every use.",
-          "2. 100% tie-off with harness above 2m.",
-          "3. Secure all tools with lanyards.",
-          "4. Inspect base plates & sole boards daily.",
-          "5. Install toe boards & debris netting.",
-          "6. Only certified scaffolders to modify.",
-          "7. Maintain 4m clearance from power lines.",
-          "8. Clear debris immediately (Clean as you go)."
-        ];
-      }
-      // 4. GENERIC FALLBACK
-      else {
-        hazards = ["1. Unplanned execution without Risk Assessment.","2. Lack of competency for specific equipment.","3. Poor housekeeping (slips/trips/fire hazards).","4. Incorrect or insufficient PPE.","5. Rushing leading to safety shortcuts.","6. Fatigue or distraction impairing judgment.","7. Poor crew communication.","8. Uncontrolled environmental factors."];
-        controls = ["1. Conduct JSA before starting.","2. Verify worker certifications.","3. Strict 'Clean as you go' policy.","4. Enforce PPE compliance. Inspect gear.","5. Empower STOP WORK authority.","6. Mandate breaks & task rotation.","7. Conduct pre-task briefings.","8. Monitor weather/heat index."];
-      }
-      return { hazards, controls };
-    }
-
-    // 🔹 GENERATE TBT PREVIEW
-    function generateTBT() {
-      const topic = document.getElementById('tbtTopic').value.trim();
-      if (!topic) return alert('Enter a topic.');
-
-      const org = document.getElementById('orgName').value;
-      const contact = document.getElementById('orgContact').value;
-      const loc = document.getElementById('tbtLocation').value || 'Site Location';
-      const sup = document.getElementById('tbtSupervisor').value || '_____________';
-      const date = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-
-      const data = getTopicData(topic);
-
-      // BUILDING CLEAN TEXT
-      let content = `${org}\nContact: ${contact}\n`;
-      content += `TOOLBOX TALK RECORD\n`;
-      content += `Topic: ${topic.toUpperCase()}\n`;
-      content += `Date: ${date} | Location: ${loc}\n`;
-      content += `Supervisor: ${sup} | Workers: ______\n\n`;
-      
-      content += `HAZARDS IDENTIFIED:\n`;
-      data.hazards.forEach(h => content += `• ${h}\n`);
-      content += `\nCONTROL MEASURES & RECOMMENDATIONS:\n`;
-      data.controls.forEach(c => content += `• ${c}\n`);
-      
-      content += `\nREQUIRED PPE:\n• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses`;
-      
-      content += `\n\nEMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.`;
-      
-      content += `\n\nWORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
-      
-      // 15 LINES FIX
-      for(let i=1; i<=15; i++) content += `${i}.  | ______________ | _________ | ______________\n`;
-
-      document.getElementById('tbtPreview').textContent = content;
-      document.getElementById('tbtPreview').style.display = 'block';
-      logActivity(`Generated TBT: ${topic}`);
-    }
-
-    // 🔹 DOWNLOAD PDF (STRICTLY CLEAN TEXT)
-    function downloadTBT() {
-      const content = document.getElementById('tbtPreview').textContent;
-      if (!content) return alert('Generate preview first.');
-      
-      const topic = document.getElementById('tbtTopic').value.replace(/\s+/g, '_') || 'TBT';
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF(); 
-      
-      doc.setFont('Courier', 'normal');
-      doc.setFontSize(10);
-      
-      const lines = doc.splitTextToSize(content, 180); 
-      doc.text(lines, 12, 15);
-      
-      doc.save(`${topic}_${Date.now()}.pdf`);
-      logActivity("Downloaded TBT PDF");
-    }
-
-    // 🔹 HELPERS
-    function generateWorkRest() {
-       const hi = parseFloat(document.getElementById('hiVal').textContent);
-       if(!hi) return alert('Check heat stress first.');
-       const type = document.getElementById('workType').value;
-       let w, r;
-       if(hi >= 45) { w=15; r=45; } else if(hi >= 35) { w=30; r=30; } else { w=50; r=10; }
-       document.getElementById('wrHeader').textContent = `Work ${w} mins | Rest ${r} mins`;
-       document.getElementById('wrNote').textContent = `Heat Index: ${hi}°C | Type: ${type}`;
-       document.getElementById('wrResult').style.display = 'block';
-       logActivity("Generated Work-Rest");
-    }
-
-    function calculateHydration() {
-      const w = parseFloat(document.getElementById('workerWeight').value);
-      if(!w) return alert('Enter weight');
-      document.getElementById('hydAmount').textContent = `💧 ${(w * 0.035).toFixed(1)} Liters / Hour`;
-      document.getElementById('hydrationResult').style.display = 'block';
-    }
-
-    function toggleEmergency(t) {
-      const el = document.getElementById(t+'Content');
-      el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function useMyLocation() {
-      if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&units=metric&appid=${API_KEY}`)
-        .then(r => r.json()).then(d => {
-           document.getElementById('city').value = d.name + ',' + d.sys.country;
-           checkHeat();
-        });
-      });
-    }
-
-    // 🔹 MULTI-SITE
-    let sites = JSON.parse(localStorage.getItem('hse_sites') || '[]');
-    function addSite() {
-      const s = document.getElementById('siteInput').value.trim();
-      if(s && !sites.includes(s)) { sites.push(s); localStorage.setItem('hse_sites', JSON.stringify(sites)); renderSites(); }
-    }
-    function removeSite(s) { sites = sites.filter(x => x!==s); localStorage.setItem('hse_sites', JSON.stringify(sites)); renderSites(); }
-    function renderSites() {
-      const grid = document.getElementById('siteGrid');
-      grid.innerHTML = sites.map(s => `<div class="site-card">${s}<button class="remove-site" onclick="removeSite('${s}')">×</button><div id="site-data-${s.replace(/[^a-zA-Z0-9]/g,'')}" style="margin-top:5px; font-size:0.8rem; color:#95a5a6;">Loading...</div></div>`).join('');
-      refreshAllSites();
-    }
-    async function refreshAllSites() {
-      sites.forEach(async site => {
-        try {
-          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
-          const d = await res.json();
-          if(d.cod===200) {
-            const id = 'site-data-'+site.replace(/[^a-zA-Z0-9]/g,'');
-            document.getElementById(id).innerHTML = `🌡️ ${d.main.temp.toFixed(1)}°C | 💧 ${d.main.humidity}%`;
-          }
-        } catch(e) {}
-      });
-    }
-
-    // 🔹 HISTORY LOGGING
-    function logActivity(action, details='') {
-      const entry = { date: new Date().toLocaleString(), action, details };
-      currentHistory.unshift(entry);
-      if(currentHistory.length > 50) currentHistory.pop();
-    }
-
-    function loadHistory() {
-      const container = document.getElementById('historyTableContainer');
-      if(currentHistory.length === 0) { container.innerHTML = '<p style="text-align:center; color:#7f8c8d;">No history found.</p>'; return; }
-      container.innerHTML = `<table><tr><th>Date</th><th>Action</th><th>Details</th></tr>` + 
-        currentHistory.map(h => `<tr><td>${h.date}</td><td>${h.action}</td><td>${h.details}</td></tr>`).join('') + `</table>`;
-    }
-
-    function exportHistory(type) {
-      if(currentHistory.length === 0) return alert('Load history first.');
-      if(type === 'csv') {
-        let csv = 'Date,Action,Details\n' + currentHistory.map(h => `"${h.date}","${h.action}","${h.details}"`).join('\n');
-        const blob = new Blob([csv], {type: 'text/csv'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'HSE_History.csv'; a.click();
-      } else {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text('HSE ACTIVITY LOG', 15, 15);
-        doc.autoTable({ startY: 20, body: currentHistory.map(h => [h.date, h.action, h.details]) });
-        doc.save('HSE_History.pdf');
-      }
-    }
-
-    // 🔹 WIDGET
-    function toggleQA() {
-      const m = document.getElementById('qaMenu');
-      m.style.display = m.style.display === 'block' ? 'none' : 'block';
-    }
-    function qaScroll(id) {
-      toggleQA();
-      document.getElementById(id).scrollIntoView({behavior:'smooth'});
-    }
-
-    // Init
-    renderSites();
-    if(localStorage.getItem('hse_history')) currentHistory = JSON.parse(localStorage.getItem('hse_history'));
-  </script>
-</body>
-</html>
+        hazards = ["1. Heat Stroke (High body temp, confusion, dry skin).","2. Heat
