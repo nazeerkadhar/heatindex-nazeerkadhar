@@ -3,68 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>HSE Heat Stress Alert - Phase 3 Free</title>
+  <title>HSE Heat Stress Alert - Nazeer Kadhar</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%); color: #ecf0f1; min-height: 100vh; padding-bottom: 80px; }
     
-    /* HEADER */
-    .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 15px; border-bottom: 4px solid #e67e22; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .header-content { display: flex; align-items: center; justify-content: space-between; max-width: 1000px; margin: 0 auto; }
-    .header-left { display: flex; align-items: center; gap: 15px; }
-    .site-logo { height: 60px; width: auto; }
-    .header-text h1 { font-size: 1.4rem; color: #fff; font-weight: 700; }
-    .header-text p { color: #bdc3c7; font-size: 0.8rem; }
-    .auth-btn { background: #e67e22; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-    .user-info { color: #2ecc71; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .logout-btn { background: #c0392b; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+    /* ORIGINAL HEADER */
+    .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 20px; border-bottom: 4px solid #e67e22; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; max-width: 950px; margin: 0 auto; padding: 0 10px; }
+    .site-logo { height: 80px; width: auto; flex-shrink: 0; }
+    .header-text { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .header-text h1 { font-size: 1.6rem; margin: 0 0 4px 0; color: #fff; font-weight: 700; line-height: 1.2; }
+    .header-text .creator { color: #bdc3c7; font-size: 0.9rem; margin: 0; line-height: 1.4; }
+    .header-text .creator strong { color: #e67e22; font-weight: 600; }
 
-    /* CONTAINER */
+    /* CONTAINER & INPUTS */
     .container { padding: 20px 15px; max-width: 850px; margin: 0 auto; }
-    .input-section { background: #2c3e50; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; gap: 12px; }
+    .input-section { background: #2c3e50; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .input-section input { flex: 1; padding: 14px 18px; border: 2px solid #34495e; border-radius: 10px; background: #34495e; color: #fff; font-size: 1rem; outline: none; }
-    .btn-check { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .btn-check { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(230,126,34,0.3); }
     
     /* CARDS */
     .card { background: #2c3e50; border-radius: 12px; padding: 25px 20px; margin-bottom: 15px; text-align: center; border: 2px solid #34495e; display: none; }
+    .card-label { font-size: 0.9rem; color: #95a5a6; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-weight: 600; }
     .card-value { font-size: 2.2rem; font-weight: 700; color: #fff; }
-    .card-label { font-size: 0.9rem; color: #95a5a6; text-transform: uppercase; margin-bottom: 10px; }
 
-    /* TBT SECTION */
-    .tbt-box { background: linear-gradient(135deg, #8e44ad, #9b59b6); border-radius: 12px; padding: 25px; margin-top: 20px; text-align: center; position: relative; box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3); }
+    /* TBT SECTION (ORIGINAL LAYOUT) */
+    .tbt-box { background: linear-gradient(135deg, #8e44ad, #9b59b6); border-radius: 12px; padding: 25px; margin-top: 20px; text-align: center; box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3); }
     .tbt-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: left; }
-    .tbt-inputs input { padding: 12px; border-radius: 8px; border: none; background: #34495e; color: #fff; outline: none; font-size: 0.9rem; }
+    .tbt-inputs input { padding: 10px; border-radius: 6px; border: none; background: #34495e; color: #fff; outline: none; }
+    .tbt-inputs input[readonly] { background: #222; color: #aaa; cursor: not-allowed; }
     
-    #tbtPreview { 
-        display:none; background:#ffffff; color:#000000; padding:20px; border-radius:8px; 
-        font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.9rem; text-align: left; 
-        margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; 
-        line-height: 1.4; border: 1px solid #ccc; position: relative;
-    }
+    #tbtPreview { display:none; background:#ffffff; color:#000000; padding:20px; border-radius:8px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; text-align: left; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #ccc; }
     
-    .tbt-locked { filter: blur(5px) brightness(0.6); user-select: none; pointer-events: none; transition: 0.3s; }
-    .tbt-lock-overlay { 
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.6); color: #f1c40f; display: flex; align-items: center; 
-        justify-content: center; font-size: 1.2rem; font-weight: bold; z-index: 10; text-align: center; 
-    }
-
-    /* BUTTONS */
     .btn-tbt { width: 100%; background: #fff; color: #8e44ad; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 15px; font-size: 1rem; }
-    .btn-download { width: 100%; background: #555; color: #999; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: not-allowed; margin-top: 10px; font-size: 1rem; transition: 0.3s; }
-    .btn-download.active { background: #e74c3c; color: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4); }
-    .btn-download.active:hover { transform: translateY(-2px); }
+    .btn-pdf { width: 100%; background: #e74c3c; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+    .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4); }
 
-    /* MODAL */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-    .modal-content { background: #2c3e50; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; border: 2px solid #e67e22; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .modal input { width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 8px; background: #34495e; color: #fff; font-size: 1rem; }
-    .modal button { width: 100%; padding: 14px; margin: 5px 0; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-    .btn-login { background: #27ae60; color: #fff; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
-    .btn-close { background: transparent; color: #bdc3c7; border: 1px solid #bdc3c7; margin-top: 10px; }
-
-    @media (max-width: 600px) { .header-content { flex-direction: column; gap: 10px; } }
+    /* FOOTER & MOBILE */
+    .footer { text-align: center; padding: 30px 20px; color: #7f8c8d; font-size: 0.85rem; border-top: 1px solid #34495e; margin-top: 30px; }
+    @media (max-width: 768px) {
+      .header-content { flex-direction: column; gap: 10px; }
+      .site-logo { height: 60px; }
+      .input-section { flex-direction: column; }
+      .btn-check { width: 100%; }
+      .tbt-inputs { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -72,304 +57,122 @@
   <!-- HEADER -->
   <div class="header">
     <div class="header-content">
-      <div class="header-left">
-        <img src="logo heat stress index.png" alt="Logo" class="site-logo" />
-        <div class="header-text">
-          <h1>🌡️ HSE Heat Stress Alert</h1>
-          <p>Phase 3: Enterprise Ready (Free)</p>
-        </div>
-      </div>
-      <div id="authSection">
-        <button onclick="openLogin()" class="auth-btn">🔑 Login</button>
-      </div>
-      <div id="userSection" class="user-info" style="display:none;">
-        <span id="userName">👤 Admin</span>
-        <button onclick="logout()" class="logout-btn">Logout</button>
+      <img src="logo heat stress index.png" alt="Logo" class="site-logo" />
+      <div class="header-text">
+        <h1>🌡️ HSE Heat Stress Alert System</h1>
+        <p class="creator">Created by <strong>NAZEER KADHAR</strong>, HSE Professional</p>
       </div>
     </div>
   </div>
 
   <div class="container">
-    
-    <!-- MAIN INPUT -->
     <div class="input-section">
-      <input type="text" id="city" placeholder="Enter Location (e.g., Dubai,AE)" />
+      <input type="text" id="city" placeholder="Enter location (e.g., Abu Dhabi,AE)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
     </div>
 
-    <!-- CARDS -->
     <div class="card" id="hiCard"><div class="card-label">Heat Index</div><div class="card-value" id="hiVal">--</div></div>
     <div class="card" id="tempCard"><div class="card-label">Temperature</div><div class="card-value" id="tempVal">--</div></div>
 
-    <!-- TBT GENERATOR -->
+    <!-- TBT GENERATOR (ORIGINAL FORMAT, NO LOGIN) -->
     <div class="tbt-box" id="tbtSection">
       <h3>🗣️ Custom Toolbox Talk Generator</h3>
-      <p style="color:#ecf0f1; margin-bottom:15px;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding, etc.</p>
+      <p style="font-size:0.9rem; margin-bottom:15px; color:#ecf0f1;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding, etc.</p>
       
       <div class="tbt-inputs">
-        <input type="text" id="orgNameInput" placeholder="Organization Name" value="Nazeer Kadhar HSE Professional" />
-        <input type="text" id="orgContact" placeholder="Contact Number" value="00971562395526" />
-        <input type="text" id="locationInput" placeholder="Site Location (Auto from map)" style="grid-column: span 2;" />
-        <input type="text" id="supervisorInput" placeholder="Supervisor Name" style="grid-column: span 2;" />
+        <input type="text" id="orgName" value="Nazeer Kadhar HSE Professional" readonly />
+        <input type="text" id="orgContact" value="00971562395526" readonly />
+        <input type="text" id="tbtLocation" placeholder="Site Location (Auto-synced)" />
+        <input type="text" id="tbtSupervisor" placeholder="Supervisor Name" />
       </div>
 
-      <input type="text" id="tbtTopic" placeholder="Enter Topic (e.g., Wheel Loader, Heat Stress)..." style="width:100%; padding:14px; border-radius:8px; border:none; background:#34495e; color:#fff; margin-bottom:10px; font-size:1rem;">
+      <input type="text" id="tbtTopic" placeholder="Enter Topic (e.g., Wheel Loader, Heat Stress)..." style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; margin-bottom:10px; outline:none;">
       <button onclick="generateTBT()" class="btn-tbt">📝 Generate Preview</button>
 
-      <div id="tbtPreview" class="tbt-locked">
-        <div class="tbt-lock-overlay">🔒 Login Required to View & Download TBT</div>
-      </div>
-
-      <button id="btnPdf" onclick="downloadTBT('pdf')" class="btn-download" disabled>📑 Download A4 PDF</button>
-    </div>
-
-  </div>
-
-  <!-- LOGIN MODAL -->
-  <div id="loginModal" class="modal">
-    <div class="modal-content">
-      <h2 style="color:#fff; margin-bottom:5px;">🔐 System Login</h2>
-      <p style="color:#bdc3c7; font-size:0.85rem; margin-bottom:15px;">Password: <strong>hse123</strong></p>
-      <input type="password" id="password" placeholder="Enter Password" />
-      <button class="btn-login" onclick="login()">Unlock Features</button>
-      <button class="btn-close" onclick="closeLogin()">Cancel</button>
+      <div id="tbtPreview"></div>
+      <button onclick="downloadTBT()" class="btn-pdf">📑 Download A4 PDF</button>
     </div>
   </div>
+
+  <div class="footer"><p>© 2026 HSE Heat Stress Alert System</p><p style="margin-top:5px;">Created by <strong>Nazeer Kadhar</strong></p></div>
 
   <script>
-    // 🔹 PHASE 3: CLIENT-SIDE AUTHENTICATION
-    let currentUser = null;
-
-    function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
-    function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
-
-    function login() {
-      const pass = document.getElementById('password').value;
-      // FREE PASSWORD: hse123
-      if (pass === 'hse123') {
-        currentUser = { name: 'Admin' };
-        localStorage.setItem('hse_user', 'active');
-        unlockUI();
-        closeLogin();
-        alert("✅ System Unlocked! You can now download PDFs.");
-      } else {
-        alert("❌ Incorrect Password");
-      }
-    }
-
-    function logout() {
-      currentUser = null;
-      localStorage.removeItem('hse_user');
-      document.getElementById('authSection').style.display = 'block';
-      document.getElementById('userSection').style.display = 'none';
-      lockUI();
-    }
-
-    function unlockUI() {
-      document.getElementById('authSection').style.display = 'none';
-      document.getElementById('userSection').style.display = 'flex';
-      
-      const preview = document.getElementById('tbtPreview');
-      preview.classList.remove('tbt-locked');
-      if(preview.querySelector('.tbt-lock-overlay')) preview.querySelector('.tbt-lock-overlay').style.display = 'none';
-      
-      const btn = document.getElementById('btnPdf');
-      btn.disabled = false;
-      btn.classList.add('active');
-      btn.textContent = '📑 Download A4 PDF';
-    }
-
-    function lockUI() {
-      document.getElementById('authSection').style.display = 'block';
-      document.getElementById('userSection').style.display = 'none';
-      
-      const preview = document.getElementById('tbtPreview');
-      preview.classList.add('tbt-locked');
-      if(!preview.querySelector('.tbt-lock-overlay')) {
-         const overlay = document.createElement('div');
-         overlay.className = 'tbt-lock-overlay';
-         overlay.textContent = '🔒 Login Required to View & Download TBT';
-         preview.appendChild(overlay);
-      } else {
-         preview.querySelector('.tbt-lock-overlay').style.display = 'flex';
-      }
-
-      const btn = document.getElementById('btnPdf');
-      btn.disabled = true;
-      btn.classList.remove('active');
-      btn.textContent = '🔒 Locked (Login Required)';
-    }
-
-    if (localStorage.getItem('hse_user') === 'active') unlockUI();
-
-    // 🔹 TBT LOGIC WITH SPECIFIC TOPICS
-    function getTopicData(topic) {
-      const lower = topic.toLowerCase();
-      let hazards = [], controls = [];
-
-      if (lower.includes('heat') || lower.includes('hot') || lower.includes('summer')) {
-        hazards = [
-          "1. Heat Stroke (High body temp, confusion, dry skin).",
-          "2. Heat Exhaustion (Heavy sweating, cold skin, dizziness).",
-          "3. Severe Dehydration & Muscle Cramps.",
-          "4. Sunburn & Long-term Skin Damage.",
-          "5. Slips/Trips from sweat on slippery surfaces.",
-          "6. Reduced Focus leading to accidents.",
-          "7. Fogged safety glasses due to humidity.",
-          "8. Chemical burns from hot surfaces."
-        ];
-        controls = [
-          "1. Drink 250ml water every 20 mins (1L/hour).",
-          "2. Rest in shaded/AC areas every 45-60 mins.",
-          "3. Wear breathable, light-colored clothing.",
-          "4. Monitor Heat Index (WBGT) continuously.",
-          "5. Use Buddy System to watch for symptoms.",
-          "6. Reschedule heavy work for early morning/night.",
-          "7. Wear wide-brim hard hats & UV sunglasses.",
-          "8. Keep emergency ice packs in First Aid kit."
-        ];
-      } 
-      else if (lower.includes('wheel') || lower.includes('loader') || lower.includes('jcb') || lower.includes('cat') || lower.includes('excavator')) {
-        hazards = [
-          "1. Blind spots hitting pedestrians or vehicles.",
-          "2. Tip-over on uneven, soft, or sloped ground.",
-          "3. Hydraulic hose burst (High-pressure fluid injection).",
-          "4. Struck-by falling bucket loads or attachments.",
-          "5. Noise & Vibration fatigue for operator.",
-          "6. Pinch points between bucket and frame.",
-          "7. Fire from fuel leaks near hot engine parts.",
-          "8. Carbon Monoxide poisoning in enclosed spaces."
-        ];
-        controls = [
-          "1. ALWAYS use Banksman/Spotter when reversing.",
-          "2. Keep bucket low while traveling; never carry over people.",
-          "3. Inspect hydraulic lines daily for wear/leaks.",
-          "4. Wear seatbelt; ensure ROPS/FOPS protection is intact.",
-          "5. Maintain 3m exclusion zone around equipment.",
-          "6. Park on level ground, lower bucket, engage brake.",
-          "7. Keep fire extinguisher accessible on board.",
-          "8. Check engine alarms and backup beepers daily."
-        ];
-      }
-      else if (lower.includes('scaffold') || lower.includes('height') || lower.includes('wah')) {
-        hazards = [
-          "1. Fall from height (>2m) due to missing guardrails.",
-          "2. Platform collapse from overloading.",
-          "3. Struck-by falling tools/materials.",
-          "4. Electrocution from proximity to power lines.",
-          "5. Slips on wet/muddy platforms.",
-          "6. Unstable ground settlement.",
-          "7. Improper access via cross-bracing.",
-          "8. Unauthorized structural alterations."
-        ];
-        controls = [
-          "1. Check Green Scafftag before every use.",
-          "2. 100% tie-off with harness above 2m.",
-          "3. Secure all tools with lanyards.",
-          "4. Inspect base plates & sole boards daily.",
-          "5. Install toe boards & debris netting.",
-          "6. Only certified scaffolders to modify.",
-          "7. Maintain 4m clearance from power lines.",
-          "8. Clear debris immediately (Clean as you go)."
-        ];
-      }
-      else {
-        hazards = [
-          "1. Unplanned execution without Risk Assessment.",
-          "2. Lack of competency for specific equipment.",
-          "3. Poor housekeeping (slips/trips/fire hazards).",
-          "4. Incorrect or insufficient PPE.",
-          "5. Rushing leading to safety shortcuts.",
-          "6. Fatigue or distraction impairing judgment.",
-          "7. Poor crew communication.",
-          "8. Uncontrolled environmental factors."
-        ];
-        controls = [
-          "1. Conduct JSA before starting.",
-          "2. Verify worker certifications.",
-          "3. Strict 'Clean as you go' policy.",
-          "4. Enforce PPE compliance. Inspect gear.",
-          "5. Empower STOP WORK authority.",
-          "6. Mandate breaks & task rotation.",
-          "7. Conduct pre-task briefings.",
-          "8. Monitor weather/heat index."
-        ];
-      }
-      return { hazards, controls };
-    }
-
-    function generateTBT() {
-      if (!currentUser) { alert("🔒 Please Login to generate TBTs."); openLogin(); return; }
-      
-      const topicInput = document.getElementById('tbtTopic').value;
-      if (!topicInput) return alert("Please enter a topic (e.g., Wheel Loader).");
-      
-      const loc = document.getElementById('locationInput').value || document.getElementById('city').value || 'Site Location';
-      const date = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-      const org = document.getElementById('orgNameInput').value || 'Nazeer Kadhar HSE Professional';
-      const contact = document.getElementById('orgContact').value || '00971562395526';
-      const sup = document.getElementById('supervisorInput').value || '_____________';
-
-      const data = getTopicData(topicInput);
-
-      let content = `TOOLBOX TALK RECORD\n\n${org}\nContact: ${contact}\n\n`;
-      content += `Topic: ${topicInput.toUpperCase()}\n`;
-      content += `Date: ${date} | Location: ${loc}\n`;
-      content += `Supervisor: ${sup} | Workers: ______\n\n`;
-      
-      content += `HAZARDS IDENTIFIED:\n`;
-      data.hazards.forEach(h => content += `• ${h}\n`);
-      content += `\nCONTROL MEASURES & RECOMMENDATIONS:\n`;
-      data.controls.forEach(c => content += `• ${c}\n`);
-      
-      content += `\nREQUIRED PPE:\n• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses`;
-      
-      content += `\n\nEMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.`;
-      
-      content += `\n\nWORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
-      
-      // 15 LINES FIX
-      for(let i=1; i<=15; i++) content += `${i}.  | ______________ | _________ | ______________\n`;
-
-      const previewEl = document.getElementById('tbtPreview');
-      previewEl.textContent = content; 
-      previewEl.style.display = 'block';
-    }
-
-    function downloadTBT(type) {
-      if (!currentUser) return alert("🔒 Please Login first.");
-      
-      const content = document.getElementById('tbtPreview').textContent;
-      const topic = document.getElementById('tbtTopic').value.replace(/\s+/g, '_') || 'TBT';
-      const org = document.getElementById('orgNameInput').value || 'Nazeer Kadhar HSE Professional';
-      const contact = document.getElementById('orgContact').value || '00971562395526';
-
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF(); 
-      
-      // Header
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-      doc.text(org.toUpperCase(), 105, 15, null, null, 'center');
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-      doc.text('Contact: ' + contact, 105, 22, null, null, 'center');
-      
-      // Title & Content
-      doc.text('TOOLBOX TALK RECORD', 105, 30, null, null, 'center');
-      const lines = doc.splitTextToSize(content, 180); 
-      doc.text(lines, 15, 40);
-      
-      doc.save(`${topic}_${Date.now()}.pdf`);
-    }
-
+    // 🔹 HEAT CHECK & AUTO-SYNC
     function checkHeat() {
-      const city = document.getElementById('city').value;
-      if(!city) return alert("Enter city.");
+      const city = document.getElementById('city').value.trim();
+      if (!city) return alert('Please enter a location.');
+      
+      // Auto-sync to TBT location field
+      document.getElementById('tbtLocation').value = city;
+      
+      // Simulate response (replace with your real API if needed)
       document.getElementById('hiCard').style.display = 'block';
       document.getElementById('tempCard').style.display = 'block';
       document.getElementById('hiVal').textContent = '42°C';
       document.getElementById('tempVal').textContent = '38°C';
-      document.getElementById('locationInput').value = city;
       alert(`✅ Heat Index updated for ${city}. Location synced to TBT generator.`);
+    }
+
+    // 🔹 SPECIFIC TOPIC DATABASE (FIXED FALLBACK)
+    function getTopicData(topic) {
+      const lower = topic.toLowerCase();
+      let hazards = [], controls = [];
+
+      if (lower.includes('heat') || lower.includes('hot') || lower.includes('summer') || lower.includes('sun')) {
+        hazards = ["1. Heat Stroke (High body temp, confusion, dry skin).","2. Heat Exhaustion (Heavy sweating, cold skin, dizziness).","3. Severe Dehydration & Muscle Cramps.","4. Sunburn & Long-term Skin Damage.","5. Slips/Trips from sweat on slippery surfaces.","6. Reduced Focus leading to accidents.","7. Fogged safety glasses due to humidity.","8. Chemical burns from hot surfaces."];
+        controls = ["1. Drink 250ml water every 20 mins (1L/hour).","2. Rest in shaded/AC areas every 45-60 mins.","3. Wear breathable, light-colored clothing.","4. Monitor Heat Index (WBGT) continuously.","5. Use Buddy System to watch for symptoms.","6. Reschedule heavy work for early morning/night.","7. Wear wide-brim hard hats & UV sunglasses.","8. Keep emergency ice packs in First Aid kit."];
+      } 
+      else if (lower.includes('wheel') || lower.includes('loader') || lower.includes('jcb') || lower.includes('cat') || lower.includes('excavator') || lower.includes('bulldozer')) {
+        hazards = ["1. Blind spots hitting pedestrians or vehicles.","2. Tip-over on uneven, soft, or sloped ground.","3. Hydraulic hose burst (High-pressure fluid injection).","4. Struck-by falling bucket loads or attachments.","5. Noise & Vibration fatigue for operator.","6. Pinch points between bucket and frame.","7. Fire from fuel leaks near hot engine parts.","8. Carbon Monoxide poisoning in enclosed spaces."];
+        controls = ["1. ALWAYS use Banksman/Spotter when reversing.","2. Keep bucket low while traveling; never carry over people.","3. Inspect hydraulic lines daily for wear/leaks.","4. Wear seatbelt; ensure ROPS/FOPS protection is intact.","5. Maintain 3m exclusion zone around equipment.","6. Park on level ground, lower bucket, engage brake.","7. Keep fire extinguisher accessible on board.","8. Check engine alarms and backup beepers daily."];
+      }
+      else if (lower.includes('scaffold') || lower.includes('scaffolding') || lower.includes('height') || lower.includes('wah')) {
+        hazards = ["1. Fall from height (>2m) due to missing guardrails.","2. Platform collapse from overloading.","3. Struck-by falling tools/materials.","4. Electrocution from proximity to power lines.","5. Slips on wet/muddy platforms.","6. Unstable ground settlement.","7. Improper access via cross-bracing.","8. Unauthorized structural alterations."];
+        controls = ["1. Check Green Scafftag before every use.","2. 100% tie-off with harness above 2m.","3. Secure all tools with lanyards.","4. Inspect base plates & sole boards daily.","5. Install toe boards & debris netting.","6. Only certified scaffolders to modify.","7. Maintain 4m clearance from power lines.","8. Clear debris immediately (Clean as you go)."];
+      }
+      else {
+        hazards = ["1. Unplanned execution without Risk Assessment.","2. Lack of competency for specific equipment.","3. Poor housekeeping (slips/trips/fire hazards).","4. Incorrect or insufficient PPE.","5. Rushing leading to safety shortcuts.","6. Fatigue or distraction impairing judgment.","7. Poor crew communication.","8. Uncontrolled environmental factors."];
+        controls = ["1. Conduct JSA before starting.","2. Verify worker certifications.","3. Strict 'Clean as you go' policy.","4. Enforce PPE compliance. Inspect gear.","5. Empower STOP WORK authority.","6. Mandate breaks & task rotation.","7. Conduct pre-task briefings.","8. Monitor weather/heat index."];
+      }
+      return { hazards, controls };
+    }
+
+    // 🔹 GENERATE PREVIEW
+    function generateTBT() {
+      const topicInput = document.getElementById('tbtTopic').value.trim();
+      if (!topicInput) return alert('Please enter a topic.');
+
+      const org = document.getElementById('orgName').value;
+      const contact = document.getElementById('orgContact').value;
+      const loc = document.getElementById('tbtLocation').value || 'Site Location';
+      const sup = document.getElementById('tbtSupervisor').value || '_____________';
+      const date = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+
+      const data = getTopicData(topicInput);
+      let content = `${org}\nContact: ${contact}\nTOOLBOX TALK RECORD\nTopic: ${topicInput.toUpperCase()}\nDate: ${date} | Location: ${loc}\nSupervisor: ${sup} | Workers: ______\n\nHAZARDS IDENTIFIED:\n${data.hazards.map((h,i)=>`${i+1}. ${h}`).join('\n')}\n\nCONTROL MEASURES & RECOMMENDATIONS:\n${data.controls.map((c,i)=>`${i+1}. ${c}`).join('\n')}\n\nREQUIRED PPE:\n• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses\n\nEMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.\n\nWORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
+      
+      for(let i=1; i<=15; i++) content += `${i}. | ______________ | _________ | ______________\n`;
+
+      document.getElementById('tbtPreview').textContent = content;
+      document.getElementById('tbtPreview').style.display = 'block';
+    }
+
+    // 🔹 DOWNLOAD PDF (EXACT ORIGINAL FORMAT)
+    function downloadTBT() {
+      const content = document.getElementById('tbtPreview').textContent;
+      if (!content) return alert('Generate preview first.');
+      
+      const topic = document.getElementById('tbtTopic').value.replace(/\s+/g, '_') || 'TBT';
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF(); 
+      
+      doc.setFont('Courier', 'normal');
+      doc.setFontSize(11);
+      
+      const lines = doc.splitTextToSize(content, 180); 
+      doc.text(lines, 12, 15);
+      
+      doc.save(`${topic}_${Date.now()}.pdf`);
     }
   </script>
 </body>
