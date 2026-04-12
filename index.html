@@ -1,118 +1,1081 @@
-<script>
-const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
-let currentHistory = [];
-
-// ✅ HEAT CHECK
-async function checkHeat() {
-  const city = document.getElementById('city').value.trim();
-  if (!city) return alert('Please enter location.');
-
-  document.getElementById('loading').style.display = 'block';
-
-  try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
-    const data = await res.json();
-
-    if (data.cod !== 200) throw new Error('Location not found');
-
-    const temp = data.main.temp;
-    const hum = data.main.humidity;
-
-    let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum;
-    if(temp < 26) hi = temp;
-
-    document.getElementById('tempVal').textContent = temp.toFixed(1) + '°C';
-    document.getElementById('humVal').textContent = hum + '%';
-    document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
-
-    document.getElementById('tbtLocation').value = city;
-
-    logActivity(`Checked Heat: ${city}`, `HI: ${hi.toFixed(1)}`);
-
-  } catch (e) {
-    alert(e.message);
-  } finally {
-    document.getElementById('loading').style.display = 'none';
-  }
-}
-
-// ✅ FIXED LOCATION FUNCTION (WORKING)
-function useMyLocation() {
-  const cityInput = document.getElementById('city');
-  const loading = document.getElementById('loading');
-
-  if (!navigator.geolocation) {
-    alert('Geolocation not supported');
-    return;
-  }
-
-  loading.style.display = 'block';
-
-  navigator.geolocation.getCurrentPosition(async (position) => {
-    const lat = position.coords.latitude;
-    const lon = position.coords.longitude;
-
-    try {
-      const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
-      const data = await res.json();
-
-      if (data.cod === 200) {
-        const locationName = `${data.name},${data.sys.country}`;
-
-        cityInput.value = locationName;
-        document.getElementById('tbtLocation').value = locationName;
-
-        // 🔥 Important: call after setting value
-        checkHeat();
-      } else {
-        alert('Unable to fetch location name');
-      }
-
-    } catch (err) {
-      console.error(err);
-      alert('Error fetching location');
-    } finally {
-      loading.style.display = 'none';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>HSE Heat Stress Alert - Nazeer Kadhar</title>
+  <!-- 🔹 PDF GENERATION LIBRARIES -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%);
+      color: #ecf0f1;
+      min-height: 100vh;
+      padding-bottom: 80px;
     }
 
-  }, (error) => {
-    loading.style.display = 'none';
-    alert('Location permission denied or unavailable');
-  });
-}
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      padding: 20px;
+      border-bottom: 4px solid #e67e22;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      max-width: 950px;
+      margin: 0 auto;
+      padding: 0 10px;
+    }
+    .site-logo {
+      height: 80px;
+      width: auto;
+      flex-shrink: 0;
+    }
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .header-text h1 {
+      font-size: 1.6rem;
+      margin: 0 0 4px 0;
+      color: #fff;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .header-text .creator {
+      color: #bdc3c7;
+      font-size: 0.9rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .header-text .creator strong {
+      color: #e67e22;
+      font-weight: 600;
+    }
 
-// ✅ HISTORY FIX (THIS WAS BREAKING YOUR CODE)
-function logActivity(action, details='') {
-  const entry = {
-    date: new Date().toLocaleString(),
-    action,
-    details
-  };
-  currentHistory.unshift(entry);
-}
+    /* MAIN CONTAINER */
+    .container {
+      padding: 20px 15px;
+      max-width: 850px;
+      margin: 0 auto;
+    }
 
-function loadHistory() {
-  const container = document.getElementById('historyTableContainer');
+    /* INPUT SECTION */
+    .input-section {
+      background: #2c3e50;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .input-section input {
+      flex: 1;
+      padding: 14px 18px;
+      border: 2px solid #34495e;
+      border-radius: 10px;
+      background: #34495e;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .input-section input:focus {
+      border-color: #e67e22;
+    }
+    .input-section input::placeholder {
+      color: #95a5a6;
+    }
+    .btn-check {
+      background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-check:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(230,126,34,0.4);
+    }
+    .btn-check:active {
+      transform: scale(0.97);
+    }
 
-  if (currentHistory.length === 0) {
-    container.innerHTML = '<p style="text-align:center;">No history</p>';
-    return;
-  }
+    /* LOADING */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 30px;
+      color: #e67e22;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
 
-  container.innerHTML =
-    `<table>
-      <tr>
-        <th>Date</th>
-        <th>Action</th>
-        <th>Details</th>
-      </tr>` +
-    currentHistory.map(h =>
-      `<tr>
-        <td>${h.date}</td>
-        <td>${h.action}</td>
-        <td>${h.details}</td>
-      </tr>`
-    ).join('') +
-    `</table>`;
-}
-</script>
+    /* ALERT BOX */
+    .alert-box {
+      background: linear-gradient(135deg, #2c1810 0%, #4a1c1c 100%);
+      border: 3px solid #e74c3c;
+      border-radius: 12px;
+      padding: 25px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      display: none;
+      box-shadow: 0 6px 20px rgba(231,76,60,0.3);
+    }
+    .alert-box.extreme {
+      background: linear-gradient(135deg, #2c1810 0%, #4a1c1c 100%);
+      border-color: #e74c3c;
+    }
+    .alert-box.caution {
+      background: linear-gradient(135deg, #2c2410 0%, #4a441c 100%);
+      border-color: #f39c12;
+    }
+    .alert-box.safe {
+      background: linear-gradient(135deg, #102c18 0%, #1c4a24 100%);
+      border-color: #27ae60;
+    }
+    .alert-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+    .alert-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .alert-box.extreme .alert-title { color: #e74c3c; }
+    .alert-box.caution .alert-title { color: #f39c12; }
+    .alert-box.safe .alert-title { color: #27ae60; }
+    .alert-msg {
+      font-size: 1rem;
+      color: #ecf0f1;
+      line-height: 1.5;
+    }
+
+    /* DATA CARDS */
+    .card {
+      background: #2c3e50;
+      border-radius: 12px;
+      padding: 25px 20px;
+      margin-bottom: 15px;
+      text-align: center;
+      border: 2px solid #34495e;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+    }
+    .card-label {
+      font-size: 0.9rem;
+      color: #95a5a6;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .card-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .card.heat-index {
+      border-color: #e67e22;
+      background: linear-gradient(135deg, #2c3e50 0%, #3d2817 100%);
+    }
+    .card.wbgt {
+      border-color: #9b59b6;
+    }
+
+    /* WHATSAPP BOX */
+    .wa-box {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+      display: none;
+      box-shadow: 0 4px 12px rgba(39,174,96,0.3);
+    }
+    .wa-box input {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+    .btn-wa {
+      background: #25d366;
+      color: #fff;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      width: 100%;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37,211,102,0.3);
+      transition: transform 0.2s;
+    }
+    .btn-wa:hover {
+      transform: translateY(-2px);
+    }
+
+    /* PREMIUM BOX */
+    .premium-box {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      border-radius: 12px;
+      padding: 25px 20px;
+      text-align: center;
+      margin: 20px 0;
+      box-shadow: 0 6px 20px rgba(231,76,60,0.3);
+    }
+    .premium-box h3 {
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+      color: #fff;
+    }
+    .btn-premium {
+      background: #fff;
+      color: #e74c3c;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: 700;
+      margin-top: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .btn-premium:hover {
+      transform: translateY(-2px);
+    }
+
+    /* NAVIGATION */
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 25px 0;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: #3498db;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border: 1px solid #3498db;
+      border-radius: 20px;
+      transition: all 0.3s;
+    }
+    .nav-links a:hover {
+      background: #3498db;
+      color: #fff;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 30px 20px;
+      color: #7f8c8d;
+      font-size: 0.85rem;
+      border-top: 1px solid #34495e;
+      margin-top: 30px;
+    }
+
+    /* MOBILE OPTIMIZATION */
+    @media (max-width: 768px) {
+      .header-content { flex-direction: column; gap: 10px; }
+      .site-logo { height: 60px; }
+      .header-text h1 { font-size: 1.3rem; }
+      .card-value { font-size: 2rem; }
+      .input-section { flex-direction: column; }
+      .btn-check { width: 100%; }
+      .container { padding: 15px; }
+    }
+
+    @media (max-width: 480px) {
+      .header-text h1 { font-size: 1.2rem; }
+      .card-value { font-size: 1.8rem; }
+      .alert-title { font-size: 1.4rem; }
+    }
+        /* 🔹 TASK 5: FORECAST CARDS */
+    .forecast-card {
+      background: #2c3e50;
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 2px solid #34495e;
+      transition: transform 0.2s;
+    }
+    .forecast-card:hover { transform: translateY(-2px); }
+    .forecast-time { font-size:0.85rem; color:#95a5a6; margin-bottom:6px; font-weight:600; }
+    .forecast-temp { font-size:1.3rem; color:#fff; font-weight:700; margin:4px 0; }
+    .forecast-hi { font-size:0.85rem; margin-bottom:6px; }
+    .forecast-risk {
+      display:inline-block; padding:3px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin-top:4px;
+    }
+    .risk-safe { background:#27ae60; color:#fff; }
+    .risk-caution { background:#f39c12; color:#fff; }
+    .risk-high { background:#e67e22; color:#fff; }
+    .risk-extreme { background:#e74c3c; color:#fff; }
+        @media (max-width: 768px) {
+      #forecastGrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .forecast-card { padding: 12px 8px; }
+      .forecast-temp { font-size: 1.1rem; }
+    }
+    @media (max-width: 480px) {
+      #forecastGrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .forecast-card { padding: 10px 6px; border-radius: 8px; }
+      .forecast-time { font-size: 0.8rem; }
+      .forecast-temp { font-size: 1rem; }
+      .forecast-hi { font-size: 0.8rem; }
+      .forecast-risk { font-size: 0.7rem; padding: 2px 6px; }
+    }
+    /* 🔹 END TASK 5 CSS */
+    /* PREMIUM LANGUAGE DROPDOWN */
+    #premiumLanguage {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      cursor: pointer;
+    }
+    #premiumLanguage option {
+      background: #2c3e50;
+      color: #fff;
+    }
+      /* 🔹 FEATURE 6: WORK-REST RESPONSIVE */
+    .wr-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
+    @media (max-width: 480px) {
+      .wr-grid { grid-template-columns: 1fr !important; }
+      .wr-grid > div { display:flex; justify-content:space-between; align-items:center; padding:10px 15px; }
+    }
+    /* 🔹 FEATURE 7: HYDRATION + EMERGENCY RESPONSIVE */
+    @media (max-width: 480px) {
+      #hydrationSection input { font-size: 0.95rem; padding: 10px; }
+      #emergencySection button { font-size: 0.9rem; padding: 10px; }
+      #emergencySection a { font-size: 1rem; padding: 12px; }
+    }
+    /* 🔹 FEATURE 13: UAE BAN RESPONSIVE */
+    @media (max-width: 480px) {
+      #uaeBanAlert { padding: 15px; }
+      #uaeBanAlert h3 { font-size: 1.1rem; }
+      #uaeBanAlert p { font-size: 0.9rem; }
+      #uaeBanAlert button { font-size: 0.9rem; padding: 8px 16px; }
+      #overridePin { width: 100% !important; margin-bottom: 8px; }
+    }
+    /* 🔹 FEATURE 10: TBT RESPONSIVE */
+    @media (max-width: 480px) {
+      #tbtTopicInput { font-size: 0.95rem; padding: 10px; }
+      #tbtPreview { font-size: 0.8rem; padding: 12px; }
+    }
+    /* 🔹 FEATURE 9: QUICK ALERT WIDGET RESPONSIVE */
+    @media (max-width: 480px) {
+      #qaWidget { bottom: 15px; right: 15px; }
+      #qaBtn { width: 50px; height: 50px; font-size: 1.3rem; }
+      #qaMenu button { font-size: 0.9rem; padding: 8px 12px; }
+    }
+    @keyframes qaPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(230,126,34,0.4); }
+      50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(231,76,60,0.7); }
+    }
+    .qa-pulse { animation: qaPulse 1.5s infinite !important; background: linear-gradient(135deg, #e74c3c, #c0392b) !important; }
+    /* 🔹 FEATURE 8: MULTI-SITE RESPONSIVE */
+    .site-card { background:#1a252f; border-radius:8px; padding:12px; position:relative; border:1px solid #34495e; transition:transform 0.2s; }
+    .site-card:hover { transform: translateY(-2px); }
+    .site-card .remove-btn { position:absolute; top:8px; right:8px; background:#c0392b; color:#fff; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; justify-content:center; transition:opacity 0.2s; }
+    .site-card .remove-btn:hover { opacity: 0.8; }
+    @media (max-width: 480px) { #siteInput, #multiSiteSection button { font-size: 0.9rem; padding: 8px; } }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-content">
+      <img src="logo heat stress index.png" alt="Logo" class="site-logo" />
+      <div class="header-text">
+        <h1>🌡️ HSE Heat Stress Alert System</h1>
+        <p class="creator">Created by <strong>NAZEER KADHAR</strong>, HSE Professional</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    
+    <!-- INPUT SECTION -->
+    <div class="input-section">
+      <input type="text" id="city" placeholder="Enter location (e.g., Ras Al Khaimah,AE)" />
+      <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
+    </div>
+    
+    <!-- LOCATION BUTTON -->
+    <div style="text-align:center; margin:-10px 0 20px 0;">
+      <button type="button" onclick="useMyLocation()" style="background:transparent; border:1px dashed #3498db; color:#3498db; padding:8px 16px; border-radius:20px; font-size:0.85rem; cursor:pointer; transition:all 0.2s;">
+        📍 Use My Current Location
+      </button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading" id="loading">⏳ Fetching weather data...</div>
+
+    <!-- DATE & TIME DISPLAY -->
+    <div class="card" id="datetimeCard">
+      <div class="card-label">📅 Local Date & Time</div>
+      <div class="card-value" id="datetimeVal" style="font-size:1.3rem;">--</div>
+    </div>
+
+    <!-- ALERT BOX -->
+    <div class="alert-box" id="alertBox">
+      <div class="alert-icon" id="alertIcon">🔴</div>
+      <div class="alert-title" id="alertTitle">EXTREME RISK</div>
+      <div class="alert-msg" id="alertMsg">EXTREME HEAT STRESS - Cease all outdoor work immediately!</div>
+    </div>
+
+    <!-- TEMPERATURE CARD -->
+    <div class="card" id="tempCard">
+      <div class="card-label">Temperature</div>
+      <div class="card-value" id="tempVal">--°C</div>
+    </div>
+
+    <!-- HUMIDITY CARD -->
+    <div class="card" id="humCard">
+      <div class="card-label">Humidity</div>
+      <div class="card-value" id="humVal">--%</div>
+    </div>
+
+    <!-- HEAT INDEX CARD -->
+    <div class="card heat-index" id="hiCard">
+      <div class="card-label">Heat Index</div>
+      <div class="card-value" id="hiVal">--°C</div>
+    </div>
+
+    <!-- WBGT CARD -->
+    <div class="card wbgt" id="wbgtCard">
+      <div class="card-label">WBGT <span style="font-size:0.75rem; font-weight:400; color:#95a5a6;">(estimated)</span></div>
+      <div class="card-value" id="wbgtVal">--°C</div>
+      <p style="color:#7f8c8d; font-size:0.75rem; margin-top:8px; line-height:1.3;">*Estimated from temp + humidity. For certified readings, use a calibrated WBGT meter.</p>
+    </div>
+        <!-- 🔹 TASK 5: FORECAST & WORK PLANNING -->
+    <div id="forecastSection" style="display:none; margin-top:25px;">
+      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">📊 12-Hour Heat Forecast & Work Planning</h3>
+      <div id="forecastGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;"></div>
+      <div id="bestWorkTime" style="background:linear-gradient(135deg,#1e824c,#27ae60); border-radius:12px; padding:15px; text-align:center; display:none;">
+        <strong style="color:#fff; font-size:1.1rem; display:block; margin-bottom:8px;">💡 Recommended Safe Work Window</strong>
+        <p id="bestTimeText" style="color:#ecf0f1; margin:0; line-height:1.4;"></p>
+      </div>
+    </div>
+    <!-- 🔹 END TASK 5 HTML -->
+        <!-- 🔹 FEATURE 6: WORK-REST SCHEDULE -->
+    <div id="workRestSection" style="display:block; margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+      <h3 style="color:#fff; margin:0 0 5px 0; text-align:center; font-size:1.2rem;">⏱️ Work-Rest Schedule Generator</h3>
+      <p style="color:#7f8c8d; font-size:0.75rem; margin:0 0 15px 0; text-align:center;">Based on NIOSH/ACGIH heat stress guidelines</p>
+      
+      <div style="margin-bottom:15px;">
+        <label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px; font-weight:500;">Work Intensity:</label>
+        <select id="workType" style="width:100%; padding:12px; border-radius:8px; border:1px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+          <option value="light">💡 Light (Inspection, Office, Surveying)</option>
+          <option value="moderate">🛠️ Moderate (Walking, Light Lifting, Drilling)</option>
+          <option value="heavy">🔨 Heavy (Digging, Rebar, Concrete Pouring)</option>
+        </select>
+      </div>
+
+      <button onclick="generateWorkRest()" style="width:100%; background:linear-gradient(135deg,#2980b9,#3498db); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; transition:opacity 0.2s;">
+        📋 Generate Schedule
+      </button>
+      
+      <div id="workRestResult" style="display:none; margin-top:15px; padding:15px; background:#1a252f; border-radius:8px; text-align:center;">
+        <div style="font-size:1.3rem; font-weight:700; color:#e67e22; margin-bottom:12px;" id="wrHeader"></div>
+        <div class="wr-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:10px;">
+          <div style="background:#27ae60; color:#fff; padding:12px 8px; border-radius:8px;">
+            <div style="font-size:0.75rem; opacity:0.85; margin-bottom:4px;">Work</div>
+            <div style="font-size:1.2rem; font-weight:700;" id="wrWork"></div>
+          </div>
+          <div style="background:#e74c3c; color:#fff; padding:12px 8px; border-radius:8px;">
+            <div style="font-size:0.75rem; opacity:0.85; margin-bottom:4px;">Rest</div>
+            <div style="font-size:1.2rem; font-weight:700;" id="wrRest"></div>
+          </div>
+          <div style="background:#3498db; color:#fff; padding:12px 8px; border-radius:8px;">
+            <div style="font-size:0.75rem; opacity:0.85; margin-bottom:4px;">Water</div>
+            <div style="font-size:1.2rem; font-weight:700;" id="wrWater"></div>
+          </div>
+        </div>
+        <p id="wrNote" style="color:#95a5a6; font-size:0.85rem; margin:10px 0 0 0; line-height:1.4;"></p>
+      </div>
+    </div>
+
+    <!-- 🔹 FEATURE 7A: HYDRATION CALCULATOR -->
+    <div id="hydrationSection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+      <h3 style="color:#fff; margin:0 0 5px 0; text-align:center; font-size:1.2rem;">💧 Hydration Calculator</h3>
+      <p style="color:#7f8c8d; font-size:0.75rem; margin:0 0 15px 0; text-align:center;">Based on temperature + body weight</p>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px;">
+        <div>
+          <label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px; font-weight:500;">Weight (kg):</label>
+          <input type="number" id="workerWeight" placeholder="e.g., 70" min="40" max="150" style="width:100%; padding:12px; border-radius:8px; border:1px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+        </div>
+        <div>
+          <label style="color:#bdc3c7; font-size:0.9rem; display:block; margin-bottom:6px; font-weight:500;">Heat Index:</label>
+          <input type="text" id="autoHI" value="--°C" readonly style="width:100%; padding:12px; border-radius:8px; border:1px solid #34495e; background:#1a252f; color:#e67e22; font-size:1rem; font-weight:600; outline:none; cursor:not-allowed;">
+        </div>
+      </div>
+
+      <button onclick="calculateHydration()" style="width:100%; background:linear-gradient(135deg,#27ae60,#2ecc71); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:700; cursor:pointer; transition:opacity 0.2s;">
+        💧 Calculate Water Needs
+      </button>
+      
+      <div id="hydrationResult" style="display:none; margin-top:15px; padding:15px; background:#1a252f; border-radius:8px; text-align:center;">
+        <div style="font-size:1.3rem; font-weight:700; color:#3498db; margin-bottom:12px;" id="hydHeader"></div>
+        <div style="font-size:1.5rem; font-weight:700; color:#2ecc71; margin:10px 0;" id="hydAmount"></div>
+        <p id="hydNote" style="color:#95a5a6; font-size:0.85rem; margin:10px 0 0 0; line-height:1.4;"></p>
+      </div>
+    </div>
+
+    <!-- 🔹 FEATURE 7B: EMERGENCY GUIDANCE -->
+    <div id="emergencySection" style="margin-top:20px; background:linear-gradient(135deg,#2c1810,#4a1c1c); border:3px solid #e74c3c; border-radius:12px; padding:20px; box-shadow:0 6px 20px rgba(231,76,60,0.3);">
+      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">🚨 Emergency Heat Response</h3>
+      
+      <div style="margin-bottom:15px;">
+        <button onclick="toggleEmergency('exhaustion')" style="width:100%; background:#e67e22; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">
+          ⚠️ Heat Exhaustion Symptoms
+        </button>
+        <div id="exhaustionContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; color:#ecf0f1; line-height:1.5;">
+          • Heavy sweating • Cold, pale skin • Dizziness • Nausea • Muscle cramps • Weakness
+        </div>
+      </div>
+      
+      <div style="margin-bottom:15px;">
+        <button onclick="toggleEmergency('stroke')" style="width:100%; background:#e74c3c; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">
+          🔴 Heat Stroke Symptoms (MEDICAL EMERGENCY)
+        </button>
+        <div id="strokeContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; color:#ecf0f1; line-height:1.5;">
+          • Hot, red, dry skin • No sweating • Confusion • Loss of consciousness • Seizures • Body temp >40°C
+        </div>
+      </div>
+      
+      <div style="margin-bottom:15px;">
+        <button onclick="toggleEmergency('firstaid')" style="width:100%; background:#3498db; color:#fff; border:none; padding:12px; border-radius:8px; font-weight:600; margin-bottom:8px; cursor:pointer;">
+          🩹 Immediate First Aid Steps
+        </button>
+        <div id="firstaidContent" style="display:none; background:#1a252f; padding:12px; border-radius:8px; margin-top:8px; font-size:0.9rem; color:#ecf0f1; line-height:1.5;">
+          1. Move to shade/AC immediately<br>
+          2. Remove excess clothing<br>
+          3. Cool with wet cloths/fan<br>
+          4. Sip water if conscious<br>
+          5. Call emergency if no improvement in 15 min
+        </div>
+      </div>
+      
+      <a href="tel:998" style="display:block; width:100%; background:#c0392b; color:#fff; text-align:center; padding:14px; border-radius:8px; font-weight:700; text-decoration:none; font-size:1.1rem; margin-top:10px;">
+        📞 Call UAE Emergency: 998 / 999
+      </a>
+    </div>
+
+    <!-- 🔹 FEATURE 13: UAE SUMMER BAN ALERT -->
+    <div id="uaeBanAlert" style="display:none; margin-top:20px; background:linear-gradient(135deg,#c0392b,#e74c3c); border:3px solid #fff; border-radius:12px; padding:20px; text-align:center; box-shadow:0 6px 20px rgba(231,76,60,0.5); animation:pulse 2s infinite;">
+      <div style="font-size:2rem; margin-bottom:10px;">⚠️</div>
+      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.3rem; font-weight:700;" id="uaeBanTitle">UAE MIDDAY BREAK IN EFFECT</h3>
+      <p style="color:#fff; margin:0 0 15px 0; font-size:1rem; line-height:1.4;" id="uaeBanMessage">Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style="color:#f1c40f;">per MOHRE rule</strong></p>
+      
+      <div id="banButtons" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button onclick="dismissBanAlert()" style="background:#fff; color:#c0392b; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">
+          ✅ Acknowledge
+        </button>
+        <button onclick="overrideBanAlert()" style="background:transparent; color:#fff; border:2px solid #fff; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;">
+          🔐 HSE Override (Emergency)
+        </button>
+      </div>
+      
+      <div id="overrideForm" style="display:none; margin-top:15px; padding-top:15px; border-top:2px solid rgba(255,255,255,0.3);">
+        <input type="password" id="overridePin" placeholder="Enter HSE PIN" style="padding:10px; border-radius:6px; border:none; margin-right:8px; width:150px;">
+        <button onclick="validateOverride()" style="background:#27ae60; color:#fff; border:none; padding:10px 16px; border-radius:6px; font-weight:600; cursor:pointer;">Validate</button>
+      </div>
+    </div>
+
+    <style>
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(231,76,60,0.7); }
+        70% { box-shadow: 0 0 0 12px rgba(231,76,60,0); }
+        100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+      }
+    </style>
+    <!-- WHATSAPP SUBSCRIPTION -->
+    <div class="wa-box" id="waBox">
+      <h3 style="color:#fff; margin:0 0 8px 0; font-size:1.2rem; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
+        📲 WhatsApp Alerts (15 AED/mo)
+        <span style="background:#e67e22; color:#fff; font-size:0.75rem; padding:3px 8px; border-radius:12px; font-weight:600;">🔥 Popular</span>
+      </h3>
+      <p style="color:#ecf0f1; margin:0 0 15px 0; font-size:0.9rem; line-height:1.4;">3 daily alerts: 10:00 AM, 12:30 PM, 3:00 PM</p>
+      <input type="tel" id="phone" placeholder="Enter WhatsApp number (+91...)" />
+      <button class="btn-wa" onclick="subscribeWA()">📲 Subscribe - 15 AED/month/per number</button>
+      <div id="waPaymentStep" style="display:none; margin-top:15px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.3);">
+        <p style="color:#fff; margin:0 0 10px 0; font-size:0.95rem;">✅ Message sent! Complete payment to activate alerts.</p>
+        <button class="btn-wa" style="background:#fff; color:#27ae60;" onclick="window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank')">💳 Pay Securely - 15 AED</button>
+      </div>
+    </div>
+    
+    <!-- PREMIUM UPGRADE -->
+    <div class="premium-box">
+      <h3>💎 Premium Alerts (50 AED/mo)</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px;">Advanced dashboard + Regional language alerts</p>
+      
+      <div style="margin-bottom:15px;">
+        <label style="color:#fff; font-size:0.9rem; display:block; margin-bottom:8px; font-weight:500;">Select Alert Language:</label>
+        <select id="premiumLanguage" style="width:100%; padding:12px; border-radius:10px; border:2px solid #34495e; background:#34495e; color:#fff; font-size:1rem; outline:none;">
+          <option value="en">🇬 English</option>
+          <option value="ar">🇸🇦 العربية (Arabic)</option>
+          <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+          <option value="ta">🇮 தமிழ் (Tamil)</option>
+          <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+          <option value="ur">🇵 اردو (Urdu)</option>
+        </select>
+      </div>
+
+      <button class="btn-premium" onclick="goPremium()">Upgrade - 50 AED/month</button>
+    </div>
+
+    <!-- 🔹 FEATURE 10: CUSTOM TBT GENERATOR (PREMIUM LOCKED) -->
+    <div class="premium-box" style="margin-top:20px; background:linear-gradient(135deg,#8e44ad,#9b59b6);" id="tbtSection">
+      <h3>🗣️ Custom Toolbox Talk Generator</h3>
+      <p style="font-size:0.9rem; margin-bottom:15px;">Enter ANY topic → Professional, audit-ready PDF</p>
+      
+      <input type="text" id="tbtTopicInput" placeholder="e.g., Scaffolding Safety, Electrical Hazards, Crane Operations" style="width:100%; padding:12px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:1rem; margin-bottom:10px; outline:none;">
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+        <select id="tbtLang" style="padding:10px; border-radius:8px; border:none; background:#2c3e50; color:#fff; font-size:0.95rem;">
+          <option value="en">🇬 English</option>
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="hi">🇮🇳 हिन्दी</option>
+        </select>
+        <button onclick="generateTBT()" style="background:#fff; color:#8e44ad; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer;">📝 Generate Preview</button>
+      </div>
+
+      <div id="tbtPreview" style="display:none; background:#1a252f; padding:15px; border-radius:8px; white-space:pre-wrap; font-family:monospace; font-size:0.85rem; color:#95a5a6; line-height:1.5; text-align:left; max-height:250px; overflow-y:auto; margin-bottom:10px; user-select:none; filter:blur(3px);"></div>
+      <div id="lockNotice" style="display:none; text-align:center; margin-bottom:15px;">
+        <p style="color:#f1c40f; font-size:0.9rem;">🔒 Subscribe to unlock downloads, org branding & attendance sheets</p>
+        <button onclick="unlockTestMode()" style="background:transparent; border:1px dashed #7f8c8d; color:#7f8c8d; padding:5px 10px; font-size:0.75rem; border-radius:4px; cursor:pointer; margin-top:5px;">[Test Unlock]</button>
+      </div>
+
+      <div id="tbtPremiumPanel" style="display:none; margin-bottom:15px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+          <input type="text" id="orgName" placeholder="Organization Name" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+          <input type="text" id="orgAddr" placeholder="Site Address" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+          <input type="text" id="orgContact" placeholder="Contact Number" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+          <input type="file" id="orgLogo" accept="image/*" style="padding:8px; border-radius:6px; background:#2c3e50; color:#fff; font-size:0.9rem;">
+        </div>
+        <div style="display:grid; gap:8px; margin-bottom:10px;">
+          <input type="text" id="conductedBy" placeholder="Conducted By (Supervisor Name)" style="padding:8px; border-radius:6px; border:none; background:#34495e; color:#fff; font-size:0.9rem;">
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button onclick="downloadTBT('txt')" style="flex:1; background:#3498db; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📄 Download TXT</button>
+          <button onclick="downloadTBT('pdf')" style="flex:1; background:#e74c3c; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:600; cursor:pointer;">📑 Download PDF</button>
+        </div>
+      </div>
+
+      <button class="btn-premium" onclick="subscribeTBT()">📅 Subscribe Daily TBT - 20 AED/month</button>
+    </div>
+
+    <!-- 🔹 FEATURE 8: MULTI-SITE MONITORING -->
+    <div id="multiSiteSection" style="margin-top:20px; background:#2c3e50; border-radius:12px; padding:20px; border:2px solid #34495e; box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+      <h3 style="color:#fff; margin:0 0 15px 0; text-align:center; font-size:1.2rem;">🌍 Multi-Site Monitoring</h3>
+      <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+        <input type="text" id="siteInput" placeholder="e.g., Sharjah,AE" style="flex:1; min-width:200px; padding:10px; border-radius:8px; border:none; background:#34495e; color:#fff; font-size:0.95rem; outline:none;">
+        <button onclick="addSite()" style="background:#27ae60; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer;">+ Add Site</button>
+        <button onclick="refreshAllSites()" style="background:#2980b9; color:#fff; border:none; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer;">🔄 Refresh All</button>
+      </div>
+      <div id="siteGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;"></div>
+      <p id="siteEmptyMsg" style="color:#7f8c8d; text-align:center; margin-top:15px; font-size:0.9rem;">No sites added yet. Add your first location above.</p>
+    </div>
+
+    <!-- NAVIGATION -->
+    <div class="nav-links">
+      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/privacy-policy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p>© 2026 HSE Heat Stress Alert System</p>
+    <p style="margin-top:5px;">Created by <strong>Nazeer Kadhar</strong></p>
+  </div>
+
+  <!-- 🔹 FEATURE 9: MOBILE QUICK ALERT WIDGET -->
+  <div id="qaWidget" style="position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
+    <div id="qaMenu" style="display:none; flex-direction:column; gap:8px; margin-bottom:8px; background:#2c3e50; padding:12px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.4); border:2px solid #34495e; min-width:200px;">
+      <button onclick="qaScroll('hiCard')" style="background:#e74c3c; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">🔥 Check Heat Risk Now</button>
+      <button onclick="qaScroll('workRestSection')" style="background:#2980b9; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">⏱️ Work-Rest</button>
+      <button onclick="qaScroll('hydrationSection')" style="background:#27ae60; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">💧 Hydration</button>
+      <button onclick="qaScroll('uaeBanAlert')" style="background:#f39c12; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">🚨 UAE Ban</button>
+      <button onclick="qaScroll('tbtSection')" style="background:#9b59b6; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; text-align:left; font-size:0.95rem;">🗣️ TBT Generator</button>
+    </div>
+    <button onclick="toggleQA()" id="qaBtn" style="background:linear-gradient(135deg,#e67e22,#d35400); color:#fff; border:none; width:56px; height:56px; border-radius:50%; font-size:1.5rem; cursor:pointer; box-shadow:0 4px 12px rgba(230,126,34,0.4); display:flex; align-items:center; justify-content:center; transition:all 0.2s;">🚨</button>
+  </div>
+
+  <script>
+    const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
+    let isTBTUnlocked = localStorage.getItem('hse_tbt_pro') === 'true';
+
+    async function checkHeat() {
+      const city = document.getElementById('city').value.trim();
+      if (!city) { alert('Please enter a location'); return; }
+      document.getElementById('loading').style.display = 'block';
+      hideResults();
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
+        const data = await res.json();
+        if (!res.ok || data.cod != 200) {
+          alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
+          return;
+        } else {
+          const temp = data.main.temp;
+          const hum = data.main.humidity;
+          calculateHeatIndex(temp, hum, data.timezone);
+          fetchForecast(data.timezone);
+          checkUaeBanWithCountry(data.sys.country);
+        }
+      } catch (error) {
+        alert(`Location not found. Try adding country code: "CityName,AE" (e.g., "Ras Al Khaimah,AE", "Dubai,AE", "Abu Dhabi,AE").`);
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    function calculateHeatIndex(temp, hum, tzOffset) {
+      let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+      if (temp < 26) hi = temp;
+      const wbgt = (0.7 * temp) + (0.3 * (temp + (5/9)*(hum/100)*6.112*Math.exp((17.27*temp)/(237.7+temp)) - 273.15));
+      document.getElementById('tempVal').textContent = temp.toFixed(2) + '°C';
+      document.getElementById('humVal').textContent = hum + '%';
+      document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
+      document.getElementById('wbgtVal').textContent = wbgt.toFixed(1) + '°C';
+      const utcNow = Math.floor(Date.now() / 1000);
+      const locTime = new Date((utcNow + tzOffset) * 1000);
+      const dateStr = locTime.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
+      const timeStr = locTime.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
+      document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
+      document.getElementById('datetimeCard').style.display = 'block';
+      document.getElementById('tempCard').style.display = 'block';
+      document.getElementById('humCard').style.display = 'block';
+      document.getElementById('hiCard').style.display = 'block';
+      document.getElementById('wbgtCard').style.display = 'block';
+      document.getElementById('waBox').style.display = 'block';
+      const alertBox = document.getElementById('alertBox');
+      const alertIcon = document.getElementById('alertIcon');
+      const alertTitle = document.getElementById('alertTitle');
+      const alertMsg = document.getElementById('alertMsg');
+      alertBox.className = 'alert-box';
+      alertBox.style.display = 'block';
+      if (hi >= 54 || wbgt >= 32) { alertBox.classList.add('extreme'); alertIcon.textContent = '🔴'; alertTitle.textContent = 'EXTREME RISK'; alertMsg.textContent = 'EXTREME HEAT STRESS - Cease all outdoor work immediately!'; }
+      else if (hi >= 40 || wbgt >= 28) { alertBox.classList.add('caution'); alertIcon.textContent = '🟠'; alertTitle.textContent = 'HIGH RISK'; alertMsg.textContent = 'Heat exhaustion likely. Limit outdoor exposure. Take frequent breaks.'; }
+      else if (hi >= 32 || wbgt >= 25) { alertBox.classList.add('caution'); alertIcon.textContent = '🟡'; alertTitle.textContent = 'CAUTION'; alertMsg.textContent = 'Heat fatigue possible. Stay hydrated and take rest breaks.'; }
+      else { alertBox.classList.add('safe'); alertIcon.textContent = '🟢'; alertTitle.textContent = 'SAFE'; alertMsg.textContent = 'Normal outdoor activities safe. Maintain regular hydration.'; }
+    }
+
+    function hideResults() {
+      document.getElementById('datetimeCard').style.display = 'none';
+      document.getElementById('alertBox').style.display = 'none';
+      document.getElementById('tempCard').style.display = 'none';
+      document.getElementById('humCard').style.display = 'none';
+      document.getElementById('hiCard').style.display = 'none';
+      document.getElementById('wbgtCard').style.display = 'none';
+      document.getElementById('waBox').style.display = 'none';
+    }
+
+    function subscribeWA() {
+      const phone = document.getElementById('phone').value.replace(/\D/g, '');
+      if (!phone) { alert('Please enter your WhatsApp number'); return; }
+      const city = document.getElementById('city').value || 'Not specified';
+      const today = new Date().toLocaleDateString('en-IN');
+      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
+      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\n\nPlease process my 15 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
+      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
+      document.getElementById('waPaymentStep').style.display = 'block';
+      document.querySelector('#waBox .btn-wa').style.display = 'none';
+    }
+
+    function goPremium() {
+      const lang = document.getElementById('premiumLanguage').value;
+      const city = document.getElementById('city').value || 'Multiple Sites';
+      const today = new Date().toLocaleDateString('en-IN');
+      const nextMonth = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN');
+      const msg = encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Please enter your name]\nLocation: ${city}\nOrganization name: [Please enter]\nSubscription period: from ${today} to ${nextMonth}\n\nPlease process my 50 AED/month subscription for a number.\n\nDisclaimer: While we aim for 100% accuracy, this tool is provided "as is." Please report any errors or technical bugs to kaarnaz@gmail.com or via WhatsApp. We appreciate your feedback and support.`);
+      window.open(`https://wa.me/971562395526?text=${msg}`, '_blank');
+      const box = document.querySelector('.premium-box');
+      box.innerHTML = `<h3>✅ Step 1: Message Sent</h3><p style="color:#fff; margin:12px 0; line-height:1.4;">WhatsApp opened with your details. Please send the message to confirm.</p><button class="btn-premium" onclick="window.open('https://razorpay.me/@heatindexnazeerkadhar', '_blank')">💳 Step 2: Pay Securely (50 AED)</button>`;
+    }
+
+    document.getElementById('city').addEventListener('keypress', function(e) { if (e.key === 'Enter') checkHeat(); });
+    
+    function useMyLocation() {
+      if (!navigator.geolocation) { alert('Geolocation is not supported by your browser'); return; }
+      document.getElementById('loading').style.display = 'block';
+      hideResults();
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
+          const data = await res.json();
+          if (data.cod !== 200) throw new Error(data.message);
+          document.getElementById('city').value = data.name + ',' + data.sys.country;
+          calculateHeatIndex(data.main.temp, data.main.humidity, data.timezone);
+          fetchForecast(data.timezone);
+          checkUaeBanWithCountry(data.sys.country);
+        } catch (error) { alert('Error: ' + error.message); } finally { document.getElementById('loading').style.display = 'none'; }
+      }, () => { alert('Unable to retrieve your location. Please enter city name manually.'); document.getElementById('loading').style.display = 'none'; });
+    }
+
+    async function fetchForecast(tzOffset) {
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(document.getElementById('city').value)}&units=metric&appid=${API_KEY}`);
+        const data = await res.json();
+        if (!data.list) return;
+        document.getElementById('forecastSection').style.display = 'block';
+        const grid = document.getElementById('forecastGrid');
+        grid.innerHTML = '';
+        let bestSlot = null;
+        let bestHI = 999;
+        data.list.slice(0, 5).forEach(slot => {
+          const dt = new Date((slot.dt + tzOffset) * 1000);
+          const timeStr = dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
+          const temp = slot.main.temp;
+          const hum = slot.main.humidity;
+          let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+          if (temp < 26) hi = temp;
+          let riskClass = 'risk-safe', riskText = 'SAFE';
+          if (hi >= 54) { riskClass = 'risk-extreme'; riskText = 'EXTREME'; }
+          else if (hi >= 40) { riskClass = 'risk-high'; riskText = 'HIGH RISK'; }
+          else if (hi >= 32) { riskClass = 'risk-caution'; riskText = 'CAUTION'; }
+          if (hi < bestHI) { bestHI = hi; bestSlot = { time: timeStr, hi: hi.toFixed(1) }; }
+          grid.innerHTML += `<div class="forecast-card"><div class="forecast-time">⏰ ${timeStr}</div><div class="forecast-temp">${temp.toFixed(1)}°C</div><div class="forecast-hi" style="color:#bdc3c7;">HI: ${hi.toFixed(1)}°C</div><span class="forecast-risk ${riskClass}">${riskText}</span></div>`;
+        });
+        const bestDiv = document.getElementById('bestWorkTime');
+        const bestText = document.getElementById('bestTimeText');
+        if (bestSlot) { bestDiv.style.display = 'block'; bestDiv.style.background = bestHI >= 40 ? 'linear-gradient(135deg,#e67e22,#d35400)' : 'linear-gradient(135deg,#1e824c,#27ae60)'; bestText.textContent = bestHI >= 40 ? `Lowest risk at ${bestSlot.time} (HI: ${bestSlot.hi}°C). Consider indoor/night shifts.` : `Safest period: ${bestSlot.time} (HI: ${bestSlot.hi}°C). Normal outdoor work acceptable.`; }
+      } catch (e) { console.log('Forecast skipped:', e); }
+    }
+
+    function generateWorkRest() {
+      const hiText = document.getElementById('hiVal').textContent;
+      if (hiText === '--°C') { alert('Please check heat stress first.'); return; }
+      const hi = parseFloat(hiText);
+      const workType = document.getElementById('workType').value;
+      let workMin, restMin, water, note;
+      if (hi < 32) { workMin = "Continuous"; restMin = "As needed"; water = "0.5 L/hr"; note = "✅ Conditions safe. Maintain standard hydration & breaks."; }
+      else if (hi >= 32 && hi < 40) { if (workType==='light') { workMin=50; restMin=10; water="0.75 L/hr"; } else if (workType==='moderate') { workMin=40; restMin=20; water="1 L/hr"; } else { workMin=30; restMin=30; water="1.25 L/hr"; } note = "⚠️ Heat stress increasing. Strictly follow cycles."; }
+      else if (hi >= 40 && hi < 46) { if (workType==='light') { workMin=40; restMin=20; water="1 L/hr"; } else if (workType==='moderate') { workMin=30; restMin=30; water="1.25 L/hr"; } else { workMin=20; restMin=40; water="1.5 L/hr"; } note = "🚨 HIGH RISK. Cease heavy labor if possible."; }
+      else { if (workType==='heavy') { workMin=10; restMin=50; water="1.5 L/hr"; } else { workMin=30; restMin=30; water="1 L/hr"; } note = "🚨 EXTREME DANGER. Suspend outdoor work."; }
+      document.getElementById('workRestSection').style.display = 'block';
+      document.getElementById('workRestResult').style.display = 'block';
+      document.getElementById('wrHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${workType.charAt(0).toUpperCase()+workType.slice(1)} Work`;
+      document.getElementById('wrWork').textContent = typeof workMin==='number' ? `${workMin} min` : workMin;
+      document.getElementById('wrRest').textContent = typeof restMin==='number' ? `${restMin} min` : restMin;
+      document.getElementById('wrWater').textContent = water;
+      document.getElementById('wrNote').textContent = note;
+    }
+
+    function calculateHydration() {
+      const weight = parseFloat(document.getElementById('workerWeight').value);
+      const hiText = document.getElementById('hiVal').textContent;
+      if (!weight || weight < 40 || weight > 150) { alert('Please enter a valid weight (40-150 kg)'); return; }
+      if (hiText === '--°C') { alert('Please check heat stress first.'); return; }
+      const hi = parseFloat(hiText);
+      let base = weight * 0.035; let adjustment = hi >= 46 ? 1.5 : hi >= 40 ? 1.0 : hi >= 32 ? 0.5 : 0;
+      const total = (base + adjustment).toFixed(1);
+      const interval = hi >= 40 ? "15" : hi >= 32 ? "20" : "30";
+      const amount = Math.round((total * 1000) / (60/parseInt(interval)));
+      document.getElementById('hydrationSection').style.display = 'block';
+      document.getElementById('hydrationResult').style.display = 'block';
+      document.getElementById('hydHeader').textContent = `HI: ${hi.toFixed(1)}°C | ${weight} kg`;
+      document.getElementById('hydAmount').textContent = `💧 ${amount}ml every ${interval} min`;
+      document.getElementById('hydNote').textContent = `Total: ~${total} L/hr. Adjust for sweat loss.`;
+      document.getElementById('autoHI').value = `${hi.toFixed(1)}°C`;
+    }
+
+    function toggleEmergency(type) {
+      ['exhaustion','stroke','firstaid'].forEach(t => document.getElementById(t+'Content').style.display = 'none');
+      document.getElementById(type+'Content').style.display = 'block';
+    }
+
+    let isUaeLocation = false;
+    function checkUaeBanWithCountry(countryCode) {
+      const cityInput = document.getElementById('city').value.toUpperCase();
+      const isUaeByCode = countryCode ? countryCode.toUpperCase() === 'AE' : false;
+      const isUaeByCity = cityInput.endsWith(',AE') || ['DUBAI','ABU DHABI','SHARJAH','AJMAN','FUJAIRAH','UMM AL QUWAIN','RAS AL KHAIMAH'].some(em => cityInput.includes(em));
+      isUaeLocation = isUaeByCode || isUaeByCity;
+      checkUaeBan();
+    }
+    function checkUaeBan() {
+      const alertBox = document.getElementById('uaeBanAlert');
+      const title = document.getElementById('uaeBanTitle');
+      const message = document.getElementById('uaeBanMessage');
+      const buttons = document.getElementById('banButtons');
+      if (!isUaeLocation) { title.textContent = "UAE Midday Break Not Applicable"; message.innerHTML = "Not applicable in your country as per law"; alertBox.style.background = 'linear-gradient(135deg,#7f8c8d,#95a5a6)'; buttons.style.display = 'none'; alertBox.style.display = 'block'; return; }
+      buttons.style.display = 'flex';
+      const now = new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' });
+      const date = new Date(now);
+      const totalMinutes = date.getHours() * 60 + date.getMinutes();
+      if (totalMinutes >= 750 && totalMinutes < 900) {
+        title.textContent = "UAE MIDDAY BREAK IN EFFECT"; message.innerHTML = "Outdoor work prohibited between 12:30 PM – 3:00 PM<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>"; alertBox.style.background = 'linear-gradient(135deg,#c0392b,#e74c3c)';
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else { title.textContent = "UAE Midday Break Currently Inactive"; message.innerHTML = "Outdoor work allowed. Ban resumes at 12:30 PM UAE time.<br><strong style=\"color:#f1c40f;\">per MOHRE rule</strong>"; alertBox.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)'; }
+      alertBox.style.display = 'block';
+    }
+    function dismissBanAlert() { document.getElementById('uaeBanAlert').style.display = 'none'; }
+    function overrideBanAlert() { document.getElementById('overrideForm').style.display = 'block'; }
+    function validateOverride() {
+      if (document.getElementById('overridePin').value === '1234') {
+        document.getElementById('uaeBanAlert').style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
+        document.getElementById('uaeBanAlert').querySelector('h3').textContent = '⚠️ OVERRIDE ACTIVE - EMERGENCY WORK';
+        document.getElementById('uaeBanAlert').querySelector('p').innerHTML = 'Emergency work authorized by HSE Officer.<br><strong style="color:#f1c40f;">per MOHRE rule - Ensure all safety measures are in place.</strong>';
+        document.getElementById('overrideForm').style.display = 'none';
+      } else { alert('❌ Invalid PIN. Contact site HSE manager.'); }
+    }
+    document.addEventListener('DOMContentLoaded', () => { checkUaeBan(); setInterval(checkUaeBan, 60000); });
+
+    // 🔹 FEATURE 10: PREMIUM TBT GENERATOR (LOCKED + BRANDING + ATTENDANCE)
+    function unlockTestMode() { isTBTUnlocked = true; localStorage.setItem('hse_tbt_pro', 'true'); applyTBTState(); }
+    function applyTBTState() {
+      const panel = document.getElementById('tbtPremiumPanel'); const notice = document.getElementById('lockNotice'); const preview = document.getElementById('tbtPreview');
+      if (isTBTUnlocked) { panel.style.display = 'block'; notice.style.display = 'none'; preview.style.filter = 'none'; preview.style.color = '#ecf0f1'; } 
+      else { panel.style.display = 'none'; notice.style.display = 'block'; preview.style.filter = 'blur(3px)'; preview.style.color = '#95a5a6'; }
+    }
+    function generateTBT() {
+      const topic = document.getElementById('tbtTopicInput').value.trim(); if (!topic) { alert('Please enter a topic'); return; }
+      const loc = document.getElementById('city').value || 'Site Location'; const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const lower = topic.toLowerCase();
+      let hazards = ['Unplanned task execution without risk assessment','Worker fatigue or lack of specific training','Uncontrolled environment or equipment failure'];
+      let controls = ['Conduct Job Safety Analysis (JSA) before starting','Verify all personnel are briefed & equipped','Maintain exclusion zones & clear emergency routes'];
+      if(lower.includes('manual')||lower.includes('handling')) { hazards=['Musculoskeletal injuries from improper bending/twisting','Overexertion from loads exceeding safe limits','Pinch points, dropped objects, or unstable footing']; controls=['Keep load close to waist. Bend knees, not back','Use team lift for >20kg or mechanical aids','Clear pathways & wear cut-resistant gloves']; }
+      else if(lower.includes('scaffold')) { hazards=['Unsecured base plates or inadequate bracing','Overloading beyond design capacity','Missing guardrails or toe boards at height']; controls=['Inspect all tags & couplings before climbing','Never exceed marked platform capacity','100% tie-off required above 2m']; }
+      else if(lower.includes('electrical')) { hazards=['Live circuit exposure & arc flash risk','Damaged insulation or wet tool operation','Inadequate Lockout/Tagout (LOTO)']; controls=['Verify zero energy state before work begins','Use insulated tools & voltage-rated PPE only','Apply LOTO permits & test circuits']; }
+      document.getElementById('tbtPreview').textContent = `📅 DAILY TOOLBOX TALK: ${topic.toUpperCase()}\n📍 Location: ${loc} | 📆 ${date}\n\n⚠️ KEY HAZARDS IDENTIFIED:\n• ${hazards[0]}\n• ${hazards[1]}\n• ${hazards[2]}\n\n✅ MANDATORY CONTROL MEASURES:\n• ${controls[0]}\n• ${controls[1]}\n• ${controls[2]}\n\n📝 SUPERVISOR SIGN-OFF:\nConducted by: _______________ | Workers Present: ___/___ | Date: ${date}\n\n[ ] All hazards discussed  [ ] Controls implemented  [ ] Q&A completed`;
+      document.getElementById('tbtPreview').style.display = 'block'; applyTBTState();
+    }
+    async function downloadTBT(format) {
+      const topic = document.getElementById('tbtTopicInput').value.trim(); const loc = document.getElementById('city').value || 'Site Location'; const date = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+      const conductedBy = document.getElementById('conductedBy').value || 'Supervisor Name'; const orgName = document.getElementById('orgName').value || ''; const orgAddr = document.getElementById('orgAddr').value || ''; const orgContact = document.getElementById('orgContact').value || '';
+      const logoInput = document.getElementById('orgLogo'); let logoBase64 = null;
+      if (logoInput.files.length > 0) { logoBase64 = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(logoInput.files[0]); }); }
+      logoInput.value = '';
+      if (format === 'txt') {
+        const txt = `TOOL BOX TALK\n${orgName?orgName+'\n':''}${orgAddr?orgAddr+'\n':''}${orgContact?'Contact: '+orgContact+'\n':''}\nTopic: ${topic.toUpperCase()}\nLocation: ${loc} | Date: ${date} | Conducted By: ${conductedBy}\n[Full content & attendance sheet available in PDF]`;
+        const blob = new Blob([txt], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TBT_${topic.replace(/\s+/g,'_')}.txt`; a.click();
+      } else {
+        const { jsPDF } = window.jspdf; const doc = new jsPDF(); let y=15;
+        if(logoBase64) { doc.addImage(logoBase64, 'JPEG', 15, 5, 20, 20); doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('TOOL BOX TALK', 40, 15); y=30; } 
+        else { doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.text('TOOL BOX TALK', 15, 15); y=22; }
+        doc.setFont('helvetica','normal'); doc.setFontSize(10); if(orgName){doc.text(orgName,15,y);y+=5;} if(orgAddr){doc.text(orgAddr,15,y);y+=5;} if(orgContact){doc.text('Contact: '+orgContact,15,y);y+=8;}
+        doc.text(`Topic: ${topic.toUpperCase()} | Loc: ${loc} | Date: ${date} | By: ${conductedBy}`, 15, y); y+=12;
+        doc.setFont('helvetica','bold'); doc.text('⚠️ KEY HAZARDS:', 15, y); y+=5; doc.setFont('helvetica','normal');
+        const lower=topic.toLowerCase(), hz=['Unplanned task execution','Worker fatigue','Uncontrolled environment'], ct=['Conduct JSA before starting','Verify personnel briefing','Maintain exclusion zones'];
+        if(lower.includes('manual')||lower.includes('handling')) { hz=['Improper lifting posture','Overexertion >20kg','Dropped objects/pinch points']; ct=['Bend knees, keep load close','Use mechanical aids/team lift','Clear path, wear gloves']; }
+        hz.forEach(h=>{doc.text('• '+h,20,y);y+=5;}); y+=3; doc.setFont('helvetica','bold'); doc.text('✅ MANDATORY CONTROLS:', 15, y); y+=5; doc.setFont('helvetica','normal'); ct.forEach(c=>{doc.text('• '+c,20,y);y+=5;});
+        doc.autoTable({ startY: y, head: [['No.', 'Worker Name', 'Signature']], body: Array.from({length:15},(_,i)=>[i+1,'','']), theme:'grid', styles:{fontSize:9,cellPadding:3,halign:'center'}, headStyles:{fillColor:[44,62,80]}, columnStyles:{0:{cellWidth:12},1:{cellWidth:'auto'},2:{cellWidth:40}} });
+        doc.save(`TBT_${topic.replace(/\s+/g,'_')}_${date.replace(/\s+/g,'')}.pdf`);
+      }
+    }
+    function subscribeTBT() {
+      const lang = document.getElementById('tbtLang').value; const city = document.getElementById('city').value || 'Not specified';
+      const today = new Date().toLocaleDateString('en-IN'); const nextMonth = new Date(Date.now()+30*24*60*60*1000).toLocaleDateString('en-IN');
+      window.open(`https://wa.me/971562395526?text=${encodeURIComponent(`Welcome to HSE Heat Stress Alert System.\nCreated by "NAZEER KADHAR", HSE Professional\n\nName: [Enter name]\nLocation: ${city}\nOrg: [Enter]\nPeriod: ${today} to ${nextMonth}\nTBT Sub (${lang})\n\nPlease process 20 AED/mo.\nDisclaimer: Tool provided "as is". Report bugs to kaarnaz@gmail.com`)}`, '_blank');
+      setTimeout(()=>{if(confirm('✅ Message sent!\nClick OK for payment (20 AED)')){window.open('https://razorpay.me/@heatindexnazeerkadhar','_blank');}},2000);
+    }
+
+    // 🔹 FEATURE 9: MOBILE QUICK ALERT WIDGET LOGIC
+    let qaOpen = false;
+    function toggleQA() { qaOpen = !qaOpen; document.getElementById('qaMenu').style.display = qaOpen ? 'flex' : 'none'; }
+    function qaScroll(id) { toggleQA(); const el = document.getElementById(id); if(el) { if(el.style.display==='none') el.style.display='block'; el.scrollIntoView({behavior:'smooth',block:'center'}); } }
+    function checkExtreme() { const h = parseFloat(document.getElementById('hiVal')?.textContent || 0); const btn = document.getElementById('qaBtn'); if(h >= 40) { btn.classList.add('qa-pulse'); if(navigator.vibrate) navigator.vibrate([300,100,300]); } else { btn.classList.remove('qa-pulse'); } }
+    setInterval(checkExtreme, 30000);
+    document.addEventListener('DOMContentLoaded', checkExtreme);
+
+    // 🔹 FEATURE 8: MULTI-SITE MONITORING LOGIC
+    let savedSites = JSON.parse(localStorage.getItem('hse_sites') || '[]');
+    function renderSites() {
+      const grid = document.getElementById('siteGrid');
+      const emptyMsg = document.getElementById('siteEmptyMsg');
+      grid.innerHTML = '';
+      if (savedSites.length === 0) { emptyMsg.style.display = 'block'; return; }
+      emptyMsg.style.display = 'none';
+      savedSites.forEach(site => {
+        const id = site.replace(/[^a-zA-Z0-9]/g,'');
+        grid.innerHTML += `<div class="site-card" id="card-${id}">
+          <button class="remove-btn" onclick="removeSite('${site}')">×</button>
+          <div style="font-size:0.95rem; font-weight:600; color:#ecf0f1; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📍 ${site}</div>
+          <div id="data-${id}" style="color:#7f8c8d; font-size:0.85rem; line-height:1.4;">Loading...</div>
+        </div>`;
+      });
+      refreshAllSites();
+    }
+    function addSite() {
+      const input = document.getElementById('siteInput');
+      const val = input.value.trim();
+      if (!val) return alert('Please enter a location (e.g., Dubai,AE)');
+      if (savedSites.includes(val)) return alert('Site already exists');
+      savedSites.push(val);
+      localStorage.setItem('hse_sites', JSON.stringify(savedSites));
+      input.value = '';
+      renderSites();
+    }
+    function removeSite(site) {
+      savedSites = savedSites.filter(s => s !== site);
+      localStorage.setItem('hse_sites', JSON.stringify(savedSites));
+      renderSites();
+    }
+    async function refreshAllSites() {
+      if (savedSites.length === 0) return;
+      const promises = savedSites.map(async (site) => {
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
+          if (!res.ok) throw new Error();
+          const data = await res.json();
+          const temp = data.main.temp.toFixed(1);
+          const hum = data.main.humidity;
+          let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
+          if (temp < 26) hi = temp;
+          let risk = hi >= 40 ? '🔴 HIGH' : hi >= 32 ? '🟡 CAUTION' : '🟢 SAFE';
+          const id = `data-${site.replace(/[^a-zA-Z0-9]/g,'')}`;
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = `🌡️ ${temp}°C | 💧 ${hum}%<br>HI: ${hi.toFixed(1)}°C ${risk}`;
+        } catch {
+          const id = `data-${site.replace(/[^a-zA-Z0-9]/g,'')}`;
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = '⚠️ Invalid location';
+        }
+      });
+      await Promise.all(promises);
+    }
+    document.addEventListener('DOMContentLoaded', renderSites);
+    setInterval(refreshAllSites, 300000);
+  </script>
+</body>
+</html>
