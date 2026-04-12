@@ -1,132 +1,77 @@
-<script>
-// 🔹 GLOBAL STATE
-const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
-let currentHistory = [];
-
-// 🔹 HEAT CHECK (UNCHANGED)
-async function checkHeat() {
-  const city = document.getElementById('city').value.trim();
-  if (!city) return alert('Please enter location.');
-  
-  document.getElementById('loading').style.display = 'block';
-  try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
-    const data = await res.json();
-    if(data.cod !== 200) throw new Error('Location not found');
-    
-    const utcNow = Math.floor(Date.now() / 1000);
-    const locTime = new Date((utcNow + data.timezone) * 1000);
-
-    const dateStr = locTime.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC' });
-    const timeStr = locTime.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'UTC' });
-
-    document.getElementById('datetimeVal').textContent = `${dateStr} | ${timeStr}`;
-    document.getElementById('datetimeCard').style.display = 'block';
-
-    const temp = data.main.temp;
-    const hum = data.main.humidity;
-
-    let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum;
-    if(temp < 26) hi = temp;
-
-    document.getElementById('tempVal').textContent = temp.toFixed(1) + '°C';
-    document.getElementById('humVal').textContent = hum + '%';
-    document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
-    document.getElementById('autoHI').value = hi.toFixed(1) + '°C';
-
-    ['tempCard','humCard','hiCard','alertBox'].forEach(id => document.getElementById(id).style.display = 'block');
-
-    document.getElementById('tbtLocation').value = city;
-
-  } catch(e) {
-    alert(e.message);
-  } finally {
-    document.getElementById('loading').style.display = 'none';
-  }
-}
-
-
-// ✅✅✅ FIXED LOCATION FUNCTION
 function useMyLocation() {
   const cityInput = document.getElementById('city');
+  const loading = document.getElementById('loading');
 
   if (!navigator.geolocation) {
-    alert('Geolocation not supported by your browser.');
+    alert('Geolocation not supported');
     return;
   }
 
-  document.getElementById('loading').style.display = 'block';
+  loading.style.display = 'block';
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
+  // 🔥 Promise wrapper (more reliable)
+  function getPosition() {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: false,
+        timeout: 15000,
+        maximumAge: 60000
+      });
+    });
+  }
+
+  getPosition()
+    .then(async (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
       try {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
+        // 🔹 Try OpenWeather first
+        let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
+        let data = await res.json();
 
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
-        const data = await res.json();
+        let locationName = '';
 
-        if (data.cod !== 200) throw new Error('Unable to fetch location');
+        if (data && data.cod === 200 && data.name) {
+          locationName = `${data.name},${data.sys.country}`;
+        } else {
+          // 🔹 Fallback (OpenStreetMap)
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+          const geoData = await geoRes.json();
 
-        const locationName = `${data.name},${data.sys.country}`;
+          locationName =
+            geoData.address.city ||
+            geoData.address.town ||
+            geoData.address.village ||
+            geoData.address.state ||
+            'Your Location';
+        }
 
+        // 🔥 FINAL SET (guaranteed)
         cityInput.value = locationName;
         document.getElementById('tbtLocation').value = locationName;
 
+        // 🔹 Trigger main logic
         checkHeat();
 
       } catch (err) {
-        alert('Error fetching location data.');
         console.error(err);
+        alert('Unable to fetch location data');
       } finally {
-        document.getElementById('loading').style.display = 'none';
+        loading.style.display = 'none';
       }
-    },
-    (error) => {
-      document.getElementById('loading').style.display = 'none';
+    })
+    .catch((error) => {
+      loading.style.display = 'none';
 
-      if (error.code === error.PERMISSION_DENIED) {
-        alert('Location permission denied.');
-      } else if (error.code === error.TIMEOUT) {
-        alert('Location request timed out.');
+      if (error.code === 1) {
+        alert('Permission denied. Allow location access.');
+      } else if (error.code === 2) {
+        alert('Location unavailable.');
+      } else if (error.code === 3) {
+        alert('Timeout. Try again.');
       } else {
-        alert('Location error occurred.');
+        alert('Error getting location.');
       }
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
-    }
-  );
+    });
 }
-
-
-// 🔹 HISTORY LOGGING (FIXED END PART)
-function logActivity(action, details='') {
-  const entry = { date: new Date().toLocaleString(), action, details };
-  currentHistory.unshift(entry);
-  if(currentHistory.length > 50) currentHistory.pop();
-}
-
-function loadHistory() {
-  const container = document.getElementById('historyTableContainer');
-
-  if(currentHistory.length === 0) {
-    container.innerHTML = '<p style="text-align:center; color:#7f8c8d;">No history found.</p>';
-    return;
-  }
-
-  container.innerHTML =
-    `<table>
-      <tr><th>Date</th><th>Action</th><th>Details</th></tr>` +
-    currentHistory.map(h =>
-      `<tr>
-        <td>${h.date}</td>
-        <td>${h.action}</td>
-        <td>${h.details}</td>
-      </tr>`
-    ).join('') +
-    `</table>`;
-}
-</script>
