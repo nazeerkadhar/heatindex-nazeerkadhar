@@ -27,7 +27,7 @@
     .btn-check:hover { transform: translateY(-2px); }
     
     /* LOADING */
-    #loading { display: none; text-align: center; padding: 15px; color: #e67e22; font-weight: 600; }
+    #loading { display: none; text-align: center; padding: 15px; color: #e67e22; font-weight: 600; margin-bottom: 10px; }
 
     /* CARDS */
     .card { background: #2c3e50; border-radius: 12px; padding: 25px 20px; margin-bottom: 15px; text-align: center; border: 2px solid #34495e; display: none; }
@@ -108,7 +108,7 @@
 
   <div class="container">
     <div class="input-section">
-      <input type="text" id="city" placeholder="Enter location (e.g., Abu Dhabi,AE)" />
+      <input type="text" id="city" placeholder="Enter location (e.g., Ras Al Khaimah,AE)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
     </div>
     <div style="text-align:center; margin:-10px 0 20px 0;">
@@ -198,19 +198,29 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let currentHistory = [];
 
-    // 🔹 FIX 1: ROBUST HEAT CHECK WITH GLOBAL FALLBACK
+    // 🔹 FIX 1: ROBUST HEAT CHECK WITH SANITIZER
     async function checkHeat() {
       let city = document.getElementById('city').value.trim();
       if (!city) return alert('Please enter location.');
       document.getElementById('loading').style.display = 'block';
 
+      // 🔹 FIX: Clean spaces around commas (Fixes "Ras Al Khaimah, AE")
+      city = city.replace(/\s*,\s*/g, ',');
+
+      // Specific overrides for tricky city names
+      const lower = city.toLowerCase();
+      if (lower.includes('ras al khaimah')) city = 'Ras Al Khaimah,AE';
+      else if (lower.includes('fujairah')) city = 'Fujairah,AE';
+      else if (lower.includes('umm al quwain')) city = 'Umm Al Quwain,AE';
+
       try {
+        // Direct fetch first
         let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
         let data = await res.json();
 
-        // If fails, try common country codes for international cities
-        if (data.cod !== 200) {
-          const countries = ['AE', 'IN', 'US', 'GB', 'SA', 'QA', 'KW', 'BH', 'OM', 'EG', 'PH', 'CA', 'AU'];
+        // If fails, try fallback country codes
+        if (data.cod !== 200 && !city.includes(',')) {
+          const countries = ['AE', 'IN', 'US', 'GB', 'SA', 'QA', 'KW', 'BH', 'OM', 'EG', 'PH', 'CA'];
           for (let c of countries) {
             res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city + ',' + c)}&units=metric&appid=${API_KEY}`);
             data = await res.json();
@@ -219,11 +229,11 @@
         }
 
         if (data.cod !== 200) {
-          alert(`Location "${city}" not found.\n\nTry format: "City,CountryCode"\nExamples: London,GB | Toronto,CA | Riyadh,SA`);
+          alert(`Location "${city}" not found.\n\nTry format: "City,CountryCode"\nExamples: Ras Al Khaimah,AE | Riyadh,SA`);
           return;
         }
 
-        document.getElementById('city').value = `${data.name}, ${data.sys.country}`; // Update input to match API
+        document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
         processWeatherData(data);
       } catch (e) {
         alert('Connection error. Please check internet.');
@@ -234,16 +244,18 @@
 
     // 🔹 FIX 2: DIRECT COORDINATE USAGE (NO DOUBLE SEARCH)
     function useMyLocation() {
-      if (!navigator.geolocation) return alert('Geolocation not supported by your browser.');
+      if (!navigator.geolocation) return alert('Geolocation not supported.');
       document.getElementById('loading').style.display = 'block';
       
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
+          // Fetch directly by Lat/Lon (Guaranteed to work & return timezone)
           const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&units=metric&appid=${API_KEY}`);
           const data = await res.json();
           
           if (data.cod === 200) {
             document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
+            // Process data immediately to show Time/Temp
             processWeatherData(data);
           } else {
             alert('Weather service unavailable for your coordinates.');
@@ -254,14 +266,14 @@
           document.getElementById('loading').style.display = 'none';
         }
       }, (err) => {
-        alert('Location access denied. Please enable GPS/Location permissions in your browser.');
+        alert('Location access denied. Please enable GPS.');
         document.getElementById('loading').style.display = 'none';
-      }, { enableHighAccuracy: true, timeout: 10000 });
+      });
     }
 
-    // 🔹 CENTRALIZED DATA PROCESSOR
+    // 🔹 CENTRALIZED DATA PROCESSOR (Updates Time, Heat, Ban Alert)
     function processWeatherData(data) {
-      // Local Time Calculation
+      // Local Time Calculation (Uses API Timezone)
       const utcNow = Math.floor(Date.now() / 1000);
       const locTime = new Date((utcNow + data.timezone) * 1000);
       document.getElementById('datetimeVal').textContent = locTime.toLocaleString('en-GB');
@@ -279,13 +291,15 @@
       document.getElementById('autoHI').value = hi.toFixed(1) + '°C';
       
       ['tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id => document.getElementById(id).style.display = 'block');
+      
+      // Check UAE Ban
       checkUaeBan(data.timezone);
+      
       logActivity(`Checked Heat: ${data.name}, ${data.sys.country}`, `HI: ${hi.toFixed(1)}`);
     }
 
     // 🔹 UAE MID-DAY BREAK LOGIC
     function checkUaeBan(timezoneOffset) {
-      // UAE/Gulf offset is +4 hours (14400 seconds)
       if (timezoneOffset !== 14400) {
         document.getElementById('uaeBanAlert').style.display = 'none';
         return;
@@ -295,13 +309,12 @@
       const locTime = new Date((utcNow + timezoneOffset) * 1000);
       const totalMinutes = locTime.getUTCHours() * 60 + locTime.getUTCMinutes();
 
-      // 12:30 PM = 750 mins, 3:00 PM = 900 mins
       const isBanTime = totalMinutes >= 750 && totalMinutes < 900;
       document.getElementById('uaeBanAlert').style.display = isBanTime ? 'block' : 'none';
     }
     function dismissBan() { document.getElementById('uaeBanAlert').style.display = 'none'; }
 
-    // 🔹 OSHA-COMPLIANT HYDRATION
+    // 🔹 HYDRATION
     function calculateHydration() {
       const weight = parseFloat(document.getElementById('workerWeight').value);
       const hiText = document.getElementById('hiVal').textContent;
@@ -309,7 +322,7 @@
       if (hiText === '--°C') return alert('Check heat stress first.');
 
       const hi = parseFloat(hiText);
-      let baseRate = 720; // OSHA baseline: ~240ml/20min
+      let baseRate = 720;
       let heatFactor = 1.0;
       if (hi >= 46) heatFactor = 1.75;
       else if (hi >= 40) heatFactor = 1.50;
