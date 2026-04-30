@@ -109,14 +109,14 @@
       </div>
     </div>
 
-    <!-- HYDRATION -->
+    <!-- HYDRATION (OSHA FIXED) -->
     <div class="section-box" id="hydrationSection">
       <h3 class="section-title">💧 Hydration Calculator</h3>
       <input type="number" id="workerWeight" placeholder="Weight (kg)" />
       <input type="text" id="autoHI" value="--°C" readonly />
       <button class="btn-action" style="background:#27ae60;" onclick="calculateHydration()">💧 Calculate</button>
       <div id="hydrationResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;">
-        <div style="font-size:1.2rem; font-weight:700; color:#3498db;" id="hydAmount"></div>
+        <div style="font-size:1.1rem; font-weight:700; color:#3498db;" id="hydAmount"></div>
       </div>
     </div>
 
@@ -194,25 +194,40 @@
       } catch(e) { alert(e.message); }
     }
 
-    // 🔹 WHATSAPP
-    function sendWhatsApp() {
-      const phone = document.getElementById('waPhone').value.replace(/\D/g,'');
-      if(!phone) return alert('Enter phone with country code.');
-      const type = document.getElementById('waType').value;
-      const hi = document.getElementById('hiVal').textContent || '--';
-      const temp = document.getElementById('tempVal').textContent || '--';
-      const loc = document.getElementById('city').value || 'Site';
-      let msg = `*HSE ALERT SYSTEM*\n📍 ${loc}\n⏰ ${new Date().toLocaleString()}\n\n`;
-      if(type==='heat') msg += `🔥 HEAT STRESS\n🌡️ Temp: ${temp}\n📈 HI: ${hi}\n✅ Status: ${hi.includes('4')||hi.includes('5')?'HIGH RISK':'CAUTION'}`;
-      else if(type==='schedule') msg += `⏱️ WORK-REST & HYDRATION\n💧 Drink 250ml every 20 mins.\n🛑 Stop if symptoms occur.`;
-      else msg += `🚨 STOP WORK IMMEDIATELY.\n📞 Call 998/999 if needed.`;
-      const note = document.getElementById('waNote').value;
-      if(note) msg += `\n📝 ${note}`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-      logActivity(`WhatsApp ${type} sent to ${phone}`);
+    // 🔹 OSHA-COMPLIANT HYDRATION CALCULATOR (FIXED)
+    function calculateHydration() {
+      const weight = parseFloat(document.getElementById('workerWeight').value);
+      const hiText = document.getElementById('hiVal').textContent;
+      if (!weight || weight < 40 || weight > 150) return alert('Enter valid weight (40-150 kg)');
+      if (hiText === '--°C') return alert('Check heat stress first.');
+
+      const hi = parseFloat(hiText);
+      let baseRate = 720; // OSHA baseline: ~240ml/20min = 720ml/hr
+      let heatFactor = 1.0;
+      if (hi >= 46) heatFactor = 1.75;      // Extreme
+      else if (hi >= 40) heatFactor = 1.50; // High
+      else if (hi >= 32) heatFactor = 1.25; // Caution
+
+      let weightFactor = 1.0;
+      if (weight < 60) weightFactor = 0.9;
+      else if (weight > 90) weightFactor = 1.1;
+
+      let totalMlPerHour = Math.round(baseRate * heatFactor * weightFactor);
+      const MAX_SAFE = 1200; // Hyponatremia prevention cap
+      let displayIntake = Math.min(totalMlPerHour, MAX_SAFE);
+      let intervalMl = Math.round(displayIntake / 3);
+      let needsElectrolytes = (heatFactor >= 1.5 || totalMlPerHour > MAX_SAFE);
+
+      let note = `Total: ~${displayIntake}ml/hr`;
+      if (needsElectrolytes) note += ` | ⚠️ Add electrolytes to prevent hyponatremia`;
+      if (totalMlPerHour > MAX_SAFE) note += ` (Capped at safe max)`;
+
+      document.getElementById('hydrationResult').style.display = 'block';
+      document.getElementById('hydAmount').innerHTML = `💧 ${intervalMl}ml every 20 mins<br><span style="font-size:0.9rem; color:#95a5a6;">${note}</span>`;
+      logActivity("Calculated Hydration", `HI:${hi}°C | ${displayIntake}ml/hr`);
     }
 
-    // 🔹 HELPERS
+    // 🔹 WORK-REST SCHEDULE
     function generateWorkRest() {
        const hi = parseFloat(document.getElementById('hiVal').textContent);
        if(!hi) return alert('Check heat first.');
@@ -223,13 +238,26 @@
        document.getElementById('wrResult').style.display = 'block';
        logActivity("Generated Work-Rest");
     }
-    function calculateHydration() {
-      const w = parseFloat(document.getElementById('workerWeight').value);
-      if(!w) return alert('Enter weight');
-      document.getElementById('hydAmount').textContent = `💧 ${(w * 0.035).toFixed(1)} L/hr`;
-      document.getElementById('hydrationResult').style.display = 'block';
-      logActivity("Calculated Hydration");
+
+    // 🔹 WHATSAPP ALERT
+    function sendWhatsApp() {
+      const phone = document.getElementById('waPhone').value.replace(/\D/g,'');
+      if(!phone) return alert('Enter phone with country code.');
+      const type = document.getElementById('waType').value;
+      const hi = document.getElementById('hiVal').textContent || '--';
+      const temp = document.getElementById('tempVal').textContent || '--';
+      const loc = document.getElementById('city').value || 'Site';
+      let msg = `*HSE ALERT SYSTEM*\n📍 ${loc}\n⏰ ${new Date().toLocaleString()}\n\n`;
+      if(type==='heat') msg += `🔥 HEAT STRESS\n🌡️ Temp: ${temp}\n📈 HI: ${hi}\n✅ Status: ${hi.includes('4')||hi.includes('5')?'HIGH RISK':'CAUTION'}`;
+      else if(type==='schedule') msg += `⏱️ WORK-REST & HYDRATION\n💧 240-300ml every 20 mins.\n🛑 Stop if symptoms occur.`;
+      else msg += `🚨 STOP WORK IMMEDIATELY.\n📞 Call 998/999 if needed.`;
+      const note = document.getElementById('waNote').value;
+      if(note) msg += `\n📝 ${note}`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      logActivity(`WhatsApp ${type} sent to ${phone}`);
     }
+
+    // 🔹 LOCATION
     function useMyLocation() {
       if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
         fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&units=metric&appid=${API_KEY}`)
