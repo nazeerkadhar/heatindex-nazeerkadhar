@@ -119,8 +119,8 @@
 
     <!-- UAE MID-DAY BREAK ALERT -->
     <div class="uae-ban-box" id="uaeBanAlert">
-      <div class="uae-ban-title">⚠️ UAE MIDDAY BREAK IN EFFECT</div>
-      <div class="uae-ban-msg">Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong></div>
+      <div class="uae-ban-title" id="uaeBanTitle">⚠️ UAE MIDDAY BREAK IN EFFECT</div>
+      <div class="uae-ban-msg" id="uaeBanMessage">Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong></div>
       <div style="margin-top:15px;">
         <button onclick="dismissBan()" style="background:#fff; color:#c0392b; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">✅ Acknowledge</button>
       </div>
@@ -291,27 +291,62 @@
       
       ['tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id => document.getElementById(id).style.display = 'block');
       
-      // Check UAE Ban
-      checkUaeBan(data.timezone);
+      // Check UAE Ban (Pass country code + timezone)
+      checkUaeBan(data.sys.country, data.timezone);
       
       logActivity(`Checked Heat: ${data.name}, ${data.sys.country}`, `HI: ${hi.toFixed(1)}`);
     }
 
-    // 🔹 UAE MID-DAY BREAK LOGIC
-    function checkUaeBan(timezoneOffset) {
-      // UAE/Gulf offset is +4 hours (14400 seconds)
-      if (timezoneOffset !== 14400) {
-        document.getElementById('uaeBanAlert').style.display = 'none';
+    // 🔹 UAE MID-DAY BREAK LOGIC (FIXED: Date Range + UAE Only)
+    function checkUaeBan(countryCode, timezoneOffset) {
+      const alertBox = document.getElementById('uaeBanAlert');
+      const titleEl = document.getElementById('uaeBanTitle');
+      const msgEl = document.getElementById('uaeBanMessage');
+      
+      // 1. Check if UAE location (country code 'AE' OR timezone +4 hours = 14400 seconds)
+      const isUae = (countryCode && countryCode.toUpperCase() === 'AE') || (timezoneOffset === 14400);
+      
+      if (!isUae) {
+        alertBox.style.display = 'none';
         return;
       }
 
+      // 2. Check date range: 15-06-2026 to 15-09-2026
+      const today = new Date();
+      const startDate = new Date('2026-06-15T00:00:00');
+      const endDate = new Date('2026-09-15T23:59:59');
+
+      if (today < startDate) {
+        // Before start date: show "Starts from" message
+        titleEl.textContent = '⚠️ UAE MIDDAY BREAK';
+        msgEl.innerHTML = 'Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>Starts from 15-06-2026</strong><br>per MOHRE rule';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      if (today > endDate) {
+        // After end date: hide alert
+        alertBox.style.display = 'none';
+        return;
+      }
+
+      // 3. Within date range: check if current UAE time is between 12:30-15:00
       const utcNow = Math.floor(Date.now() / 1000);
       const locTime = new Date((utcNow + timezoneOffset) * 1000);
       const totalMinutes = locTime.getUTCHours() * 60 + locTime.getUTCMinutes();
 
       // 12:30 PM = 750 mins, 3:00 PM = 900 mins
       const isBanTime = totalMinutes >= 750 && totalMinutes < 900;
-      document.getElementById('uaeBanAlert').style.display = isBanTime ? 'block' : 'none';
+      
+      if (isBanTime) {
+        titleEl.textContent = '⚠️ UAE MIDDAY BREAK IN EFFECT';
+        msgEl.innerHTML = 'Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong>';
+        alertBox.style.display = 'block';
+      } else {
+        titleEl.textContent = '✅ UAE Midday Break Currently Inactive';
+        msgEl.innerHTML = 'Outdoor work allowed. Ban resumes at 12:30 PM.<br><strong>per MOHRE rule</strong>';
+        alertBox.style.display = 'block';
+      }
     }
     function dismissBan() { document.getElementById('uaeBanAlert').style.display = 'none'; }
 
