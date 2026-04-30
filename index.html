@@ -33,7 +33,7 @@
     .card.heat-index { border-color: #e67e22; background: linear-gradient(135deg, #2c3e50 0%, #3d2817 100%); }
     .card.wbgt { border-color: #9b59b6; }
 
-    /* ALERT */
+    /* ALERTS */
     .alert-box { background: linear-gradient(135deg, #2c1810 0%, #4a1c1c 100%); border: 3px solid #e74c3c; border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 20px; display: none; }
     .alert-box.extreme { border-color: #e74c3c; }
     .alert-box.caution { border-color: #f39c12; }
@@ -44,6 +44,27 @@
     .alert-box.caution .alert-title { color: #f39c12; }
     .alert-box.safe .alert-title { color: #27ae60; }
     .alert-msg { font-size: 1rem; color: #ecf0f1; line-height: 1.5; }
+
+    /* UAE BAN ALERT */
+    .uae-ban-box { 
+      background: linear-gradient(135deg, #c0392b, #e74c3c); 
+      border: 3px solid #fff; 
+      border-radius: 12px; 
+      padding: 20px; 
+      text-align: center; 
+      margin-bottom: 20px; 
+      display: none; /* Hidden by default */
+      animation: pulse 2s infinite;
+    }
+    .uae-ban-title { font-size: 1.4rem; color: #fff; font-weight: bold; margin-bottom: 8px; }
+    .uae-ban-msg { font-size: 1rem; color: #fff; line-height: 1.4; }
+    .uae-ban-msg strong { color: #f1c40f; }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    }
 
     /* SECTIONS */
     .section-box { background: #2c3e50; border-radius: 12px; padding: 20px; margin-top: 20px; border: 2px solid #34495e; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -89,6 +110,15 @@
     </div>
     <div style="text-align:center; margin:-10px 0 20px 0;">
       <button onclick="useMyLocation()" style="background:transparent; border:1px dashed #3498db; color:#3498db; padding:8px 16px; border-radius:20px; font-size:0.85rem; cursor:pointer;">📍 Use My Current Location</button>
+    </div>
+
+    <!-- UAE MID-DAY BREAK ALERT -->
+    <div class="uae-ban-box" id="uaeBanAlert">
+      <div class="uae-ban-title">⚠️ UAE MIDDAY BREAK IN EFFECT</div>
+      <div class="uae-ban-msg">Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong></div>
+      <div style="margin-top:15px;">
+        <button onclick="dismissBan()" style="background:#fff; color:#c0392b; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">✅ Acknowledge</button>
+      </div>
     </div>
 
     <div class="alert-box" id="alertBox"><div class="alert-icon" id="alertIcon">🔴</div><div class="alert-title" id="alertTitle">EXTREME RISK</div><div class="alert-msg" id="alertMsg">Cease outdoor work.</div></div>
@@ -163,15 +193,33 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let currentHistory = [];
 
-    // 🔹 HEAT CHECK + LOCAL TIME SYNC
+    // 🔹 HEAT CHECK + LOCAL TIME + SMART LOCATION
     async function checkHeat() {
-      const city = document.getElementById('city').value.trim();
+      let city = document.getElementById('city').value.trim();
       if (!city) return alert('Please enter location.');
+
+      // 🔹 FIX 1: Smart Location (Auto-add ,AE for UAE cities if missing)
+      if (!city.includes(',')) {
+        const uaeCities = ['dubai', 'abu dhabi', 'sharjah', 'ajman', 'rak', 'fujairah', 'uaq', 'umm al quwain', 'ras al khaimah'];
+        if (uaeCities.some(u => city.toLowerCase().includes(u))) {
+          city += ',AE';
+          document.getElementById('city').value = city; // Update input
+        }
+      }
+
       try {
         const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
         const data = await res.json();
-        if(data.cod !== 200) throw new Error('Location not found');
         
+        if(data.cod !== 200) {
+          if(data.message && data.message.includes('city not found')) {
+             alert('Location not found. Try adding country code (e.g., Dubai,AE).');
+          } else {
+             alert(data.message);
+          }
+          return;
+        }
+
         // Local Time Calculation
         const utcNow = Math.floor(Date.now() / 1000);
         const locTime = new Date((utcNow + data.timezone) * 1000);
@@ -190,11 +238,41 @@
         document.getElementById('autoHI').value = hi.toFixed(1) + '°C';
         
         ['tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id => document.getElementById(id).style.display = 'block');
+        
         logActivity(`Checked Heat: ${city}`, `HI: ${hi.toFixed(1)}`);
-      } catch(e) { alert(e.message); }
+        
+        // 🔹 FIX 2: Check UAE Ban after fetch (since we have timezone)
+        checkUaeBan(data.timezone);
+
+      } catch(e) { alert('Connection error. Please check internet.'); }
     }
 
-    // 🔹 OSHA-COMPLIANT HYDRATION CALCULATOR (FIXED)
+    // 🔹 UAE MID-DAY BREAK LOGIC
+    function checkUaeBan(timezoneOffset) {
+      // Check if location is likely UAE (based on offset +4 hours = 14400s)
+      // Note: User might be checking non-UAE sites, so we only ban if offset matches UAE/Gulf
+      if (timezoneOffset !== 14400) {
+        document.getElementById('uaeBanAlert').style.display = 'none';
+        return;
+      }
+
+      // Calculate current UAE time
+      const utcNow = Math.floor(Date.now() / 1000);
+      const locTime = new Date((utcNow + timezoneOffset) * 1000);
+      const hours = locTime.getUTCHours();
+      const minutes = locTime.getUTCMinutes();
+      const totalMinutes = hours * 60 + minutes;
+
+      // 12:30 PM = 750 mins, 3:00 PM = 900 mins
+      const isBanTime = totalMinutes >= 750 && totalMinutes < 900;
+      document.getElementById('uaeBanAlert').style.display = isBanTime ? 'block' : 'none';
+    }
+
+    function dismissBan() {
+      document.getElementById('uaeBanAlert').style.display = 'none';
+    }
+
+    // 🔹 OSHA-COMPLIANT HYDRATION CALCULATOR
     function calculateHydration() {
       const weight = parseFloat(document.getElementById('workerWeight').value);
       const hiText = document.getElementById('hiVal').textContent;
