@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>HSE Heat Stress Alert - Nazeer Kadhar</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(180deg, #1a252f 0%, #2c3e50 100%); color: #ecf0f1; min-height: 100vh; padding-bottom: 80px; }
+    
+    /* HEADER */
     .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); padding: 20px; border-bottom: 4px solid #e67e22; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .header-content { display: flex; align-items: center; justify-content: center; gap: 20px; max-width: 950px; margin: 0 auto; padding: 0 10px; }
     .site-logo { height: 80px; width: auto; flex-shrink: 0; }
@@ -15,17 +16,27 @@
     .header-text h1 { font-size: 1.6rem; margin: 0 0 4px 0; color: #fff; font-weight: 700; line-height: 1.2; }
     .header-text .creator { color: #bdc3c7; font-size: 0.9rem; margin: 0; line-height: 1.4; }
     .header-text .creator strong { color: #e67e22; font-weight: 600; }
+
+    /* CONTAINER */
     .container { padding: 20px 15px; max-width: 850px; margin: 0 auto; }
+    
+    /* INPUT SECTION */
     .input-section { background: #2c3e50; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .input-section input { flex: 1; padding: 14px 18px; border: 2px solid #34495e; border-radius: 10px; background: #34495e; color: #fff; font-size: 1rem; outline: none; }
     .btn-check { background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(230,126,34,0.3); }
     .btn-check:hover { transform: translateY(-2px); }
+    
+    /* LOADING */
     #loading { display: none; text-align: center; padding: 15px; color: #e67e22; font-weight: 600; margin-bottom: 10px; }
+
+    /* CARDS */
     .card { background: #2c3e50; border-radius: 12px; padding: 25px 20px; margin-bottom: 15px; text-align: center; border: 2px solid #34495e; display: none; }
     .card-label { font-size: 0.9rem; color: #95a5a6; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-weight: 600; }
     .card-value { font-size: 2.2rem; font-weight: 700; color: #fff; }
     .card.heat-index { border-color: #e67e22; background: linear-gradient(135deg, #2c3e50 0%, #3d2817 100%); }
     .card.wbgt { border-color: #9b59b6; }
+
+    /* ALERTS */
     .alert-box { background: linear-gradient(135deg, #2c1810 0%, #4a1c1c 100%); border: 3px solid #e74c3c; border-radius: 12px; padding: 25px 20px; text-align: center; margin-bottom: 20px; display: none; }
     .alert-box.extreme { border-color: #e74c3c; }
     .alert-box.caution { border-color: #f39c12; }
@@ -36,27 +47,51 @@
     .alert-box.caution .alert-title { color: #f39c12; }
     .alert-box.safe .alert-title { color: #27ae60; }
     .alert-msg { font-size: 1rem; color: #ecf0f1; line-height: 1.5; }
-    .uae-ban-box { background: linear-gradient(135deg, #c0392b, #e74c3c); border: 3px solid #fff; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; display: none; animation: pulse 2s infinite; }
+
+    /* UAE BAN ALERT */
+    .uae-ban-box { 
+      background: linear-gradient(135deg, #c0392b, #e74c3c); 
+      border: 3px solid #fff; 
+      border-radius: 12px; 
+      padding: 20px; 
+      text-align: center; 
+      margin-bottom: 20px; 
+      display: none;
+      animation: pulse 2s infinite;
+    }
     .uae-ban-title { font-size: 1.4rem; color: #fff; font-weight: bold; margin-bottom: 8px; }
     .uae-ban-msg { font-size: 1rem; color: #fff; line-height: 1.4; }
     .uae-ban-msg strong { color: #f1c40f; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    }
+
+    /* SECTIONS */
     .section-box { background: #2c3e50; border-radius: 12px; padding: 20px; margin-top: 20px; border: 2px solid #34495e; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .section-title { font-size: 1.2rem; color: #fff; margin: 0 0 15px 0; text-align: center; font-weight: 700; }
-    input[type="text"], input[type="number"], input[type="tel"], select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #34495e; background: #34495e; color: #fff; font-size: 1rem; outline: none; margin-bottom: 10px; }
+    
+    input[type="text"], input[type="number"], input[type="tel"], select {
+      width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #34495e; background: #34495e; color: #fff; font-size: 1rem; outline: none; margin-bottom: 10px;
+    }
     .btn-action { width: 100%; background: #2980b9; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+    
+    /* MULTI-SITE & HISTORY */
     .site-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
     .site-card { background: #1a252f; padding: 10px; border-radius: 8px; position: relative; border: 1px solid #34495e; }
     .remove-site { position: absolute; top: 5px; right: 5px; background: #c0392b; color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #fff; font-size: 0.85rem; }
     th, td { border: 1px solid #34495e; padding: 8px; text-align: left; }
     th { background: #34495e; }
-    .tbt-box { background: linear-gradient(135deg, #8e44ad, #9b59b6); border-radius: 12px; padding: 25px; margin-top: 20px; text-align: center; }
-    .tbt-preview { background: #ffffff; color: #000000; padding: 20px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; text-align: left; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; border: 1px solid #ccc; display:none; }
-    .btn-tbt { width: 100%; background: #fff; color: #8e44ad; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; font-size: 1rem; }
-    .btn-pdf { width: 100%; background: #e74c3c; color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; }
+
     .footer { text-align: center; padding: 30px 20px; color: #7f8c8d; font-size: 0.85rem; border-top: 1px solid #34495e; margin-top: 30px; }
-    @media (max-width: 768px) { .header-content { flex-direction: column; gap: 10px; } .input-section { flex-direction: column; } .btn-check { width: 100%; } }
+    @media (max-width: 768px) {
+      .header-content { flex-direction: column; gap: 10px; }
+      .input-section { flex-direction: column; }
+      .btn-check { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -79,12 +114,16 @@
     <div style="text-align:center; margin:-10px 0 20px 0;">
       <button onclick="useMyLocation()" style="background:transparent; border:1px dashed #3498db; color:#3498db; padding:8px 16px; border-radius:20px; font-size:0.85rem; cursor:pointer;">📍 Use My Current Location</button>
     </div>
+
     <div id="loading">⏳ Fetching weather data...</div>
 
+    <!-- UAE MID-DAY BREAK ALERT -->
     <div class="uae-ban-box" id="uaeBanAlert">
       <div class="uae-ban-title">⚠️ UAE MIDDAY BREAK IN EFFECT</div>
       <div class="uae-ban-msg">Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong></div>
-      <div style="margin-top:15px;"><button onclick="dismissBan()" style="background:#fff; color:#c0392b; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">✅ Acknowledge</button></div>
+      <div style="margin-top:15px;">
+        <button onclick="dismissBan()" style="background:#fff; color:#c0392b; border:none; padding:8px 16px; border-radius:6px; font-weight:bold; cursor:pointer;">✅ Acknowledge</button>
+      </div>
     </div>
 
     <div class="alert-box" id="alertBox"><div class="alert-icon" id="alertIcon">🔴</div><div class="alert-title" id="alertTitle">EXTREME RISK</div><div class="alert-msg" id="alertMsg">Cease outdoor work.</div></div>
@@ -94,46 +133,44 @@
     <div class="card heat-index" id="hiCard"><div class="card-label">Heat Index</div><div class="card-value" id="hiVal">--°C</div></div>
     <div class="card wbgt" id="wbgtCard"><div class="card-label">WBGT</div><div class="card-value" id="wbgtVal">--°C</div></div>
 
+    <!-- WORK-REST -->
     <div class="section-box" id="workRestSection">
       <h3 class="section-title">⏱️ Work-Rest Schedule</h3>
       <select id="workType"><option value="light">💡 Light</option><option value="moderate">🛠️ Moderate</option><option value="heavy">🔨 Heavy</option></select>
       <button class="btn-action" onclick="generateWorkRest()">📋 Generate Schedule</button>
-      <div id="wrResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;"><p style="font-size:1.2rem; color:#e67e22; font-weight:bold;" id="wrHeader"></p><p id="wrNote" style="color:#bdc3c7; margin-top:5px;"></p></div>
+      <div id="wrResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;">
+        <p style="font-size:1.2rem; color:#e67e22; font-weight:bold;" id="wrHeader"></p>
+        <p id="wrNote" style="color:#bdc3c7; margin-top:5px;"></p>
+      </div>
     </div>
 
+    <!-- HYDRATION -->
     <div class="section-box" id="hydrationSection">
       <h3 class="section-title">💧 Hydration Calculator</h3>
       <input type="number" id="workerWeight" placeholder="Weight (kg)" />
       <input type="text" id="autoHI" value="--°C" readonly />
       <button class="btn-action" style="background:#27ae60;" onclick="calculateHydration()">💧 Calculate</button>
-      <div id="hydrationResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;"><div style="font-size:1.1rem; font-weight:700; color:#3498db;" id="hydAmount"></div></div>
+      <div id="hydrationResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;">
+        <div style="font-size:1.1rem; font-weight:700; color:#3498db;" id="hydAmount"></div>
+      </div>
     </div>
 
+    <!-- WHATSAPP -->
     <div class="section-box" id="whatsappSection">
       <h3 class="section-title">💬 WhatsApp Alert Generator</h3>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
         <input type="tel" id="waPhone" placeholder="Phone (e.g., 971501234567)" />
-        <select id="waType"><option value="heat">🔥 Heat Stress Alert</option><option value="schedule">⏱️ Work-Rest & Hydration</option><option value="emergency">🚨 Emergency Stop Work</option></select>
+        <select id="waType">
+          <option value="heat">🔥 Heat Stress Alert</option>
+          <option value="schedule">⏱️ Work-Rest & Hydration</option>
+          <option value="emergency">🚨 Emergency Stop Work</option>
+        </select>
       </div>
       <input type="text" id="waNote" placeholder="Custom Note (Optional)" style="margin-bottom:10px;" />
       <button onclick="sendWhatsApp()" class="btn-action" style="background:#25D366;">📲 Generate & Open WhatsApp</button>
     </div>
 
-    <div class="tbt-box" id="tbtSection">
-      <h3 class="section-title">🗣️ Custom Toolbox Talk Generator</h3>
-      <p style="color:#ecf0f1; margin-bottom:15px; font-size:0.9rem;">Specific hazards for Wheel Loader, Heat Stress, Scaffolding</p>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; text-align:left;">
-        <input type="text" id="orgName" placeholder="Organization Name" />
-        <input type="text" id="orgContact" placeholder="Contact Number" />
-        <input type="text" id="tbtLocation" placeholder="Site Location (Auto-synced)" />
-        <input type="text" id="tbtSupervisor" placeholder="Supervisor Name" />
-      </div>
-      <input type="text" id="tbtTopic" placeholder="Enter Topic (e.g., Wheel Loader, Heat Stress)..." style="font-size:1rem;" />
-      <button onclick="generateTBT()" class="btn-tbt">📝 Generate Preview</button>
-      <div id="tbtPreview" class="tbt-preview"></div>
-      <button onclick="downloadTBT()" class="btn-pdf">📑 Download A4 PDF</button>
-    </div>
-
+    <!-- MULTI-SITE -->
     <div class="section-box" id="multiSiteSection">
       <h3 class="section-title">🌍 Multi-Site Monitoring</h3>
       <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -144,6 +181,7 @@
       <div id="siteGrid" class="site-grid"></div>
     </div>
 
+    <!-- HISTORY -->
     <div class="section-box" id="historySection">
       <h3 class="section-title">📊 History & Reporting</h3>
       <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -160,11 +198,16 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let currentHistory = [];
 
+    // 🔹 ROBUST HEAT CHECK WITH SANITIZER
     async function checkHeat() {
       let city = document.getElementById('city').value.trim();
       if (!city) return alert('Please enter location.');
       document.getElementById('loading').style.display = 'block';
+
+      // Clean spaces around commas (Fixes "Ras Al Khaimah, AE")
       city = city.replace(/\s*,\s*/g, ',');
+
+      // Specific overrides for tricky city names
       const lower = city.toLowerCase();
       if (lower.includes('ras al khaimah')) city = 'Ras Al Khaimah,AE';
       else if (lower.includes('fujairah')) city = 'Fujairah,AE';
@@ -173,156 +216,204 @@
       try {
         let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
         let data = await res.json();
+
+        // If fails, try fallback country codes
         if (data.cod !== 200 && !city.includes(',')) {
-          const countries = ['AE','IN','US','GB','SA','QA','KW','BH','OM','EG','PH','CA'];
+          const countries = ['AE', 'IN', 'US', 'GB', 'SA', 'QA', 'KW', 'BH', 'OM', 'EG', 'PH', 'CA'];
           for (let c of countries) {
-            res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city+','+c)}&units=metric&appid=${API_KEY}`);
-            data = await res.json(); if(data.cod===200) break;
+            res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city + ',' + c)}&units=metric&appid=${API_KEY}`);
+            data = await res.json();
+            if (data.cod === 200) break;
           }
         }
-        if (data.cod !== 200) { alert(`Location not found. Try: "City,AE"`); return; }
+
+        if (data.cod !== 200) {
+          alert(`Location "${city}" not found.\n\nTry format: "City,CountryCode"\nExamples: Ras Al Khaimah,AE | Riyadh,SA`);
+          return;
+        }
+
         document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
         processWeatherData(data);
-      } catch(e) { alert('Connection error.'); }
-      finally { document.getElementById('loading').style.display = 'none'; }
+      } catch (e) {
+        alert('Connection error. Please check internet.');
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
     }
 
+    // 🔹 DIRECT COORDINATE USAGE (NO DOUBLE SEARCH)
     function useMyLocation() {
-      if(!navigator.geolocation) return alert('Geolocation not supported.');
+      if (!navigator.geolocation) return alert('Geolocation not supported.');
       document.getElementById('loading').style.display = 'block';
+      
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
+          // Fetch directly by Lat/Lon (Guaranteed to work & return timezone)
           const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&units=metric&appid=${API_KEY}`);
           const data = await res.json();
-          if(data.cod===200) {
+          
+          if (data.cod === 200) {
             document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
+            // Process data immediately to show Time/Temp
             processWeatherData(data);
-          } else alert('Weather unavailable for coordinates.');
-        } catch(e) { alert('Failed to fetch location.'); }
-        finally { document.getElementById('loading').style.display = 'none'; }
-      }, (err) => { alert('Location denied. Enable GPS.'); document.getElementById('loading').style.display = 'none'; });
+          } else {
+            alert('Weather service unavailable for your coordinates.');
+          }
+        } catch (e) {
+          alert('Failed to fetch location data.');
+        } finally {
+          document.getElementById('loading').style.display = 'none';
+        }
+      }, (err) => {
+        alert('Location access denied. Please enable GPS.');
+        document.getElementById('loading').style.display = 'none';
+      });
     }
 
+    // 🔹 CENTRALIZED DATA PROCESSOR (Updates Time, Heat, Ban Alert)
     function processWeatherData(data) {
-      const utcNow = Math.floor(Date.now()/1000);
-      const locTime = new Date((utcNow + data.timezone)*1000);
+      // Local Time Calculation (Uses API Timezone)
+      const utcNow = Math.floor(Date.now() / 1000);
+      const locTime = new Date((utcNow + data.timezone) * 1000);
       document.getElementById('datetimeVal').textContent = locTime.toLocaleString('en-GB');
       document.getElementById('datetimeCard').style.display = 'block';
+      
+      // Heat Index
       const temp = data.main.temp, hum = data.main.humidity;
       let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
-      if(temp<26) hi = temp;
-      document.getElementById('tempVal').textContent = temp.toFixed(1)+'°C';
-      document.getElementById('humVal').textContent = hum+'%';
-      document.getElementById('hiVal').textContent = hi.toFixed(1)+'°C';
-      document.getElementById('wbgtVal').textContent = (0.667*temp + 0.333*(temp - 0.4*(100-hum)/100)).toFixed(1)+'°C';
-      document.getElementById('autoHI').value = hi.toFixed(1)+'°C';
-      ['tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id=>document.getElementById(id).style.display='block');
+      if(temp < 26) hi = temp;
+      
+      document.getElementById('tempVal').textContent = temp.toFixed(1) + '°C';
+      document.getElementById('humVal').textContent = hum + '%';
+      document.getElementById('hiVal').textContent = hi.toFixed(1) + '°C';
+      document.getElementById('wbgtVal').textContent = (0.667 * temp + 0.333 * (temp - 0.4 * (100 - hum) / 100)).toFixed(1) + '°C';
+      document.getElementById('autoHI').value = hi.toFixed(1) + '°C';
+      
+      ['tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id => document.getElementById(id).style.display = 'block');
+      
+      // Check UAE Ban
       checkUaeBan(data.timezone);
+      
       logActivity(`Checked Heat: ${data.name}, ${data.sys.country}`, `HI: ${hi.toFixed(1)}`);
     }
 
-    function checkUaeBan(tz) {
-      if(tz!==14400) { document.getElementById('uaeBanAlert').style.display='none'; return; }
-      const m = new Date((Math.floor(Date.now()/1000)+tz)*1000).getUTCHours()*60 + new Date((Math.floor(Date.now()/1000)+tz)*1000).getUTCMinutes();
-      document.getElementById('uaeBanAlert').style.display = (m>=750 && m<900) ? 'block' : 'none';
-    }
-    function dismissBan() { document.getElementById('uaeBanAlert').style.display='none'; }
+    // 🔹 UAE MID-DAY BREAK LOGIC
+    function checkUaeBan(timezoneOffset) {
+      // UAE/Gulf offset is +4 hours (14400 seconds)
+      if (timezoneOffset !== 14400) {
+        document.getElementById('uaeBanAlert').style.display = 'none';
+        return;
+      }
 
+      const utcNow = Math.floor(Date.now() / 1000);
+      const locTime = new Date((utcNow + timezoneOffset) * 1000);
+      const totalMinutes = locTime.getUTCHours() * 60 + locTime.getUTCMinutes();
+
+      // 12:30 PM = 750 mins, 3:00 PM = 900 mins
+      const isBanTime = totalMinutes >= 750 && totalMinutes < 900;
+      document.getElementById('uaeBanAlert').style.display = isBanTime ? 'block' : 'none';
+    }
+    function dismissBan() { document.getElementById('uaeBanAlert').style.display = 'none'; }
+
+    // 🔹 OSHA-COMPLIANT HYDRATION
     function calculateHydration() {
-      const w = parseFloat(document.getElementById('workerWeight').value);
-      const hi = parseFloat(document.getElementById('hiVal').textContent);
-      if(!w || w<40 || w>150) return alert('Enter valid weight (40-150 kg)');
-      if(!hi) return alert('Check heat first.');
-      let base=720, hf=1.0, wf=1.0;
-      if(hi>=46) hf=1.75; else if(hi>=40) hf=1.50; else if(hi>=32) hf=1.25;
-      if(w<60) wf=0.9; else if(w>90) wf=1.1;
-      let total = Math.round(base*hf*wf), max=1200, disp=Math.min(total,max), interval=Math.round(disp/3);
-      let note = `Total: ~${disp}ml/hr`;
-      if(hf>=1.5 || total>max) note += ' | ⚠️ Add electrolytes to prevent hyponatremia';
-      if(total>max) note += ' (Capped)';
-      document.getElementById('hydrationResult').style.display='block';
-      document.getElementById('hydAmount').innerHTML = `💧 ${interval}ml every 20 mins<br><span style="font-size:0.9rem; color:#95a5a6;">${note}</span>`;
-      logActivity("Calculated Hydration", `HI:${hi}°C | ${disp}ml/hr`);
+      const weight = parseFloat(document.getElementById('workerWeight').value);
+      const hiText = document.getElementById('hiVal').textContent;
+      if (!weight || weight < 40 || weight > 150) return alert('Enter valid weight (40-150 kg)');
+      if (hiText === '--°C') return alert('Check heat stress first.');
+
+      const hi = parseFloat(hiText);
+      let baseRate = 720; // OSHA baseline: ~240ml/20min
+      let heatFactor = 1.0;
+      if (hi >= 46) heatFactor = 1.75;
+      else if (hi >= 40) heatFactor = 1.50;
+      else if (hi >= 32) heatFactor = 1.25;
+
+      let weightFactor = 1.0;
+      if (weight < 60) weightFactor = 0.9;
+      else if (weight > 90) weightFactor = 1.1;
+
+      let totalMlPerHour = Math.round(baseRate * heatFactor * weightFactor);
+      const MAX_SAFE = 1200;
+      let displayIntake = Math.min(totalMlPerHour, MAX_SAFE);
+      let intervalMl = Math.round(displayIntake / 3);
+      let needsElectrolytes = (heatFactor >= 1.5 || totalMlPerHour > MAX_SAFE);
+
+      let note = `Total: ~${displayIntake}ml/hr`;
+      if (needsElectrolytes) note += ` | ⚠️ Add electrolytes to prevent hyponatremia`;
+      if (totalMlPerHour > MAX_SAFE) note += ` (Capped at safe max)`;
+
+      document.getElementById('hydrationResult').style.display = 'block';
+      document.getElementById('hydAmount').innerHTML = `💧 ${intervalMl}ml every 20 mins<br><span style="font-size:0.9rem; color:#95a5a6;">${note}</span>`;
+      logActivity("Calculated Hydration", `HI:${hi}°C | ${displayIntake}ml/hr`);
     }
 
+    // 🔹 WORK-REST
     function generateWorkRest() {
-      const hi = parseFloat(document.getElementById('hiVal').textContent);
-      if(!hi) return alert('Check heat first.');
-      const t = document.getElementById('workType').value;
-      let w = hi>=45?15:hi>=35?30:50, r = hi>=45?45:hi>=35?30:10;
-      document.getElementById('wrHeader').textContent = `Work ${w}m | Rest ${r}m`;
-      document.getElementById('wrNote').textContent = `HI: ${hi}°C | Type: ${t}`;
-      document.getElementById('wrResult').style.display='block';
-      logActivity("Generated Work-Rest");
+       const hi = parseFloat(document.getElementById('hiVal').textContent);
+       if(!hi) return alert('Check heat first.');
+       const type = document.getElementById('workType').value;
+       let w = hi>=45?15:hi>=35?30:50, r = hi>=45?45:hi>=35?30:10;
+       document.getElementById('wrHeader').textContent = `Work ${w}m | Rest ${r}m`;
+       document.getElementById('wrNote').textContent = `HI: ${hi}°C | Type: ${type}`;
+       document.getElementById('wrResult').style.display = 'block';
+       logActivity("Generated Work-Rest");
     }
 
+    // 🔹 WHATSAPP
     function sendWhatsApp() {
-      const p = document.getElementById('waPhone').value.replace(/\D/g,'');
-      if(!p) return alert('Enter phone with country code.');
-      const t = document.getElementById('waType').value, hi=document.getElementById('hiVal').textContent||'--', temp=document.getElementById('tempVal').textContent||'--', loc=document.getElementById('city').value||'Site';
+      const phone = document.getElementById('waPhone').value.replace(/\D/g,'');
+      if(!phone) return alert('Enter phone with country code.');
+      const type = document.getElementById('waType').value;
+      const hi = document.getElementById('hiVal').textContent || '--';
+      const temp = document.getElementById('tempVal').textContent || '--';
+      const loc = document.getElementById('city').value || 'Site';
       let msg = `*HSE ALERT SYSTEM*\n📍 ${loc}\n⏰ ${new Date().toLocaleString()}\n\n`;
-      if(t==='heat') msg+=`🔥 HEAT STRESS\n🌡️ Temp: ${temp}\n📈 HI: ${hi}\n✅ Status: ${hi.includes('4')||hi.includes('5')?'HIGH RISK':'CAUTION'}`;
-      else if(t==='schedule') msg+=`⏱️ WORK-REST & HYDRATION\n💧 240-300ml every 20 mins.\n🛑 Stop if symptoms occur.`;
-      else msg+=`🚨 STOP WORK IMMEDIATELY.\n📞 Call 998/999 if needed.`;
-      const n=document.getElementById('waNote').value; if(n) msg+=`\n📝 ${n}`;
-      window.open(`https://wa.me/${p}?text=${encodeURIComponent(msg)}`, '_blank');
-      logActivity(`WhatsApp ${t} sent to ${p}`);
+      if(type==='heat') msg += `🔥 HEAT STRESS\n🌡️ Temp: ${temp}\n📈 HI: ${hi}\n✅ Status: ${hi.includes('4')||hi.includes('5')?'HIGH RISK':'CAUTION'}`;
+      else if(type==='schedule') msg += `⏱️ WORK-REST & HYDRATION\n💧 240-300ml every 20 mins.\n🛑 Stop if symptoms occur.`;
+      else msg += `🚨 STOP WORK IMMEDIATELY.\n📞 Call 998/999 if needed.`;
+      const note = document.getElementById('waNote').value;
+      if(note) msg += `\n📝 ${note}`;
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      logActivity(`WhatsApp ${type} sent to ${phone}`);
     }
 
-    // 🔹 FIXED TBT LOGIC (No duplicate header, 15 lines, specific hazards)
-    function getTopicData(topic) {
-      const l = topic.toLowerCase();
-      if(l.includes('heat')||l.includes('hot')||l.includes('sun')) return {h:["1. Heat Stroke (High body temp, confusion, dry skin).","2. Heat Exhaustion (Heavy sweating, cold skin, dizziness).","3. Severe Dehydration & Muscle Cramps.","4. Sunburn & Long-term Skin Damage.","5. Slips/Trips from sweat on slippery surfaces.","6. Reduced Focus leading to accidents.","7. Fogged safety glasses due to humidity.","8. Chemical burns from hot surfaces."], c:["1. Drink 250ml water every 20 mins (1L/hour).","2. Rest in shaded/AC areas every 45-60 mins.","3. Wear breathable, light-colored clothing.","4. Monitor Heat Index (WBGT) continuously.","5. Use Buddy System to watch for symptoms.","6. Reschedule heavy work for early morning/night.","7. Wear wide-brim hard hats & UV sunglasses.","8. Keep emergency ice packs in First Aid kit."]};
-      if(l.includes('wheel')||l.includes('loader')||l.includes('jcb')||l.includes('excavator')) return {h:["1. Blind spots hitting pedestrians or vehicles.","2. Tip-over on uneven, soft, or sloped ground.","3. Hydraulic hose burst (High-pressure fluid injection).","4. Struck-by falling bucket loads or attachments.","5. Noise & Vibration fatigue for operator.","6. Pinch points between bucket and frame.","7. Fire from fuel leaks near hot engine parts.","8. Carbon Monoxide poisoning in enclosed spaces."], c:["1. ALWAYS use Banksman/Spotter when reversing.","2. Keep bucket low while traveling; never carry over people.","3. Inspect hydraulic lines daily for wear/leaks.","4. Wear seatbelt; ensure ROPS/FOPS protection is intact.","5. Maintain 3m exclusion zone around equipment.","6. Park on level ground, lower bucket, engage brake.","7. Keep fire extinguisher accessible on board.","8. Check engine alarms and backup beepers daily."]};
-      if(l.includes('scaffold')||l.includes('height')||l.includes('wah')) return {h:["1. Fall from height (>2m) due to missing guardrails.","2. Platform collapse from overloading.","3. Struck-by falling tools/materials.","4. Electrocution from proximity to power lines.","5. Slips on wet/muddy platforms.","6. Unstable ground settlement.","7. Improper access via cross-bracing.","8. Unauthorized structural alterations."], c:["1. Check Green Scafftag before every use.","2. 100% tie-off with harness above 2m.","3. Secure all tools with lanyards.","4. Inspect base plates & sole boards daily.","5. Install toe boards & debris netting.","6. Only certified scaffolders to modify.","7. Maintain 4m clearance from power lines.","8. Clear debris immediately (Clean as you go)."]};
-      return {h:["1. Unplanned execution without Risk Assessment.","2. Lack of competency for specific equipment.","3. Poor housekeeping (slips/trips/fire hazards).","4. Incorrect or insufficient PPE.","5. Rushing leading to safety shortcuts.","6. Fatigue or distraction impairing judgment.","7. Poor crew communication.","8. Uncontrolled environmental factors."], c:["1. Conduct JSA before starting.","2. Verify worker certifications.","3. Strict 'Clean as you go' policy.","4. Enforce PPE compliance. Inspect gear.","5. Empower STOP WORK authority.","6. Mandate breaks & task rotation.","7. Conduct pre-task briefings.","8. Monitor weather/heat index."]};
-    }
-
-    function generateTBT() {
-      const topic = document.getElementById('tbtTopic').value.trim();
-      if(!topic) return alert('Enter a topic.');
-      const data = getTopicData(topic);
-      const org = document.getElementById('orgName').value || 'Organization Name';
-      const contact = document.getElementById('orgContact').value || 'Contact';
-      const loc = document.getElementById('tbtLocation').value || 'Site Location';
-      const sup = document.getElementById('tbtSupervisor').value || '_____________';
-      const date = new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
-      
-      let content = `${org}\nContact: ${contact}\nTOOLBOX TALK RECORD\nTopic: ${topic.toUpperCase()}\nDate: ${date} | Location: ${loc}\nSupervisor: ${sup} | Workers: ______\n\n`;
-      content += `HAZARDS IDENTIFIED:\n${data.h.join('\n')}\n\nCONTROL MEASURES & RECOMMENDATIONS:\n${data.c.join('\n')}\n\n`;
-      content += `REQUIRED PPE:\n• Safety Helmet\n• Safety Boots\n• High-Vis Vest\n• Task-Specific Gloves\n• Safety Glasses\n\n`;
-      content += `EMERGENCY PROCEDURES:\n1. Stop work immediately upon incident or near-miss.\n2. Secure the area. Evacuate if danger persists.\n3. Administer First Aid. Call Site Med/998/999 if required.\n4. Preserve the scene. Do not disturb equipment.\n5. Report to HSE Manager within 15 minutes.\n\n`;
-      content += `WORKER SIGN-OFF:\nI confirm I understand the hazards and agree to follow all controls.\nNo. | Worker Name | Signature | ID/Passport No.\n`;
-      for(let i=1; i<=15; i++) content += `${i}.  | ______________ | _________ | ______________\n`;
-      
-      const el = document.getElementById('tbtPreview');
-      el.textContent = content;
-      el.style.display = 'block';
-      logActivity(`Generated TBT: ${topic}`);
-    }
-
-    function downloadTBT() {
-      const content = document.getElementById('tbtPreview').textContent;
-      if(!content) return alert('Generate preview first.');
-      const topic = document.getElementById('tbtTopic').value.replace(/\s+/g,'_') || 'TBT';
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFont('Courier', 'normal'); doc.setFontSize(10);
-      const lines = doc.splitTextToSize(content, 180);
-      doc.text(lines, 12, 15);
-      doc.save(`${topic}_${Date.now()}.pdf`);
-      logActivity("Downloaded TBT PDF");
-    }
-
+    // 🔹 MULTI-SITE
     let sites = JSON.parse(localStorage.getItem('hse_sites')||'[]');
-    function addSite() { const s=document.getElementById('siteInput').value.trim(); if(s&&!sites.includes(s)){sites.push(s);localStorage.setItem('hse_sites',JSON.stringify(sites));renderSites();} }
-    function renderSites() { document.getElementById('siteGrid').innerHTML=sites.map(s=>`<div class="site-card">${s}<button class="remove-site" onclick="removeSite('${s}')">×</button><div id="data-${s.replace(/[^a-zA-Z0-9]/g,'')}" style="margin-top:5px;font-size:0.8rem;color:#95a5a6;">Loading...</div></div>`).join(''); refreshAllSites(); }
-    function removeSite(s) { sites=sites.filter(x=>x!==s); localStorage.setItem('hse_sites',JSON.stringify(sites)); renderSites(); }
-    async function refreshAllSites() { for(const site of sites){const id='data-'+site.replace(/[^a-zA-Z0-9]/g,''); const el=document.getElementById(id); if(el) el.innerHTML='Fetching...'; try{const res=await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`); const d=await res.json(); if(d.cod===200&&el) el.innerHTML=`🌡️ ${d.main.temp.toFixed(1)}°C | 💧 ${d.main.humidity}%`;} catch{if(el) el.innerHTML='⚠️ Not found';} await new Promise(r=>setTimeout(r,250));}}
+    function addSite() {
+      const s = document.getElementById('siteInput').value.trim();
+      if(s && !sites.includes(s)) { sites.push(s); localStorage.setItem('hse_sites', JSON.stringify(sites)); renderSites(); }
+    }
+    function renderSites() {
+      document.getElementById('siteGrid').innerHTML = sites.map(s => `<div class="site-card">${s}<button class="remove-site" onclick="removeSite('${s}')">×</button><div id="data-${s.replace(/[^a-zA-Z0-9]/g,'')}" style="margin-top:5px; font-size:0.8rem; color:#95a5a6;">Loading...</div></div>`).join('');
+      refreshAllSites();
+    }
+    function removeSite(s) { sites = sites.filter(x => x!==s); localStorage.setItem('hse_sites', JSON.stringify(sites)); renderSites(); }
+    async function refreshAllSites() {
+      for (const site of sites) {
+        const id = 'data-'+site.replace(/[^a-zA-Z0-9]/g,'');
+        const el = document.getElementById(id);
+        if(el) el.innerHTML = 'Fetching...';
+        try {
+          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(site)}&units=metric&appid=${API_KEY}`);
+          const d = await res.json();
+          if(d.cod===200 && el) el.innerHTML = `🌡️ ${d.main.temp.toFixed(1)}°C | 💧 ${d.main.humidity}%`;
+        } catch { if(el) el.innerHTML = '⚠️ Not found'; }
+        await new Promise(r => setTimeout(r, 250));
+      }
+    }
 
-    function logActivity(a,d='') { currentHistory.unshift({date:new Date().toLocaleString(), action:a, details:d}); if(currentHistory.length>50) currentHistory.pop(); }
-    function loadHistory() { if(!currentHistory.length) return document.getElementById('historyTableContainer').innerHTML='<p style="text-align:center;">No logs yet.</p>'; document.getElementById('historyTableContainer').innerHTML=`<table><tr><th>Date</th><th>Action</th><th>Details</th></tr>`+currentHistory.map(h=>`<tr><td>${h.date}</td><td>${h.action}</td><td>${h.details}</td></tr>`).join('')+`</table>`; }
-    function exportHistory() { if(!currentHistory.length) return alert('No logs.'); let csv='Date,Action,Details\n'+currentHistory.map(h=>`"${h.date}","${h.action}","${h.details}"`).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='HSE_History.csv'; a.click(); }
+    // 🔹 HISTORY
+    function logActivity(a, d='') { currentHistory.unshift({date:new Date().toLocaleString(), action:a, details:d}); if(currentHistory.length>50) currentHistory.pop(); }
+    function loadHistory() {
+      if(!currentHistory.length) return document.getElementById('historyTableContainer').innerHTML = '<p style="text-align:center;">No logs yet.</p>';
+      document.getElementById('historyTableContainer').innerHTML = `<table><tr><th>Date</th><th>Action</th><th>Details</th></tr>` + currentHistory.map(h=>`<tr><td>${h.date}</td><td>${h.action}</td><td>${h.details}</td></tr>`).join('') + `</table>`;
+    }
+    function exportHistory() {
+      if(!currentHistory.length) return alert('No logs.');
+      let csv = 'Date,Action,Details\n' + currentHistory.map(h=>`"${h.date}","${h.action}","${h.details}"`).join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = 'HSE_History.csv'; a.click();
+    }
 
     renderSites();
     if(localStorage.getItem('hse_history')) currentHistory = JSON.parse(localStorage.getItem('hse_history'));
