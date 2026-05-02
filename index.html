@@ -42,7 +42,7 @@
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
     .section-box { background: #2c3e50; border-radius: 12px; padding: 20px; margin-top: 20px; border: 2px solid #34495e; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .section-title { font-size: 1.2rem; color: #fff; margin: 0 0 15px 0; text-align: center; font-weight: 700; }
-    input[type="text"], input[type="number"], input[type="tel"], select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #34495e; background: #34495e; color: #fff; font-size: 1rem; outline: none; margin-bottom: 10px; }
+    input[type="text"], input[type="tel"], select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #34495e; background: #34495e; color: #fff; font-size: 1rem; outline: none; margin-bottom: 10px; }
     .btn-action { width: 100%; background: #2980b9; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
     .site-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
     .site-card { background: #1a252f; padding: 10px; border-radius: 8px; position: relative; border: 1px solid #34495e; }
@@ -73,7 +73,7 @@
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
     </div>
 
-    <!-- 2. DATE & TIME (MOVED HERE) -->
+    <!-- 2. DATE & TIME -->
     <div class="card" id="datetimeCard" style="margin-top: 0;">
       <div class="card-label">📅 Date & Time</div>
       <div class="card-value" id="datetimeVal" style="font-size:1.3rem;">--</div>
@@ -102,14 +102,6 @@
       <select id="workType"><option value="light">💡 Light</option><option value="moderate">🛠️ Moderate</option><option value="heavy">🔨 Heavy</option></select>
       <button class="btn-action" onclick="generateWorkRest()">📋 Generate Schedule</button>
       <div id="wrResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;"><p style="font-size:1.2rem; color:#e67e22; font-weight:bold;" id="wrHeader"></p><p id="wrNote" style="color:#bdc3c7; margin-top:5px;"></p></div>
-    </div>
-
-    <div class="section-box" id="hydrationSection">
-      <h3 class="section-title">💧 Hydration Calculator</h3>
-      <input type="number" id="workerWeight" placeholder="Weight (kg)" />
-      <input type="text" id="autoHI" value="--°C" readonly />
-      <button class="btn-action" style="background:#27ae60;" onclick="calculateHydration()">💧 Calculate</button>
-      <div id="hydrationResult" style="display:none; text-align:center; padding:10px; background:#1a252f; border-radius:8px;"><div style="font-size:1.1rem; font-weight:700; color:#3498db;" id="hydAmount"></div></div>
     </div>
 
     <div class="section-box" id="whatsappSection">
@@ -219,7 +211,6 @@
       document.getElementById('humVal').textContent = hum+'%';
       document.getElementById('hiVal').textContent = hi.toFixed(1)+'°C';
       document.getElementById('wbgtVal').textContent = (0.667*temp + 0.333*(temp - 0.4*(100-hum)/100)).toFixed(1)+'°C';
-      document.getElementById('autoHI').value = hi.toFixed(1)+'°C';
       ['tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id=>document.getElementById(id).style.display='block');
       checkUaeBan(data.sys.country, data.timezone);
       logActivity(`Checked Heat: ${data.name}, ${data.sys.country}`, `HI: ${hi.toFixed(1)}`);
@@ -259,23 +250,6 @@
       }
     }
     function dismissBan() { document.getElementById('uaeBanAlert').style.display = 'none'; }
-
-    function calculateHydration() {
-      const w = parseFloat(document.getElementById('workerWeight').value);
-      const hi = parseFloat(document.getElementById('hiVal').textContent);
-      if(!w || w<40 || w>150) return alert('Enter valid weight (40-150 kg)');
-      if(!hi) return alert('Check heat first.');
-      let base=720, hf=1.0, wf=1.0;
-      if(hi>=46) hf=1.75; else if(hi>=40) hf=1.50; else if(hi>=32) hf=1.25;
-      if(w<60) wf=0.9; else if(w>90) wf=1.1;
-      let total = Math.round(base*hf*wf), max=1200, disp=Math.min(total,max), interval=Math.round(disp/3);
-      let note = `Total: ~${disp}ml/hr`;
-      if(hf>=1.5 || total>max) note += ' | ⚠️ Add electrolytes to prevent hyponatremia';
-      if(total>max) note += ' (Capped)';
-      document.getElementById('hydrationResult').style.display='block';
-      document.getElementById('hydAmount').innerHTML = `💧 ${interval}ml every 20 mins<br><span style="font-size:0.9rem; color:#95a5a6;">${note}</span>`;
-      logActivity("Calculated Hydration", `HI:${hi}°C | ${disp}ml/hr`);
-    }
 
     function generateWorkRest() {
       const hi = parseFloat(document.getElementById('hiVal').textContent);
