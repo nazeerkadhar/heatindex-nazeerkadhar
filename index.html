@@ -150,16 +150,32 @@
   <div class="footer"><p>© 2026 HSE Heat Stress Alert System</p><p style="margin-top:4px;">Created by <strong>Nazeer Kadhar</strong></p></div>
 
   <script>
-    // ⚠️ REPLACE THIS KEY IF IT SHOWS 401 ERROR
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d'; 
     let currentHistory = [];
 
+    // 🔹 FIX: Uses Coordinates for RAK to bypass API Name Errors
     async function checkHeat() {
       let input = document.getElementById('city').value.trim();
       if (!input) return alert('Please enter a UAE location.');
       document.getElementById('loading').style.display = 'block';
 
-      // Normalize input for OpenWeatherMap
+      // 1. Check if RAK (Force Coordinates)
+      if (input.toLowerCase().includes('ras') || input.toLowerCase().includes('khaimah') || input.toLowerCase() === 'rak') {
+         // Use Coordinates for RAK: 25.7902, 55.9425
+         const data = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=25.7902&lon=55.9425&units=metric&appid=${API_KEY}`)
+            .then(r => r.json());
+         
+         if(data.cod === 200 && data.sys.country.toUpperCase() === 'AE') {
+            document.getElementById('city').value = "Ras Al Khaimah, AE";
+            processWeatherData(data);
+            return;
+         } else {
+            document.getElementById('loading').style.display = 'none';
+            return alert('⚠️ UAE Only: Location not found.');
+         }
+      }
+
+      // 2. Normal Cities (Name Search)
       let query = input.replace(/\s*,\s*/g, ',').replace(/\s+/g, ' ').trim();
       if (!query.includes(',')) query += ',AE';
       
@@ -188,11 +204,9 @@
       }
       if (data.cod !== 200) {
         document.getElementById('loading').style.display = 'none';
-        // SHOW EXACT API ERROR
         let err = data.message || 'Unknown error';
-        if (data.cod === 401) err = 'INVALID API KEY (401). Generate your own free key at openweathermap.org/api';
-        else if (data.cod === 429) err = 'RATE LIMITED (429). Wait 1 min or use a new API key.';
-        else if (data.cod === 404) err = 'CITY NOT FOUND (404). Check spelling or try "Ras al Khaimah" (lowercase "al").';
+        if (data.cod === 401) err = 'INVALID API KEY (401)';
+        else if (data.cod === 404) err = 'CITY NOT FOUND (404)';
         alert(`⚠️ API Error: ${err}`);
         return;
       }
@@ -203,14 +217,11 @@
 
     async function fetchWeather(q) {
       const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&units=metric&appid=${API_KEY}`;
-      console.log('🌐 Fetching:', url);
       try {
         const res = await fetch(url);
-        const data = await res.json();
-        console.log('📡 OWM Response:', data); // Check Console (F12) for exact error
-        return data;
+        return await res.json();
       } catch (err) {
-        return { cod: 500, message: 'Network/Connection Error' };
+        return { cod: 500, message: 'Network Error' };
       }
     }
 
