@@ -67,7 +67,6 @@
   </div>
 
   <div class="container">
-    <!-- 1. LOCATION INPUT -->
     <div class="input-section">
       <input type="text" id="city" placeholder="Enter UAE location (e.g., Ras Al Khaimah)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
@@ -77,29 +76,22 @@
     </div>
     <div id="loading">⏳ Fetching weather data...</div>
 
-    <!-- 2. DATE & TIME -->
     <div class="card" id="datetimeCard">
       <div class="card-label">📅 Date & Time</div>
       <div class="card-value" id="datetimeVal" style="font-size:1.25rem;">--</div>
     </div>
 
-    <!-- 3. RISK WARNING -->
     <div class="alert-box" id="alertBox">
       <div class="alert-icon" id="alertIcon">🔴</div>
       <div class="alert-title" id="alertTitle">EXTREME RISK</div>
       <div class="alert-msg" id="alertMsg">Cease outdoor work.</div>
     </div>
 
-    <!-- 4. TEMPERATURE -->
     <div class="card" id="tempCard"><div class="card-label">🌡️ Temperature</div><div class="card-value" id="tempVal">--°C</div></div>
-    <!-- 5. HUMIDITY -->
     <div class="card" id="humCard"><div class="card-label">💧 Humidity</div><div class="card-value" id="humVal">--%</div></div>
-    <!-- 6. HEAT INDEX -->
     <div class="card heat-index" id="hiCard"><div class="card-label">🔥 Heat Index</div><div class="card-value" id="hiVal">--°C</div></div>
-    <!-- 7. WBGT -->
     <div class="card wbgt" id="wbgtCard"><div class="card-label">📊 WBGT</div><div class="card-value" id="wbgtVal">--°C</div></div>
 
-    <!-- 8. WORK-REST SCHEDULE -->
     <div class="section-box" id="workRestSection">
       <h3 class="section-title">⏱️ Work-Rest Schedule</h3>
       <select id="workType"><option value="light">💡 Light</option><option value="moderate">🛠️ Moderate</option><option value="heavy">🔨 Heavy</option></select>
@@ -110,16 +102,12 @@
       </div>
     </div>
 
-    <!-- 9. UAE MIDDAY BREAK -->
     <div class="uae-ban-box" id="uaeBanAlert">
       <div class="uae-ban-title" id="uaeBanTitle">⚠️ UAE MIDDAY BREAK IN EFFECT</div>
       <div class="uae-ban-msg" id="uaeBanMessage">Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong></div>
-      <div style="margin-top:12px;">
-        <button onclick="dismissBan()" style="background:#fff; color:#c0392b; border:none; padding:7px 14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:0.9rem;">✅ Acknowledge</button>
-      </div>
+      <div style="margin-top:12px;"><button onclick="dismissBan()" style="background:#fff; color:#c0392b; border:none; padding:7px 14px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:0.9rem;">✅ Acknowledge</button></div>
     </div>
 
-    <!-- 10. MULTI-SITE MONITORING -->
     <div class="section-box" id="multiSiteSection">
       <h3 class="section-title">🌍 Multi-Site Monitoring</h3>
       <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -130,7 +118,6 @@
       <div id="siteGrid" class="site-grid"></div>
     </div>
 
-    <!-- 11. HISTORY & REPORTING -->
     <div class="section-box" id="historySection">
       <h3 class="section-title">📊 History & Reporting</h3>
       <div style="display:flex; gap:8px; margin-bottom:8px;">
@@ -140,7 +127,6 @@
       <div id="historyTableContainer" style="max-height:180px; overflow-y:auto;"></div>
     </div>
 
-    <!-- 12. UAE EMERGENCY CONTACTS -->
     <div class="section-box" id="emergencySection" style="border-color:#e74c3c; background:linear-gradient(135deg,#2c1810,#4a1c1c);">
       <h3 class="section-title">🚨 UAE Emergency Contacts</h3>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
@@ -150,7 +136,6 @@
       <a href="tel:997" class="btn-action" style="background:#d35400; text-decoration:none;">🔥 Fire/Civil Defense: 997</a>
     </div>
 
-    <!-- 13. WHATSAPP ALERT GENERATOR -->
     <div class="section-box" id="whatsappSection">
       <h3 class="section-title">💬 WhatsApp Alert Generator</h3>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
@@ -165,81 +150,76 @@
   <div class="footer"><p>© 2026 HSE Heat Stress Alert System</p><p style="margin-top:4px;">Created by <strong>Nazeer Kadhar</strong></p></div>
 
   <script>
-    const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
+    // ⚠️ REPLACE THIS KEY IF IT SHOWS 401 ERROR
+    const API_KEY = '0c0adab3c8cc353020af11d03821e94d'; 
     let currentHistory = [];
 
-    // 🔹 ROBUST UAE LOCATION RESOLVER (3-STAGE FALLBACK)
     async function checkHeat() {
       let input = document.getElementById('city').value.trim();
       if (!input) return alert('Please enter a UAE location.');
       document.getElementById('loading').style.display = 'block';
 
-      // Clean input
-      let query = input.replace(/\s*,\s*/g, ',').trim();
-      const lower = query.toLowerCase();
-      
-      // 1. Auto-append ,AE
+      // Normalize input for OpenWeatherMap
+      let query = input.replace(/\s*,\s*/g, ',').replace(/\s+/g, ' ').trim();
       if (!query.includes(',')) query += ',AE';
-
-      // 2. Exact OWM Dictionary for UAE Cities
+      
+      // Exact OWM dictionary for UAE
       const uaeFixes = {
-        'ras al khaimah,ae': 'Ras Al Khaimah,AE', 'rak,ae': 'Ras Al Khaimah,AE', 'rak': 'Ras Al Khaimah,AE',
+        'ras al khaimah,ae': 'Ras al Khaimah,AE', 'rak,ae': 'Ras al Khaimah,AE',
         'umm al quwain,ae': 'Umm Al Quwain,AE', 'uaq,ae': 'Umm Al Quwain,AE',
         'al ain,ae': 'Al Ain,AE', 'abu dhabi,ae': 'Abu Dhabi,AE',
         'dubai,ae': 'Dubai,AE', 'sharjah,ae': 'Sharjah,AE',
-        'ajman,ae': 'Ajman,AE', 'fujairah,ae': 'Fujairah,AE',
-        'dibba,ae': 'Dibba Al-Fujairah,AE', 'khor fakkan,ae': 'Khor Fakkan,AE',
-        'kalba,ae': 'Kalba,AE', 'hatta,ae': 'Hatta,AE',
-        'al dhaid,ae': 'Al Dhaid,AE', 'masafi,ae': 'Masafi,AE',
-        'liwa,ae': 'Liwa,AE', 'ruwais,ae': 'Ruwais,AE',
-        'ghayathi,ae': 'Ghayathi,AE', 'madinat zayed,ae': 'Madinat Zayed,AE',
-        'jebel ali,ae': 'Jebel Ali,AE', 'dip,ae': 'Dubai Investment Park,AE'
+        'ajman,ae': 'Ajman,AE', 'fujairah,ae': 'Fujairah,AE'
       };
-      if (uaeFixes[lower]) query = uaeFixes[lower];
-      else if (uaeFixes[lower.replace(',ae','')]) query = uaeFixes[lower.replace(',ae','')];
+      if (uaeFixes[query.toLowerCase()]) query = uaeFixes[query.toLowerCase()];
 
-      // 3. Fetch Logic
-      let data = await tryFetch(query);
+      let data = await fetchWeather(query);
       
-      // Fallback 1: Try without comma if first fails
+      // Fallback: retry without country code if first fails
       if (data.cod !== 200) {
-         let simple = query.split(',')[0];
-         data = await tryFetch(simple);
+        let simple = query.split(',')[0];
+        if (uaeFixes[simple.toLowerCase()]) simple = uaeFixes[simple.toLowerCase()];
+        data = await fetchWeather(simple);
       }
 
-      // Fallback 2: Hardcoded RAK fallback
-      if (data.cod !== 200 && lower.includes('ras')) {
-         data = await tryFetch('Ras Al Khaimah,AE');
-      }
-
-      // 4. Validation
       if (data.cod === 200 && data.sys.country.toUpperCase() !== 'AE') {
         document.getElementById('loading').style.display = 'none';
         return alert('⚠️ UAE Only: This tool is designed for UAE locations only.');
       }
       if (data.cod !== 200) {
         document.getElementById('loading').style.display = 'none';
-        return alert(`⚠️ Location not found. Try: "Ras Al Khaimah", "Dubai", "Abu Dhabi", etc.`);
+        // SHOW EXACT API ERROR
+        let err = data.message || 'Unknown error';
+        if (data.cod === 401) err = 'INVALID API KEY (401). Generate your own free key at openweathermap.org/api';
+        else if (data.cod === 429) err = 'RATE LIMITED (429). Wait 1 min or use a new API key.';
+        else if (data.cod === 404) err = 'CITY NOT FOUND (404). Check spelling or try "Ras al Khaimah" (lowercase "al").';
+        alert(`⚠️ API Error: ${err}`);
+        return;
       }
         
       document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
       processWeatherData(data);
     }
 
-    async function tryFetch(q) {
+    async function fetchWeather(q) {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&units=metric&appid=${API_KEY}`;
+      console.log('🌐 Fetching:', url);
       try {
-        let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&units=metric&appid=${API_KEY}`);
-        return await res.json();
-      } catch { return { cod: 500 }; }
+        const res = await fetch(url);
+        const data = await res.json();
+        console.log('📡 OWM Response:', data); // Check Console (F12) for exact error
+        return data;
+      } catch (err) {
+        return { cod: 500, message: 'Network/Connection Error' };
+      }
     }
 
-    // 🔹 GPS WITH UAE CHECK
     function useMyLocation() {
       if(!navigator.geolocation) return alert('Geolocation not supported.');
       document.getElementById('loading').style.display = 'block';
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
-          const data = await tryFetch(`lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+          const data = await fetchWeather(`lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
           if(data.cod===200) {
             if(data.sys.country.toUpperCase() !== 'AE') {
                document.getElementById('loading').style.display = 'none';
@@ -283,7 +263,7 @@
       document.getElementById('wbgtVal').textContent = (0.667*temp + 0.333*(temp - 0.4*(100-hum)/100)).toFixed(1)+'°C';
       ['tempCard','humCard','hiCard','wbgtCard','alertBox'].forEach(id=>document.getElementById(id).style.display='block');
       checkUaeBan(data.sys.country, data.timezone);
-      updateAlert(data.humidity, hi, temp);
+      updateAlert(hum, hi, temp);
       logActivity(`Checked Heat: ${data.name}`, `HI: ${hi.toFixed(1)}`);
     }
 
