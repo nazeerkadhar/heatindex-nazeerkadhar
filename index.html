@@ -69,7 +69,7 @@
   <div class="container">
     <!-- 1. LOCATION INPUT -->
     <div class="input-section">
-      <input type="text" id="city" placeholder="Enter UAE location (e.g., Dubai,AE)" />
+      <input type="text" id="city" placeholder="Enter UAE location (e.g., Ras Al Khaimah)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
     </div>
     <div style="text-align:center; margin:-5px 0 15px 0;">
@@ -123,7 +123,7 @@
     <div class="section-box" id="multiSiteSection">
       <h3 class="section-title">🌍 Multi-Site Monitoring</h3>
       <div style="display:flex; gap:8px; margin-bottom:8px;">
-        <input type="text" id="siteInput" placeholder="Site (e.g., Dubai,AE)" style="flex:1; margin-bottom:0;" />
+        <input type="text" id="siteInput" placeholder="Site (e.g., Dubai)" style="flex:1; margin-bottom:0;" />
         <button onclick="addSite()" style="background:#27ae60; color:#fff; border:none; padding:0 15px; border-radius:8px; cursor:pointer; font-weight:600;">+ Add</button>
         <button onclick="refreshAllSites()" style="background:#2980b9; color:#fff; border:none; padding:0 15px; border-radius:8px; cursor:pointer; font-weight:600;">🔄</button>
       </div>
@@ -140,7 +140,7 @@
       <div id="historyTableContainer" style="max-height:180px; overflow-y:auto;"></div>
     </div>
 
-    <!-- 12. UAE EMERGENCY CONTACTS (NEW) -->
+    <!-- 12. UAE EMERGENCY CONTACTS -->
     <div class="section-box" id="emergencySection" style="border-color:#e74c3c; background:linear-gradient(135deg,#2c1810,#4a1c1c);">
       <h3 class="section-title">🚨 UAE Emergency Contacts</h3>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
@@ -168,40 +168,57 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let currentHistory = [];
 
-    // 🔹 UAE-ONLY CHECK HEAT
+    // 🔹 ROBUST UAE-ONLY LOCATION RESOLVER
     async function checkHeat() {
-      let city = document.getElementById('city').value.trim();
-      if (!city) return alert('Please enter a UAE location.');
+      let input = document.getElementById('city').value.trim();
+      if (!input) return alert('Please enter a UAE location.');
       document.getElementById('loading').style.display = 'block';
-      
-      // Sanitize and Auto-Add AE
-      city = city.replace(/\s*,\s*/g, ',');
-      const lower = city.toLowerCase();
-      
-      // If no country code provided, try to append ,AE
-      if (!city.includes(',')) {
-        const uaePlaces = ['abu dhabi','dubai','sharjah','ajman','fujairah','ras al khaimah','rak','uaq','umm al quwain','uae'];
-        if (uaePlaces.some(p => lower.includes(p))) {
-          city += ',AE';
-        }
-      }
 
-      // Final check to ensure it ends with ,AE or ,ae
-      if (!city.endsWith(',AE') && !city.endsWith(',ae')) {
-         document.getElementById('loading').style.display = 'none';
-         return alert('⚠️ UAE Only: This tool is designed for UAE locations only. Please enter a UAE city (e.g., Dubai,AE).');
-      }
+      // 1. Clean input
+      let query = input.replace(/\s*,\s*/g, ',').trim();
+      const lower = query.toLowerCase();
+
+      // 2. Auto-append ,AE if missing
+      if (!query.includes(',')) query += ',AE';
+
+      // 3. Smart Dictionary for exact OWM matching
+      const uaeFixes = {
+        'ras al khaimah,ae': 'Ras Al Khaimah,AE', 'rak,ae': 'Ras Al Khaimah,AE',
+        'umm al quwain,ae': 'Umm Al Quwain,AE', 'uaq,ae': 'Umm Al Quwain,AE',
+        'al ain,ae': 'Al Ain,AE', 'abu dhabi,ae': 'Abu Dhabi,AE',
+        'dubai,ae': 'Dubai,AE', 'sharjah,ae': 'Sharjah,AE',
+        'ajman,ae': 'Ajman,AE', 'fujairah,ae': 'Fujairah,AE',
+        'dibba,ae': 'Dibba Al-Fujairah,AE', 'khor fakkan,ae': 'Khor Fakkan,AE',
+        'kalba,ae': 'Kalba,AE', 'hatta,ae': 'Hatta,AE',
+        'al dhaid,ae': 'Al Dhaid,AE', 'masafi,ae': 'Masafi,AE',
+        'liwa,ae': 'Liwa,AE', 'ruwais,ae': 'Ruwais,AE',
+        'ghayathi,ae': 'Ghayathi,AE', 'madinat zayed,ae': 'Madinat Zayed,AE',
+        'jebel ali,ae': 'Jebel Ali,AE', 'dip,ae': 'Dubai Investment Park,AE',
+        'dubai investment park,ae': 'Dubai Investment Park,AE'
+      };
+      if (uaeFixes[lower]) query = uaeFixes[lower];
 
       try {
-        let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`);
+        // Primary Fetch
+        let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&units=metric&appid=${API_KEY}`);
         let data = await res.json();
         
-        if (data.cod === 200 && data.sys.country.toUpperCase() !== 'AE') {
-           document.getElementById('loading').style.display = 'none';
-           return alert('⚠️ UAE Only: The location found is not in UAE. Please try again.');
+        // Fallback: Try simplified spacing if exact fails
+        if (data.cod !== 200) {
+          const simple = query.replace(/\s+/g, ' ').replace(' - ', ' ');
+          res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(simple)}&units=metric&appid=${API_KEY}`);
+          data = await res.json();
         }
 
-        if (data.cod !== 200) { alert(`Location not found. Ensure format is "City,AE"`); return; }
+        // Strict UAE Validation
+        if (data.cod === 200 && data.sys.country.toUpperCase() !== 'AE') {
+          document.getElementById('loading').style.display = 'none';
+          return alert('⚠️ UAE Only: This tool is designed for UAE locations only.');
+        }
+        if (data.cod !== 200) {
+          alert(`⚠️ Location not found. Try typing the city/emirate name (e.g., "Ras Al Khaimah" or "Dubai").`);
+          return;
+        }
         
         document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
         processWeatherData(data);
@@ -209,7 +226,7 @@
       finally { document.getElementById('loading').style.display = 'none'; }
     }
 
-    // 🔹 UAE-ONLY GPS
+    // 🔹 GPS WITH UAE CHECK
     function useMyLocation() {
       if(!navigator.geolocation) return alert('Geolocation not supported.');
       document.getElementById('loading').style.display = 'block';
@@ -220,14 +237,14 @@
           if(data.cod===200) {
             if(data.sys.country.toUpperCase() !== 'AE') {
                document.getElementById('loading').style.display = 'none';
-               return alert('⚠️ UAE Only: Your current GPS location is outside UAE.');
+               return alert('⚠️ UAE Only: Your GPS is currently outside the UAE.');
             }
             document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
             processWeatherData(data);
           } else alert('Weather unavailable.');
         } catch(e) { alert('Failed to fetch location.'); }
         finally { document.getElementById('loading').style.display = 'none'; }
-      }, (err) => { alert('Location denied.'); document.getElementById('loading').style.display = 'none'; });
+      }, (err) => { alert('Location access denied.'); document.getElementById('loading').style.display = 'none'; });
     }
 
     function startCityClock(offsetSeconds) {
@@ -270,33 +287,23 @@
       const msg = document.getElementById('alertMsg');
       const icon = document.getElementById('alertIcon');
       box.className = 'alert-box';
-      if (hi >= 54) {
-        box.classList.add('extreme'); icon.textContent = '🔴'; title.textContent = 'DANGER'; msg.textContent = 'Heat stroke imminent. Cease all outdoor work.';
-      } else if (hi >= 41) {
-        box.classList.add('extreme'); icon.textContent = '🔴'; title.textContent = 'EXTREME RISK'; msg.textContent = 'Take frequent breaks. Monitor crew closely.';
-      } else if (hi >= 32) {
-        box.classList.add('caution'); icon.textContent = '🟡'; title.textContent = 'CAUTION'; msg.textContent = 'Increase hydration. Rest every 45 mins.';
-      } else {
-        box.classList.add('safe'); icon.textContent = '🟢'; title.textContent = 'SAFE'; msg.textContent = 'Normal conditions. Maintain standard precautions.';
-      }
+      if (hi >= 54) { box.classList.add('extreme'); icon.textContent = '🔴'; title.textContent = 'DANGER'; msg.textContent = 'Heat stroke imminent. Cease all outdoor work.'; }
+      else if (hi >= 41) { box.classList.add('extreme'); icon.textContent = '🔴'; title.textContent = 'EXTREME RISK'; msg.textContent = 'Take frequent breaks. Monitor crew closely.'; }
+      else if (hi >= 32) { box.classList.add('caution'); icon.textContent = '🟡'; title.textContent = 'CAUTION'; msg.textContent = 'Increase hydration. Rest every 45 mins.'; }
+      else { box.classList.add('safe'); icon.textContent = '🟢'; title.textContent = 'SAFE'; msg.textContent = 'Normal conditions. Maintain standard precautions.'; }
     }
 
     function checkUaeBan(countryCode, timezoneOffset) {
       const alertBox = document.getElementById('uaeBanAlert');
       const titleEl = document.getElementById('uaeBanTitle');
       const msgEl = document.getElementById('uaeBanMessage');
-      const isUae = (countryCode && countryCode.toUpperCase() === 'AE');
-      if (!isUae) { alertBox.style.display = 'none'; return; }
+      if (countryCode.toUpperCase() !== 'AE') { alertBox.style.display = 'none'; return; }
 
       const today = new Date();
       const startDate = new Date('2026-06-15T00:00:00');
       const endDate = new Date('2026-09-15T23:59:59');
 
-      if (today < startDate) {
-        titleEl.textContent = '⚠️ UAE MIDDAY BREAK';
-        msgEl.innerHTML = 'Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>Starts from 15-06-2026</strong><br>per MOHRE rule';
-        alertBox.style.display = 'block'; return;
-      }
+      if (today < startDate) { titleEl.textContent = '⚠️ UAE MIDDAY BREAK'; msgEl.innerHTML = 'Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>Starts from 15-06-2026</strong><br>per MOHRE rule'; alertBox.style.display = 'block'; return; }
       if (today > endDate) { alertBox.style.display = 'none'; return; }
 
       const utcNow = Math.floor(Date.now() / 1000);
@@ -304,15 +311,8 @@
       const totalMinutes = locTime.getUTCHours() * 60 + locTime.getUTCMinutes();
       const isBanTime = totalMinutes >= 750 && totalMinutes < 900;
       
-      if (isBanTime) {
-        titleEl.textContent = '⚠️ UAE MIDDAY BREAK IN EFFECT';
-        msgEl.innerHTML = 'Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong>';
-        alertBox.style.display = 'block';
-      } else {
-        titleEl.textContent = '✅ UAE Midday Break Currently Inactive';
-        msgEl.innerHTML = 'Outdoor work allowed. Ban resumes at 12:30 PM.<br><strong>per MOHRE rule</strong>';
-        alertBox.style.display = 'block';
-      }
+      if (isBanTime) { titleEl.textContent = '⚠️ UAE MIDDAY BREAK IN EFFECT'; msgEl.innerHTML = 'Outdoor work prohibited 12:30 PM – 3:00 PM<br><strong>per MOHRE rule</strong>'; alertBox.style.display = 'block'; }
+      else { titleEl.textContent = '✅ UAE Midday Break Currently Inactive'; msgEl.innerHTML = 'Outdoor work allowed. Ban resumes at 12:30 PM.<br><strong>per MOHRE rule</strong>'; alertBox.style.display = 'block'; }
     }
     function dismissBan() { document.getElementById('uaeBanAlert').style.display = 'none'; }
 
