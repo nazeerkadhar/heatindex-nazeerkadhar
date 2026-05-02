@@ -67,10 +67,18 @@
   </div>
 
   <div class="container">
+    <!-- 1. LOCATION INPUT -->
     <div class="input-section">
       <input type="text" id="city" placeholder="Enter location (e.g., Chennai,IN)" />
       <button class="btn-check" onclick="checkHeat()">Check Heat Stress</button>
     </div>
+
+    <!-- 2. DATE & TIME (MOVED HERE) -->
+    <div class="card" id="datetimeCard" style="margin-top: 0;">
+      <div class="card-label">📅 Date & Time</div>
+      <div class="card-value" id="datetimeVal" style="font-size:1.3rem;">--</div>
+    </div>
+
     <div style="text-align:center; margin:-10px 0 20px 0;">
       <button onclick="useMyLocation()" style="background:transparent; border:1px dashed #3498db; color:#3498db; padding:8px 16px; border-radius:20px; font-size:0.85rem; cursor:pointer;">📍 Use My Current Location</button>
     </div>
@@ -84,7 +92,6 @@
     </div>
 
     <div class="alert-box" id="alertBox"><div class="alert-icon" id="alertIcon">🔴</div><div class="alert-title" id="alertTitle">EXTREME RISK</div><div class="alert-msg" id="alertMsg">Cease outdoor work.</div></div>
-    <div class="card" id="datetimeCard"><div class="card-label">📅 Date & Time</div><div class="card-value" id="datetimeVal" style="font-size:1.3rem;">--</div></div>
     <div class="card" id="tempCard"><div class="card-label">Temperature</div><div class="card-value" id="tempVal">--°C</div></div>
     <div class="card" id="humCard"><div class="card-label">Humidity</div><div class="card-value" id="humVal">--%</div></div>
     <div class="card heat-index" id="hiCard"><div class="card-label">Heat Index</div><div class="card-value" id="hiVal">--°C</div></div>
@@ -141,7 +148,6 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let currentHistory = [];
 
-    // 🔹 ROBUST HEAT CHECK
     async function checkHeat() {
       let city = document.getElementById('city').value.trim();
       if (!city) return alert('Please enter location.');
@@ -185,16 +191,11 @@
       }, (err) => { alert('Location denied. Enable GPS.'); document.getElementById('loading').style.display = 'none'; });
     }
 
-    // 🔹 FIXED: LIVE CITY CLOCK (Shows exact local time for ANY city)
     function startCityClock(offsetSeconds) {
       if (window.cityClockInterval) clearInterval(window.cityClockInterval);
-      
       window.cityClockInterval = setInterval(() => {
         const nowMs = Date.now();
-        // Add city's UTC offset to current time
         const cityTime = new Date(nowMs + (offsetSeconds * 1000));
-        
-        // Extract components using UTC methods (guarantees correct local time display)
         const day = String(cityTime.getUTCDate()).padStart(2, '0');
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         const month = months[cityTime.getUTCMonth()];
@@ -202,17 +203,14 @@
         const hours = String(cityTime.getUTCHours()).padStart(2, '0');
         const mins = String(cityTime.getUTCMinutes()).padStart(2, '0');
         const secs = String(cityTime.getUTCSeconds()).padStart(2, '0');
-        
         document.getElementById('datetimeVal').textContent = `${day} ${month} ${year} | ${hours}:${mins}:${secs}`;
       }, 1000);
     }
 
     function processWeatherData(data) {
-      // 1. Start Live Local Time Clock
       startCityClock(data.timezone);
       document.getElementById('datetimeCard').style.display = 'block';
       
-      // 2. Heat Index
       const temp = data.main.temp, hum = data.main.humidity;
       let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
       if(temp<26) hi = temp;
