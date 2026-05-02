@@ -168,22 +168,22 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let currentHistory = [];
 
-    // 🔹 ROBUST UAE-ONLY LOCATION RESOLVER
+    // 🔹 ROBUST UAE LOCATION RESOLVER (3-STAGE FALLBACK)
     async function checkHeat() {
       let input = document.getElementById('city').value.trim();
       if (!input) return alert('Please enter a UAE location.');
       document.getElementById('loading').style.display = 'block';
 
-      // 1. Clean input
+      // Clean input
       let query = input.replace(/\s*,\s*/g, ',').trim();
       const lower = query.toLowerCase();
-
-      // 2. Auto-append ,AE if missing
+      
+      // 1. Auto-append ,AE
       if (!query.includes(',')) query += ',AE';
 
-      // 3. Smart Dictionary for exact OWM matching
+      // 2. Exact OWM Dictionary for UAE Cities
       const uaeFixes = {
-        'ras al khaimah,ae': 'Ras Al Khaimah,AE', 'rak,ae': 'Ras Al Khaimah,AE',
+        'ras al khaimah,ae': 'Ras Al Khaimah,AE', 'rak,ae': 'Ras Al Khaimah,AE', 'rak': 'Ras Al Khaimah,AE',
         'umm al quwain,ae': 'Umm Al Quwain,AE', 'uaq,ae': 'Umm Al Quwain,AE',
         'al ain,ae': 'Al Ain,AE', 'abu dhabi,ae': 'Abu Dhabi,AE',
         'dubai,ae': 'Dubai,AE', 'sharjah,ae': 'Sharjah,AE',
@@ -193,37 +193,44 @@
         'al dhaid,ae': 'Al Dhaid,AE', 'masafi,ae': 'Masafi,AE',
         'liwa,ae': 'Liwa,AE', 'ruwais,ae': 'Ruwais,AE',
         'ghayathi,ae': 'Ghayathi,AE', 'madinat zayed,ae': 'Madinat Zayed,AE',
-        'jebel ali,ae': 'Jebel Ali,AE', 'dip,ae': 'Dubai Investment Park,AE',
-        'dubai investment park,ae': 'Dubai Investment Park,AE'
+        'jebel ali,ae': 'Jebel Ali,AE', 'dip,ae': 'Dubai Investment Park,AE'
       };
       if (uaeFixes[lower]) query = uaeFixes[lower];
+      else if (uaeFixes[lower.replace(',ae','')]) query = uaeFixes[lower.replace(',ae','')];
 
+      // 3. Fetch Logic
+      let data = await tryFetch(query);
+      
+      // Fallback 1: Try without comma if first fails
+      if (data.cod !== 200) {
+         let simple = query.split(',')[0];
+         data = await tryFetch(simple);
+      }
+
+      // Fallback 2: Hardcoded RAK fallback
+      if (data.cod !== 200 && lower.includes('ras')) {
+         data = await tryFetch('Ras Al Khaimah,AE');
+      }
+
+      // 4. Validation
+      if (data.cod === 200 && data.sys.country.toUpperCase() !== 'AE') {
+        document.getElementById('loading').style.display = 'none';
+        return alert('⚠️ UAE Only: This tool is designed for UAE locations only.');
+      }
+      if (data.cod !== 200) {
+        document.getElementById('loading').style.display = 'none';
+        return alert(`⚠️ Location not found. Try: "Ras Al Khaimah", "Dubai", "Abu Dhabi", etc.`);
+      }
+        
+      document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
+      processWeatherData(data);
+    }
+
+    async function tryFetch(q) {
       try {
-        // Primary Fetch
-        let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&units=metric&appid=${API_KEY}`);
-        let data = await res.json();
-        
-        // Fallback: Try simplified spacing if exact fails
-        if (data.cod !== 200) {
-          const simple = query.replace(/\s+/g, ' ').replace(' - ', ' ');
-          res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(simple)}&units=metric&appid=${API_KEY}`);
-          data = await res.json();
-        }
-
-        // Strict UAE Validation
-        if (data.cod === 200 && data.sys.country.toUpperCase() !== 'AE') {
-          document.getElementById('loading').style.display = 'none';
-          return alert('⚠️ UAE Only: This tool is designed for UAE locations only.');
-        }
-        if (data.cod !== 200) {
-          alert(`⚠️ Location not found. Try typing the city/emirate name (e.g., "Ras Al Khaimah" or "Dubai").`);
-          return;
-        }
-        
-        document.getElementById('city').value = `${data.name}, ${data.sys.country}`;
-        processWeatherData(data);
-      } catch(e) { alert('Connection error.'); }
-      finally { document.getElementById('loading').style.display = 'none'; }
+        let res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&units=metric&appid=${API_KEY}`);
+        return await res.json();
+      } catch { return { cod: 500 }; }
     }
 
     // 🔹 GPS WITH UAE CHECK
@@ -232,8 +239,7 @@
       document.getElementById('loading').style.display = 'block';
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
-          const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&units=metric&appid=${API_KEY}`);
-          const data = await res.json();
+          const data = await tryFetch(`lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
           if(data.cod===200) {
             if(data.sys.country.toUpperCase() !== 'AE') {
                document.getElementById('loading').style.display = 'none';
