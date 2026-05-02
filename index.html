@@ -141,6 +141,7 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d';
     let currentHistory = [];
 
+    // 🔹 ROBUST HEAT CHECK
     async function checkHeat() {
       let city = document.getElementById('city').value.trim();
       if (!city) return alert('Please enter location.');
@@ -184,23 +185,34 @@
       }, (err) => { alert('Location denied. Enable GPS.'); document.getElementById('loading').style.display = 'none'; });
     }
 
-    // 🔹 FIXED: ROBUST LOCAL TIME CALCULATION (BYPASSES DEVICE TIMEZONE)
+    // 🔹 FIXED: LIVE CITY CLOCK (Shows exact local time for ANY city)
+    function startCityClock(offsetSeconds) {
+      if (window.cityClockInterval) clearInterval(window.cityClockInterval);
+      
+      window.cityClockInterval = setInterval(() => {
+        const nowMs = Date.now();
+        // Add city's UTC offset to current time
+        const cityTime = new Date(nowMs + (offsetSeconds * 1000));
+        
+        // Extract components using UTC methods (guarantees correct local time display)
+        const day = String(cityTime.getUTCDate()).padStart(2, '0');
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const month = months[cityTime.getUTCMonth()];
+        const year = cityTime.getUTCFullYear();
+        const hours = String(cityTime.getUTCHours()).padStart(2, '0');
+        const mins = String(cityTime.getUTCMinutes()).padStart(2, '0');
+        const secs = String(cityTime.getUTCSeconds()).padStart(2, '0');
+        
+        document.getElementById('datetimeVal').textContent = `${day} ${month} ${year} | ${hours}:${mins}:${secs}`;
+      }, 1000);
+    }
+
     function processWeatherData(data) {
-      const utcNow = Math.floor(Date.now() / 1000);
-      // Add API timezone offset to current UTC time
-      const cityTime = new Date((utcNow + data.timezone) * 1000);
-      
-      // Format manually to guarantee exact city time display
-      const day = String(cityTime.getUTCDate()).padStart(2, '0');
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const month = months[cityTime.getUTCMonth()];
-      const year = cityTime.getUTCFullYear();
-      const hours = String(cityTime.getUTCHours()).padStart(2, '0');
-      const mins = String(cityTime.getUTCMinutes()).padStart(2, '0');
-      
-      document.getElementById('datetimeVal').textContent = `${day} ${month} ${year} | ${hours}:${mins}`;
+      // 1. Start Live Local Time Clock
+      startCityClock(data.timezone);
       document.getElementById('datetimeCard').style.display = 'block';
       
+      // 2. Heat Index
       const temp = data.main.temp, hum = data.main.humidity;
       let hi = -8.784695 + 1.61139411*temp + 2.338549*hum - 0.14611605*temp*hum - 0.012308094*temp*temp - 0.016424828*hum*hum + 0.002211732*temp*temp*hum + 0.00072546*temp*hum*hum - 0.000003582*temp*temp*hum*hum;
       if(temp<26) hi = temp;
