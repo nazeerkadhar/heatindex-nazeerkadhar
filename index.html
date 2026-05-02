@@ -153,49 +153,67 @@
     const API_KEY = '0c0adab3c8cc353020af11d03821e94d'; 
     let currentHistory = [];
 
-    // 🔹 FIX: Uses Coordinates for RAK to bypass API Name Errors
+    // 🔹 UAE COORDINATE DATABASE
+    // This bypasses OpenWeatherMap's spelling issues by using exact GPS locations.
+    const UAE_COORDS = {
+        // Emirates
+        'abu dhabi': { lat: 24.4539, lon: 54.3773 },
+        'dubai': { lat: 25.2048, lon: 55.2708 },
+        'sharjah': { lat: 25.3463, lon: 55.4209 },
+        'ajman': { lat: 25.4052, lon: 55.5137 },
+        'umm al quwain': { lat: 25.5496, lon: 55.5494 },
+        'uaq': { lat: 25.5496, lon: 55.5494 },
+        'ras al khaimah': { lat: 25.7902, lon: 55.9425 },
+        'rak': { lat: 25.7902, lon: 55.9425 },
+        'fujairah': { lat: 25.1289, lon: 56.3275 },
+        // Towns & Districts
+        'al ain': { lat: 24.2086, lon: 55.7563 },
+        'dibba': { lat: 25.6000, lon: 56.2500 },
+        'khor fakkan': { lat: 25.3500, lon: 56.3500 },
+        'kalba': { lat: 25.0500, lon: 56.3500 },
+        'hatta': { lat: 24.8069, lon: 56.1356 },
+        'ruwais': { lat: 24.1117, lon: 52.7244 },
+        'ghayathi': { lat: 24.2156, lon: 52.9783 },
+        'liwa': { lat: 23.1500, lon: 53.7500 },
+        'madinat zayed': { lat: 23.6500, lon: 53.7000 },
+        'jebel ali': { lat: 25.0000, lon: 55.1000 },
+        'dip': { lat: 24.9800, lon: 55.1500 },
+        'al dhaid': { lat: 25.3000, lon: 55.8800 },
+        'masafi': { lat: 25.2500, lon: 56.2000 },
+        'al hamraniyah': { lat: 25.4200, lon: 55.4500 },
+        'al jazirah al hamra': { lat: 25.6200, lon: 55.7800 }
+    };
+
     async function checkHeat() {
       let input = document.getElementById('city').value.trim();
       if (!input) return alert('Please enter a UAE location.');
       document.getElementById('loading').style.display = 'block';
 
-      // 1. Check if RAK (Force Coordinates)
-      if (input.toLowerCase().includes('ras') || input.toLowerCase().includes('khaimah') || input.toLowerCase() === 'rak') {
-         // Use Coordinates for RAK: 25.7902, 55.9425
-         const data = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=25.7902&lon=55.9425&units=metric&appid=${API_KEY}`)
-            .then(r => r.json());
-         
+      // 1. Clean Input
+      let clean = input.replace(/\s*,\s*/g, ' ').toLowerCase();
+      
+      // 2. Check Coordinate Database First
+      if (UAE_COORDS[clean]) {
+         let loc = UAE_COORDS[clean];
+         let data = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${loc.lat}&lon=${loc.lon}&units=metric&appid=${API_KEY}`).then(r => r.json());
          if(data.cod === 200 && data.sys.country.toUpperCase() === 'AE') {
-            document.getElementById('city').value = "Ras Al Khaimah, AE";
+            document.getElementById('city').value = input.charAt(0).toUpperCase() + input.slice(1);
             processWeatherData(data);
             return;
-         } else {
-            document.getElementById('loading').style.display = 'none';
-            return alert('⚠️ UAE Only: Location not found.');
          }
       }
 
-      // 2. Normal Cities (Name Search)
-      let query = input.replace(/\s*,\s*/g, ',').replace(/\s+/g, ' ').trim();
+      // 3. Fallback to Text Search (for unlisted towns)
+      let query = input.replace(/\s*,\s*/g, ',').trim();
       if (!query.includes(',')) query += ',AE';
       
-      // Exact OWM dictionary for UAE
-      const uaeFixes = {
-        'ras al khaimah,ae': 'Ras al Khaimah,AE', 'rak,ae': 'Ras al Khaimah,AE',
-        'umm al quwain,ae': 'Umm Al Quwain,AE', 'uaq,ae': 'Umm Al Quwain,AE',
-        'al ain,ae': 'Al Ain,AE', 'abu dhabi,ae': 'Abu Dhabi,AE',
-        'dubai,ae': 'Dubai,AE', 'sharjah,ae': 'Sharjah,AE',
-        'ajman,ae': 'Ajman,AE', 'fujairah,ae': 'Fujairah,AE'
-      };
-      if (uaeFixes[query.toLowerCase()]) query = uaeFixes[query.toLowerCase()];
-
-      let data = await fetchWeather(query);
+      // Fetch by name
+      let data = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(query)}&units=metric&appid=${API_KEY}`).then(r => r.json());
       
-      // Fallback: retry without country code if first fails
+      // Retry without comma if fails
       if (data.cod !== 200) {
         let simple = query.split(',')[0];
-        if (uaeFixes[simple.toLowerCase()]) simple = uaeFixes[simple.toLowerCase()];
-        data = await fetchWeather(simple);
+        data = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(simple)}&units=metric&appid=${API_KEY}`).then(r => r.json());
       }
 
       if (data.cod === 200 && data.sys.country.toUpperCase() !== 'AE') {
@@ -215,22 +233,12 @@
       processWeatherData(data);
     }
 
-    async function fetchWeather(q) {
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&units=metric&appid=${API_KEY}`;
-      try {
-        const res = await fetch(url);
-        return await res.json();
-      } catch (err) {
-        return { cod: 500, message: 'Network Error' };
-      }
-    }
-
     function useMyLocation() {
       if(!navigator.geolocation) return alert('Geolocation not supported.');
       document.getElementById('loading').style.display = 'block';
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
-          const data = await fetchWeather(`lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+          const data = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&units=metric&appid=${API_KEY}`).then(r => r.json());
           if(data.cod===200) {
             if(data.sys.country.toUpperCase() !== 'AE') {
                document.getElementById('loading').style.display = 'none';
